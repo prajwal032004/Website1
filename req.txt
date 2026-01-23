@@ -1,0 +1,30 @@
+5feet4-studio/
+├── public/
+│   ├── favicon.ico
+│   └── site.webmanifest
+├── src/
+│   ├── app/
+│   │   ├── layout.js
+│   │   ├── page.js
+│   │   ├── globals.css
+│   │   ├── about/
+│   │   │   └── page.js
+│   │   ├── ads/
+│   │   │   └── page.js
+│   │   ├── prints/
+│   │   │   └── page.js
+│   │   ├── contact/
+│   │   │   └── page.js
+│   │   ├── sitemap.xml/
+│   │   │   └── route.js
+│   │   └── robots.txt/
+│   │       └── route.js
+│   ├── components/
+│   │   ├── Navbar.js
+│   │   ├── BackgroundVideo.js
+│   │   ├── LoadingScreen.js
+│   │   └── ContextMenu.js
+├── .gitignore
+├── package.json
+├── next.config.js
+└── README.md
