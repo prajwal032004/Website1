@@ -9,66 +9,82 @@ export default function PrintsPage() {
     useEffect(() => {
         setIsLoaded(true)
 
-        const video = videoRef.current
-        if (!video) return
+        // Check if background video already exists in the DOM
+        let video = document.querySelector('.persistent-background-video')
 
-        const handleLoadedData = () => {
+        if (!video) {
+            // Create video element only if it doesn't exist
+            video = document.createElement('video')
+            video.className = 'persistent-background-video background-video'
+            video.autoplay = true
+            video.muted = true
+            video.loop = true
+            video.playsInline = true
+            video.preload = 'auto'
+
+            const source = document.createElement('source')
+            source.src = 'https://directorcolintilley.com/wp-content/themes/colintilley/static/img/bg-commercials.mp4'
+            source.type = 'video/mp4'
+
+            video.appendChild(source)
+            document.body.appendChild(video)
+
+            const handleLoadedData = () => {
+                video.classList.add('loaded')
+            }
+
+            video.addEventListener('loadeddata', handleLoadedData)
+
+            const playVideo = () => {
+                video.play().catch((err) => {
+                    console.log('Video autoplay prevented, waiting for user interaction')
+
+                    const playOnce = () => {
+                        video.play()
+                        document.removeEventListener('click', playOnce)
+                        document.removeEventListener('touchstart', playOnce)
+                        document.removeEventListener('scroll', playOnce)
+                    }
+
+                    document.addEventListener('click', playOnce, { once: true })
+                    document.addEventListener('touchstart', playOnce, { once: true })
+                    document.addEventListener('scroll', playOnce, { once: true })
+                })
+            }
+
+            if (video.readyState >= 3) {
+                video.classList.add('loaded')
+            }
+
+            playVideo()
+        } else {
+            // Video already exists, just make sure it's playing
             video.classList.add('loaded')
+            if (video.paused) {
+                video.play().catch(() => { })
+            }
         }
 
-        const playVideo = () => {
-            video.play().catch((err) => {
-                console.log('Video autoplay prevented, waiting for user interaction')
-
-                const playOnce = () => {
-                    video.play()
-                    document.removeEventListener('click', playOnce)
-                    document.removeEventListener('touchstart', playOnce)
-                    document.removeEventListener('scroll', playOnce)
-                }
-
-                document.addEventListener('click', playOnce, { once: true })
-                document.addEventListener('touchstart', playOnce, { once: true })
-                document.addEventListener('scroll', playOnce, { once: true })
-            })
-        }
-
-        video.addEventListener('loadeddata', handleLoadedData)
-
-        if (video.readyState >= 3) {
-            video.classList.add('loaded')
-        }
-
-        playVideo()
+        videoRef.current = video
 
         const handleVisibilityChange = () => {
             if (!document.hidden && video.paused) {
-                playVideo()
+                video.play().catch(() => { })
             }
         }
 
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
         return () => {
-            video.removeEventListener('loadeddata', handleLoadedData)
             document.removeEventListener('visibilitychange', handleVisibilityChange)
+            // Don't remove the video element on unmount - let it persist
         }
     }, [])
 
     return (
         <>
-            <style jsx>{`
-                .prints-container {
-                    min-height: 100vh;
-                    background: #000;
-                    position: relative;
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                .background-video {
+            <style jsx global>{`
+                .persistent-background-video {
                     position: fixed;
                     top: 50%;
                     left: 50%;
@@ -83,8 +99,18 @@ export default function PrintsPage() {
                     transition: opacity 1s ease-in-out, filter 0.5s ease;
                 }
 
-                .background-video.loaded {
+                .persistent-background-video.loaded {
                     opacity: 1;
+                }
+
+                .prints-container {
+                    min-height: 100vh;
+                    background: #000;
+                    position: relative;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .video-overlay {
@@ -144,20 +170,6 @@ export default function PrintsPage() {
             `}</style>
 
             <div className="prints-container">
-                <video
-                    ref={videoRef}
-                    className="background-video"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                >
-                    <source
-                        src="https://directorcolintilley.com/wp-content/themes/colintilley/static/img/bg-commercials.mp4"
-                        type="video/mp4"
-                    />
-                </video>
                 <div className="video-overlay"></div>
 
                 <div className="content-wrapper">
