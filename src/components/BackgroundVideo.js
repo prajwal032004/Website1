@@ -63,7 +63,7 @@ export default function BackgroundVideo() {
             preload="auto"
         >
             <source
-                src="https://directorcolintilley.com/wp-content/themes/colintilley/static/img/bg-commercials.mp4"
+                src="https://ik.imagekit.io/pqkj4p4ii/5feet4/top.mp4"
                 type="video/mp4"
             />
         </video>

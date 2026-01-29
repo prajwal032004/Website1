@@ -1,185 +1,216 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
-export default function PrintsPage() {
-    const [isLoaded, setIsLoaded] = useState(false)
-    const videoRef = useRef(null)
-
+export default function Prints() {
     useEffect(() => {
-        setIsLoaded(true)
+        if (typeof window !== 'undefined' && window.AOS) {
+            window.AOS.init({
+                duration: 1200,
+                once: true,
+                offset: 120,
+                easing: 'ease-out-cubic',
+            })
+        }
 
-        // Check if background video already exists in the DOM
-        let video = document.querySelector('.persistent-background-video')
+        const heroSection = document.querySelector('.hero-section')
 
-        if (!video) {
-            // Create video element only if it doesn't exist
-            video = document.createElement('video')
-            video.className = 'persistent-background-video background-video'
-            video.autoplay = true
-            video.muted = true
-            video.loop = true
-            video.playsInline = true
-            video.preload = 'auto'
-
-            const source = document.createElement('source')
-            source.src = 'https://directorcolintilley.com/wp-content/themes/colintilley/static/img/bg-commercials.mp4'
-            source.type = 'video/mp4'
-
-            video.appendChild(source)
-            document.body.appendChild(video)
-
-            const handleLoadedData = () => {
-                video.classList.add('loaded')
+        const updateBlur = () => {
+            if (!heroSection) return
+            const rect = heroSection.getBoundingClientRect()
+            if (rect.bottom < window.innerHeight * 0.2) {
+                document.body.classList.add('blur-active')
+            } else {
+                document.body.classList.remove('blur-active')
             }
+        }
 
-            video.addEventListener('loadeddata', handleLoadedData)
-
-            const playVideo = () => {
-                video.play().catch((err) => {
-                    console.log('Video autoplay prevented, waiting for user interaction')
-
-                    const playOnce = () => {
-                        video.play()
-                        document.removeEventListener('click', playOnce)
-                        document.removeEventListener('touchstart', playOnce)
-                        document.removeEventListener('scroll', playOnce)
-                    }
-
-                    document.addEventListener('click', playOnce, { once: true })
-                    document.addEventListener('touchstart', playOnce, { once: true })
-                    document.addEventListener('scroll', playOnce, { once: true })
+        let ticking = false
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateBlur()
+                    ticking = false
                 })
-            }
-
-            if (video.readyState >= 3) {
-                video.classList.add('loaded')
-            }
-
-            playVideo()
-        } else {
-            // Video already exists, just make sure it's playing
-            video.classList.add('loaded')
-            if (video.paused) {
-                video.play().catch(() => { })
+                ticking = true
             }
         }
 
-        videoRef.current = video
-
-        const handleVisibilityChange = () => {
-            if (!document.hidden && video.paused) {
-                video.play().catch(() => { })
-            }
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityChange)
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        updateBlur()
 
         return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange)
-            // Don't remove the video element on unmount - let it persist
+            window.removeEventListener('scroll', handleScroll)
+            document.body.classList.remove('blur-active')
         }
     }, [])
 
     return (
         <>
-            <style jsx global>{`
-                .persistent-background-video {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    min-width: 100%;
-                    min-height: 100%;
-                    width: auto;
-                    height: auto;
-                    transform: translate(-50%, -50%);
-                    z-index: 0;
-                    object-fit: cover;
-                    opacity: 0;
-                    transition: opacity 1s ease-in-out, filter 0.5s ease;
-                }
+            <style jsx>{`
+        body.blur-active .background-video {
+          filter: blur(15px) brightness(0.5);
+        }
 
-                .persistent-background-video.loaded {
-                    opacity: 1;
-                }
+        .hero-section {
+          position: relative;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
 
-                .prints-container {
-                    min-height: 100vh;
-                    background: #000;
-                    position: relative;
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
+        .hero-content {
+          position: relative;
+          z-index: 2;
+          text-align: center;
+          mix-blend-mode: difference;
+          padding: 0 20px;
+        }
 
-                .video-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.4);
-                    z-index: 1;
-                    transition: background 0.5s ease;
-                }
+        .coming-soon-badge {
+          display: inline-block;
+          padding: 8px 20px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 100px;
+          font-size: 14px;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(5px);
+          animation: fadeInUp 1s ease-out;
+        }
 
-                .content-wrapper {
-                    position: relative;
-                    z-index: 2;
-                    text-align: center;
-                    padding: 40px 20px;
-                    opacity: ${isLoaded ? 1 : 0};
-                    transform: translateY(${isLoaded ? '0' : '30px'});
-                    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-                    mix-blend-mode: difference;
-                }
+        .hero-title {
+          font-size: clamp(60px, 12vw, 160px);
+          font-weight: 700;
+          line-height: 0.9;
+          letter-spacing: -4px;
+          margin-bottom: 20px;
+          animation: fadeInUp 1.2s ease-out;
+        }
 
-                .main-title {
-                    font-size: clamp(70px, 12vw, 160px);
-                    font-weight: 700;
-                    line-height: 1;
-                    letter-spacing: -3px;
-                    color: #ffffff;
-                    text-transform: uppercase;
-                    animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-                }
+        .hero-subtitle {
+          font-size: clamp(16px, 2vw, 24px);
+          opacity: 0.7;
+          max-width: 600px;
+          margin: 0 auto;
+          line-height: 1.6;
+          animation: fadeInUp 1.4s ease-out;
+        }
 
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
+        .teaser-section {
+          min-height: 60vh;
+          padding: 100px 40px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          background: linear-gradient(to bottom, transparent, #000);
+        }
 
-                @media (max-width: 768px) {
-                    .main-title {
-                        font-size: 110px;
-                    }
-                }
+        .teaser-content {
+          max-width: 800px;
+        }
 
-                @media (max-width: 480px) {
-                    .main-title {
-                        font-size: 68px;
-                    }
-                }
-            `}</style>
+        .teaser-content h2 {
+          font-size: clamp(32px, 5vw, 56px);
+          font-weight: 700;
+          margin-bottom: 30px;
+          letter-spacing: -1px;
+        }
 
-            <div className="prints-container">
-                <div className="video-overlay"></div>
+        .teaser-content p {
+          font-size: 18px;
+          opacity: 0.6;
+          line-height: 1.8;
+          margin-bottom: 40px;
+        }
 
-                <div className="content-wrapper">
-                    <h1 className="main-title">
-                        Coming
+        .notified-input-group {
+          display: flex;
+          gap: 10px;
+          max-width: 500px;
+          margin: 0 auto;
+        }
+
+        input {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 15px 25px;
+          border-radius: 8px;
+          color: white;
+          outline: none;
+          transition: border 0.3s ease;
+        }
+
+        input:focus {
+          border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .notify-btn {
+          padding: 15px 30px;
+          background: #fff;
+          color: #000;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .notify-btn:hover {
+          transform: scale(1.05);
+          background: #e0e0e0;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-title {
+            font-size: 80px;
+            letter-spacing: -2px;
+          }
+          
+          .notified-input-group {
+            flex-direction: column;
+          }
+          
+          .notify-btn {
+            width: 100%;
+          }
+        }
+      `}</style>
+
+            <section className="hero-section">
+                <div className="hero-content">
+                    <div className="coming-soon-badge">Coming Soon</div>
+                    <h1 className="hero-title">
+                        The
                         <br />
-                        Soon
+                        Print Shop
                     </h1>
+                    <p className="hero-subtitle">
+                        Transforming our cinematic frames into museum-quality physical art.
+                        Limited edition drops arriving soon.
+                    </p>
                 </div>
-            </div>
+            </section>
+
+
         </>
     )
 }

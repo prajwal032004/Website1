@@ -181,7 +181,7 @@ export default function Navbar() {
                     <Link href="/">
                         <img
                             className="logo"
-                            src="https://apifetch.pythonanywhere.com/static/IMG_9910__1_-removebg-preview.png"
+                            src="https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910__1_-removebg-preview.png?updatedAt=1769579689829"
                             alt="5feet4 Studio"
                         />
                     </Link>

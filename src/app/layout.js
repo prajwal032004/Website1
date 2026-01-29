@@ -25,7 +25,7 @@ export const metadata = {
         description: 'Specializing in creative direction and full-scale production, guiding your brand from concept to final delivery.',
         images: [
             {
-                url: 'https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG',
+                url: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
                 width: 1200,
                 height: 630,
                 alt: '5feet4 Studio - Creative Production Company',
@@ -38,12 +38,12 @@ export const metadata = {
         creator: '@5feet4studio',
         title: '5feet4 - Full Scale Production Company',
         description: 'Specializing in creative direction and full-scale production.',
-        images: ['https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG'],
+        images: ['https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9911.JPG'],
     },
     icons: {
-        icon: 'https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG',
-        shortcut: 'https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG',
-        apple: 'https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG',
+        icon: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
+        shortcut: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
+        apple: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
     },
     manifest: '/site.webmanifest',
     robots: {
@@ -58,8 +58,7 @@ export default function RootLayout({ children }) {
             <head>
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link rel="preconnect" href="https://apifetch.pythonanywhere.com" />
-                <link rel="preconnect" href="https://directorcolintilley.com" />
+                <link rel="preconnect" href="https://5feet4r.vercel.app" />
                 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
             </head>
             <body className={josefinSans.className}>
