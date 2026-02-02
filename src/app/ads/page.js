@@ -202,6 +202,10 @@ export default function Ads() {
         .sk-hero-line.top { width: 25%; }
         .sk-hero-line.bot { width: 20%; }
 
+        @media (max-width: 768px) {
+        .sk-hero-line.top { width: 90%; height:80px;}
+        .sk-hero-line.bot { width: 60%; height:60px;}
+      }
         /* Header Skeleton */
         .sk-header-title {
           width: 200px;

@@ -261,7 +261,20 @@ export default function About() {
         .sk-hero-title-line.shorter {
           width: 15%; /* "Us" - Very small */
         }
+@media (max-width: 768px) {
+          /* ... existing mobile styles ... */
 
+          /* Adjust Skeleton Widths for Mobile */
+          .sk-hero-title-line.short {
+            width: 70%;
+            height: 80px; /* "About" needs to be wider on mobile screens */
+          }
+          
+          .sk-hero-title-line.shorter {
+            width: 50%;
+            height: 60px; /* "Us" needs to be wider on mobile screens */
+          }
+        }
         /* Team Card Skeleton */
         .sk-card {
           aspect-ratio: 3/4;
