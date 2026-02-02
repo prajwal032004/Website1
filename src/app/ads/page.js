@@ -1,10 +1,27 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 
 export default function Ads() {
   const videoRefs = useRef([])
   const [isMobile, setIsMobile] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  // Simulation of loading heavy assets
+  useEffect(() => {
+    const startTime = Date.now()
+    const MIN_LOADING_TIME = 2500
+
+    // We simply use a timer here because waiting for 7+ videos 
+    // to actually preload would take too long and hurt UX.
+    // This gives the "premium app" feel.
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, MIN_LOADING_TIME)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     // Detect mobile
@@ -13,6 +30,8 @@ export default function Ads() {
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
+
+    if (!isLoaded) return
 
     // Initialize AOS if available
     if (typeof window !== 'undefined' && window.AOS) {
@@ -101,7 +120,7 @@ export default function Ads() {
       videoObserver.disconnect()
       if (centerObserver) centerObserver.disconnect()
     }
-  }, [isMobile])
+  }, [isMobile, isLoaded])
 
   const handleSoundToggle = (e, index) => {
     e.stopPropagation()
@@ -139,7 +158,137 @@ export default function Ads() {
   return (
     <>
       <style jsx>{`
-        /* Global Blur Transition */
+        /* ===========================
+           AESTHETIC SKELETON STYLES 
+           =========================== */
+        
+        .skeleton-block {
+          background-color: #0f0f0f;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .skeleton-block::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          transform: translateX(-100%);
+          background-image: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.05) 20%,
+            rgba(255, 255, 255, 0.09) 60%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        /* Hero Text Skeleton */
+        .sk-hero-line {
+          height: clamp(70px, 12vw, 160px);
+          background: #111;
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        .sk-hero-line.top { width: 25%; }
+        .sk-hero-line.bot { width: 20%; }
+
+        /* Header Skeleton */
+        .sk-header-title {
+          width: 200px;
+          height: 60px;
+          margin: 0 auto 30px;
+          border-radius: 8px;
+          background: #111;
+        }
+        .sk-header-p {
+          width: 600px;
+          height: 24px;
+          margin: 0 auto 10px;
+          border-radius: 4px;
+          background: #161616;
+          max-width: 90%;
+        }
+
+        /* Video Card Skeleton */
+        .sk-video-card {
+          background: #121212;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          position: relative;
+          min-height: 500px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 30px;
+        }
+
+        /* Grid spans for skeleton matching the real grid */
+        .sk-video-card.wide {
+           grid-column: span 2;
+        }
+
+        .sk-overlay-title {
+          width: 50%;
+          height: 28px;
+          background: #1e1e1e;
+          border-radius: 4px;
+          margin-bottom: 12px;
+        }
+
+        .sk-overlay-desc {
+          width: 80%;
+          height: 16px;
+          background: #1e1e1e;
+          border-radius: 4px;
+        }
+        
+        /* Mobile adjustment for skeleton grid */
+        @media (max-width: 768px) {
+            .sk-video-card.wide { grid-column: span 1; }
+            .sk-video-card { min-height: 65vh; }
+        }
+
+        /* Loading Wrappers */
+        .skeleton-wrapper {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 50;
+          transition: opacity 0.6s ease-out, visibility 0.6s;
+          opacity: 1;
+          visibility: visible;
+        }
+        .skeleton-wrapper.hidden {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+        }
+
+        .content-wrapper {
+          opacity: 0;
+          transition: opacity 0.8s ease-in;
+        }
+        .content-wrapper.loaded {
+          opacity: 1;
+        }
+
+
+        /* ===========================
+           EXISTING STYLES
+           =========================== */
+        
         :global(body.blur-active .background-video) {
           filter: blur(15px) brightness(0.7);
         }
@@ -177,6 +326,7 @@ export default function Ads() {
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-direction: column;
         }
 
         .hero-content {
@@ -369,6 +519,59 @@ export default function Ads() {
           display: block;
         }
 
+        /* Footer / Copyright Styles */
+        .copyright-container {
+          width: 100%;
+          padding: 60px 20px;
+          margin-top: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          z-index: 100;
+        }
+
+        .copyright {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 400;
+          letter-spacing: 0.5px;
+          margin: 0;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .copyright-link,
+        .copyright-link:visited,
+        .copyright-link:active {
+          color: #ffffff;
+          font-weight: 700;
+          text-decoration: none;
+          position: relative;
+          display: inline-block;
+          margin: 0 4px;
+          cursor: pointer;
+        }
+
+        .copyright-link::after {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 1px;
+          bottom: -2px;
+          left: 0;
+          background-color: #ffffff;
+          transition: width 0.3s ease;
+        }
+
+        .copyright-link:hover::after {
+          width: 100%;
+        }
+
+        .copyright-link:hover {
+          opacity: 0.8;
+          transform: translateY(-1px);
+        }
+
         /* TABLET BREAKPOINT */
         @media (max-width: 1200px) {
           .work-grid {
@@ -385,7 +588,7 @@ export default function Ads() {
           }
         }
 
-        /* MOBILE BREAKPOINT - CRITICAL STYLES */
+        /* MOBILE BREAKPOINT */
         @media (max-width: 768px) {
           .hero-title {
             font-size: 110px;
@@ -428,6 +631,14 @@ export default function Ads() {
             animation: fadeInUpBottom 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
 
+          .copyright-container {
+            padding: 40px 20px;
+          }
+          .copyright {
+            font-size: 12px;
+            text-align: center;
+          }
+
           @keyframes fadeInUpBottom {
             from {
               opacity: 0;
@@ -460,89 +671,166 @@ export default function Ads() {
         }
       `}</style>
 
-      <section className="hero-section">
-        <div className="hero-content" data-aos="fade-up">
-          <h1 className="hero-title">
-            Creative
-            <br />
-            Stories
-          </h1>
-        </div>
-      </section>
+      {/* =======================
+          SKELETON LOADER
+          ======================= */}
+      <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
 
-      <section id="work-section">
-        <div className="section-header" data-aos="fade-up">
-          <h2>Our Work</h2>
-          <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
-        </div>
+        {/* Hero Skeleton */}
+        <section className="hero-section">
+          <div className="skeleton-block sk-hero-line top"></div>
+          <div className="skeleton-block sk-hero-line bot"></div>
+        </section>
 
-        <div className="work-grid">
-          {videos.map((video, index) => (
-            <div
-              key={index}
-              className={`work-item ${video.type}`}
-              data-aos="fade-up"
-              data-aos-delay={index * 100}
-            >
-              <video
-                ref={(el) => (videoRefs.current[index] = el)}
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              >
-                <source src={video.src} type="video/mp4" />
-              </video>
+        {/* Work Grid Skeleton */}
+        <section id="work-section">
+          <div className="section-header">
+            <div className="skeleton-block sk-header-title"></div>
+            <div className="skeleton-block sk-header-p"></div>
+            <div className="skeleton-block sk-header-p" style={{ width: '400px' }}></div>
+          </div>
 
-              <button
-                className="sound-toggle"
-                aria-label="Toggle sound"
-                onClick={(e) => handleSoundToggle(e, index)}
-              >
-                <svg className="icon-muted" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M11 5L6 9H2V15H6L11 19V5Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <svg className="icon-unmuted" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M11 5L6 9H2V15H6L11 19V5Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M18.364 5.63599C19.9926 7.26465 20.9087 9.49077 20.9087 11.8095C20.9087 14.1282 19.9926 16.3543 18.364 17.983"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <div className="work-overlay">
-                <h3>{video.title}</h3>
-                <p>{video.desc}</p>
-              </div>
+          <div className="work-grid">
+            {/* 1. Vertical */}
+            <div className="skeleton-block sk-video-card">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
             </div>
-          ))}
+
+            {/* 2. Vertical */}
+            <div className="skeleton-block sk-video-card">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+
+            {/* 3. Vertical */}
+            <div className="skeleton-block sk-video-card">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+
+            {/* 4. Horizontal (Wide) */}
+            <div className="skeleton-block sk-video-card wide">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+
+            {/* 5. Vertical */}
+            <div className="skeleton-block sk-video-card">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+
+            {/* 6. Vertical */}
+            <div className="skeleton-block sk-video-card">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      {/* =======================
+          REAL CONTENT
+          ======================= */}
+      <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
+        <section className="hero-section">
+          <div className="hero-content" data-aos="fade-up">
+            <h1 className="hero-title">
+              Creative
+              <br />
+              Stories
+            </h1>
+          </div>
+        </section>
+
+        <section id="work-section">
+          <div className="section-header" data-aos="fade-up">
+            <h2>Our Work</h2>
+            <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
+          </div>
+
+          <div className="work-grid">
+            {videos.map((video, index) => (
+              <div
+                key={index}
+                className={`work-item ${video.type}`}
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
+              >
+                <video
+                  ref={(el) => (videoRefs.current[index] = el)}
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                >
+                  <source src={video.src} type="video/mp4" />
+                </video>
+
+                <button
+                  className="sound-toggle"
+                  aria-label="Toggle sound"
+                  onClick={(e) => handleSoundToggle(e, index)}
+                >
+                  <svg className="icon-muted" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M11 5L6 9H2V15H6L11 19V5Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <svg className="icon-unmuted" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M11 5L6 9H2V15H6L11 19V5Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M18.364 5.63599C19.9926 7.26465 20.9087 9.49077 20.9087 11.8095C20.9087 14.1282 19.9926 16.3543 18.364 17.983"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div className="work-overlay">
+                  <h3>{video.title}</h3>
+                  <p>{video.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Footer / Copyright Section */}
+        <div className="copyright-container">
+          <p data-aos="fade-up" data-aos-offset="0" className="copyright">
+            © 2026{' '}
+            <Link href="/" className="copyright-link">
+              5feet4
+            </Link>
+            . All Rights Reserved.
+          </p>
         </div>
-      </section>
+      </div>
     </>
   )
 }

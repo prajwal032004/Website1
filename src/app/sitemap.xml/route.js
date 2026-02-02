@@ -8,20 +8,21 @@ export async function GET() {
         { loc: '/contact', lastmod: '2025-01-23', changefreq: 'monthly', priority: '0.7' },
     ]
 
-    const sitemap = `
-
+    // Added proper XML headers and URLSet tags
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${pages
             .map(
                 (page) => `
-  
-    ${baseUrl}${page.loc}
-    ${page.lastmod}
-    ${page.changefreq}
-    ${page.priority}
-  `
+    <url>
+        <loc>${baseUrl}${page.loc}</loc>
+        <lastmod>${page.lastmod}</lastmod>
+        <changefreq>${page.changefreq}</changefreq>
+        <priority>${page.priority}</priority>
+    </url>`
             )
             .join('')}
-`
+</urlset>`
 
     return new Response(sitemap, {
         headers: {

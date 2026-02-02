@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function Home() {
+  const heroRef = useRef(null)
+
   useEffect(() => {
+    // --- AOS Initialization ---
+    // Make sure you have the AOS script loaded in your layout or installed via npm
     if (typeof window !== 'undefined' && window.AOS) {
       window.AOS.init({
         duration: 1000,
@@ -14,9 +19,10 @@ export default function Home() {
     }
 
     // --- Background Blur Logic ---
-    const heroSection = document.querySelector('.hero-section')
     const updateBlur = () => {
+      const heroSection = heroRef.current
       if (!heroSection) return
+
       const rect = heroSection.getBoundingClientRect()
 
       // Trigger blur when hero is 70% scrolled out of view
@@ -95,6 +101,7 @@ export default function Home() {
           line-height: 1.1;
           letter-spacing: -2px;
           animation: fadeInUp 1s ease-out;
+          color: white; /* Ensure text is visible depending on background */
         }
 
         #contact-section {
@@ -105,6 +112,7 @@ export default function Home() {
           justify-content: center;
           position: relative;
           padding: 120px 20px;
+          overflow: hidden; /* Prevent floating images causing scrollbars */
         }
 
         .floating-images {
@@ -126,10 +134,12 @@ export default function Home() {
           object-fit: cover;
           cursor: pointer;
           transition: transform 0.3s ease;
+          pointer-events: auto; /* Re-enable pointer events for hover effect */
         }
 
         .float-img:hover {
           transform: scale(1.05) !important;
+          z-index: 10;
         }
 
         @keyframes fadeInBounce {
@@ -217,6 +227,7 @@ export default function Home() {
           opacity: 0.6;
           margin-bottom: 20px;
           font-weight: 400;
+          color: white;
         }
 
         .contact-email {
@@ -238,7 +249,17 @@ export default function Home() {
           opacity: 0.5;
           font-weight: 400;
           margin-top: 60px;
+          color: white;
         }
+        
+        /* Targets the Link component inside copyright */
+        .copyright :global(.copyright-link) {
+          color: inherit;
+          text-decoration: none;
+          transition: opacity 0.2s;
+        }
+        
+        
 
         @media (max-width: 768px) {
           .hero-title {
@@ -400,7 +421,8 @@ export default function Home() {
 
       <LoadingScreen />
 
-      <section className="hero-section">
+      {/* Added ref={heroRef} to target this specific DOM element */}
+      <section className="hero-section" ref={heroRef}>
         <div className="hero-content" data-aos="fade-up">
           <h1 className="hero-title">
             Main
@@ -412,47 +434,48 @@ export default function Home() {
 
       <section id="contact-section">
         <div className="floating-images">
+          {/* Added alt tags to silence React warnings (can be descriptive or empty) */}
           <img
             className="float-img"
             src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
-            alt=""
+            alt="Decorative floating element 1"
           />
           <img
             className="float-img"
             src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg"
-            alt=""
+            alt="Decorative floating element 2"
           />
           <img
             className="float-img"
             src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg"
-            alt=""
+            alt="Decorative floating element 3"
           />
           <img
             className="float-img"
             src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg"
-            alt=""
+            alt="Decorative floating element 4"
           />
           <img
             className="float-img"
             src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg"
-            alt=""
+            alt="Decorative floating element 5"
           />
           <img
             className="float-img"
             src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png"
-            alt=""
+            alt="Decorative floating element 6"
           />
         </div>
 
         <div className="contact-content">
           <div data-aos="fade-up">
             <p className="contact-subtitle">Let's have a chat</p>
-            <a href="#" className="contact-email" onClick={handleEmailClick}>
+            <a href="mailto:business@5feet4.co" className="contact-email" onClick={handleEmailClick}>
               business@5feet4.co
             </a>
           </div>
           <p data-aos="fade-up" data-aos-delay="100" className="copyright">
-            © 2025 5feet4. All Rights Reserved.
+            © 2026 <Link href="/" className="copyright-link">5feet4</Link>. All Rights Reserved.
           </p>
         </div>
       </section>
