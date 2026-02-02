@@ -182,5 +182,5 @@ img, video {
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 255, 136, 0.5) rgba(0, 0, 0, 0.3);
+  scrollbar-color: #c8ced0 #0000004d;
 }

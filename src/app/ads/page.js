@@ -234,7 +234,7 @@ export default function Ads() {
         }
 
         @media (max-width: 768px) {
-          .hero-title { font-size: 80px; }
+          .hero-title { font-size: 75px; }
           .work-grid { grid-template-columns: 1fr; }
           .work-item.horizontal, .work-item.vertical { grid-column: span 1; min-height: 50vh; }
         }
