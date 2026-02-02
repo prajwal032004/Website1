@@ -3,6 +3,7 @@ import './globals.css'
 import Navbar from '../components/Navbar'
 import BackgroundVideo from '../components/BackgroundVideo'
 import ContextMenu from '../components/ContextMenu'
+import ScrollToTop from '../components/ScrollToTop'
 
 const josefinSans = Josefin_Sans({
     subsets: ['latin'],
@@ -69,6 +70,7 @@ export default function RootLayout({ children }) {
                     <Navbar />
                     {children}
                 </div>
+                <ScrollToTop />
                 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" async></script>
             </body>
         </html>
