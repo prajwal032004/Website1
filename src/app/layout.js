@@ -61,7 +61,7 @@ export default function RootLayout({ children }) {
                 <link rel="preconnect" href="https://5feet4r.vercel.app" />
                 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
             </head>
-            <body className={josefinSans.className}>
+            <body className={josefinSans.className} suppressHydrationWarning>
                 <ContextMenu />
                 <BackgroundVideo />
                 <div className="video-overlay"></div>

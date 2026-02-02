@@ -220,10 +220,9 @@ export default function Ads() {
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
           z-index: 10;
           backdrop-filter: blur(10px);
-        }
+           }
 
         .icon-unmuted { display: none; }
         .work-item.unmuted .icon-muted { display: none; }

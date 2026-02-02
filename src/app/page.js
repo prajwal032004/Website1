@@ -4,56 +4,73 @@ import { useEffect } from 'react'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function Home() {
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.AOS) {
-            window.AOS.init({
-                duration: 1000,
-                once: true,
-                offset: 100,
-            })
-        }
-
-        const contactSection = document.getElementById('contact-section')
-        if (contactSection) {
-            const blurObserver = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            document.body.classList.add('contact-visible')
-                        } else {
-                            document.body.classList.remove('contact-visible')
-                        }
-                    })
-                },
-                { threshold: 0.3 }
-            )
-            blurObserver.observe(contactSection)
-
-            return () => blurObserver.disconnect()
-        }
-    }, [])
-
-    const handleEmailClick = (e) => {
-        e.preventDefault()
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-        )
-
-        if (isMobile) {
-            window.location.href = 'mailto:business@5feet4.co'
-        } else {
-            window.open(
-                'https://mail.google.com/mail/?view=cm&fs=1&to=business@5feet4.co',
-                '_blank'
-            )
-        }
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.AOS) {
+      window.AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100,
+      })
     }
 
-    return (
-        <>
-            <style jsx>{`
-        body.contact-visible .background-video {
-          filter: blur(10px);
+    // --- Background Blur Logic ---
+    const heroSection = document.querySelector('.hero-section')
+    const updateBlur = () => {
+      if (!heroSection) return
+      const rect = heroSection.getBoundingClientRect()
+
+      // Trigger blur when hero is 70% scrolled out of view
+      if (rect.bottom < window.innerHeight * 0.3) {
+        document.body.classList.add('blur-active')
+      } else {
+        document.body.classList.remove('blur-active')
+      }
+    }
+
+    // --- Scroll Listener ---
+    let ticking = false
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateBlur()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    updateBlur() // Run on mount
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.body.classList.remove('blur-active')
+    }
+  }, [])
+
+  const handleEmailClick = (e) => {
+    e.preventDefault()
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+
+    if (isMobile) {
+      window.location.href = 'mailto:business@5feet4.co'
+    } else {
+      window.open(
+        'https://mail.google.com/mail/?view=cm&fs=1&to=business@5feet4.co',
+        '_blank'
+      )
+    }
+  }
+
+  return (
+    <>
+      <style jsx>{`
+        /* Global Blur Transition */
+        :global(body.blur-active .background-video) {
+          filter: blur(15px) brightness(0.5);
+          transition: filter 0.8s ease;
         }
 
         .hero-section {
@@ -381,64 +398,64 @@ export default function Home() {
         }
       `}</style>
 
-            <LoadingScreen />
+      <LoadingScreen />
 
-            <section className="hero-section">
-                <div className="hero-content" data-aos="fade-up">
-                    <h1 className="hero-title">
-                        Main
-                        <br />
-                        Page
-                    </h1>
-                </div>
-            </section>
+      <section className="hero-section">
+        <div className="hero-content" data-aos="fade-up">
+          <h1 className="hero-title">
+            Main
+            <br />
+            Page
+          </h1>
+        </div>
+      </section>
 
-            <section id="contact-section">
-                <div className="floating-images">
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
-                        alt=""
-                    />
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg"
-                        alt=""
-                    />
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg"
-                        alt=""
-                    />
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg"
-                        alt=""
-                    />
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg"
-                        alt=""
-                    />
-                    <img
-                        className="float-img"
-                        src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png"
-                        alt=""
-                    />
-                </div>
+      <section id="contact-section">
+        <div className="floating-images">
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
+            alt=""
+          />
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg"
+            alt=""
+          />
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg"
+            alt=""
+          />
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg"
+            alt=""
+          />
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg"
+            alt=""
+          />
+          <img
+            className="float-img"
+            src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png"
+            alt=""
+          />
+        </div>
 
-                <div className="contact-content">
-                    <div data-aos="fade-up">
-                        <p className="contact-subtitle">Let's have a chat</p>
-                        <a href="#" className="contact-email" onClick={handleEmailClick}>
-                            business@5feet4.co
-                        </a>
-                    </div>
-                    <p data-aos="fade-up" data-aos-delay="100" className="copyright">
-                        © 2025 5feet4. All Rights Reserved.
-                    </p>
-                </div>
-            </section>
-        </>
-    )
+        <div className="contact-content">
+          <div data-aos="fade-up">
+            <p className="contact-subtitle">Let's have a chat</p>
+            <a href="#" className="contact-email" onClick={handleEmailClick}>
+              business@5feet4.co
+            </a>
+          </div>
+          <p data-aos="fade-up" data-aos-delay="100" className="copyright">
+            © 2025 5feet4. All Rights Reserved.
+          </p>
+        </div>
+      </section>
+    </>
+  )
 }
