@@ -54,7 +54,6 @@ export default function ScrollToTop() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    cursor: pointer;
                     z-index: 999;
                     
                     /* Entry Transition */
@@ -69,6 +68,18 @@ export default function ScrollToTop() {
                     opacity: 0;
                     visibility: hidden;
                     transform: translateY(40px) scale(0.8);
+
+                    /* 
+                     * CUSTOM CURSOR - YOUR NEW SVG 
+                     * Hex codes (#) replaced with %23 for URL encoding
+                     * Hotspot set to 16 10 (Tip of the arrow)
+                     */
+                    cursor: url('data:image/svg+xml;utf8,<svg height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg"><g fill="none" transform="translate(10 10)"><path d="m12 6-6-6-6 6h4v7h4v-7z" fill="%23fff"/><path d="m5 12v-7h-2.586l3.586-3.586 3.586 3.586h-2.586v7z" fill="%23000"/></g></svg>') 16 10, pointer !important;
+                }
+
+                /* Force children (the inner SVG) to inherit the cursor */
+                .scroll-to-top * {
+                    cursor: inherit !important;
                 }
 
                 .scroll-to-top.visible {
