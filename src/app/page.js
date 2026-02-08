@@ -1,21 +1,31 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function Home() {
   const heroRef = useRef(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
+    // Set loaded state after a short delay
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, 100)
+
     // --- AOS Initialization ---
-    // Make sure you have the AOS script loaded in your layout or installed via npm
     if (typeof window !== 'undefined' && window.AOS) {
       window.AOS.init({
         duration: 1000,
         once: true,
         offset: 100,
       })
+
+      // Refresh AOS after content is loaded
+      setTimeout(() => {
+        window.AOS.refresh()
+      }, 200)
     }
 
     // --- Background Blur Logic ---
@@ -49,6 +59,7 @@ export default function Home() {
     updateBlur() // Run on mount
 
     return () => {
+      clearTimeout(timer)
       window.removeEventListener('scroll', handleScroll)
       document.body.classList.remove('blur-active')
     }
@@ -86,6 +97,8 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           overflow: hidden;
+          opacity: ${isLoaded ? '1' : '0'};
+          transition: opacity 0.3s ease-in;
         }
 
         .hero-content {
@@ -101,7 +114,18 @@ export default function Home() {
           line-height: 1.1;
           letter-spacing: -2px;
           animation: fadeInUp 1s ease-out;
-          color: white; /* Ensure text is visible depending on background */
+          color: white;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         #contact-section {
@@ -112,7 +136,9 @@ export default function Home() {
           justify-content: center;
           position: relative;
           padding: 120px 20px;
-          overflow: hidden; /* Prevent floating images causing scrollbars */
+          overflow: hidden;
+          opacity: ${isLoaded ? '1' : '0'};
+          transition: opacity 0.3s ease-in 0.2s;
         }
 
         .floating-images {
@@ -134,7 +160,8 @@ export default function Home() {
           object-fit: cover;
           cursor: pointer;
           transition: transform 0.3s ease;
-          pointer-events: auto; /* Re-enable pointer events for hover effect */
+          pointer-events: auto;
+          opacity: 0;
         }
 
         .float-img:hover {
@@ -175,42 +202,42 @@ export default function Home() {
           width: 119px;
           left: 43.6%;
           top: 24%;
-          animation: fadeInBounce 1s ease-out forwards, bounce 3s ease-in-out 1s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out forwards, bounce 3s ease-in-out 1s infinite' : 'none'};
         }
 
         .float-img:nth-child(2) {
           width: 137px;
           left: 69.2%;
           top: 27.8%;
-          animation: fadeInBounce 1s ease-out 0.1s forwards, bounce 3.2s ease-in-out 1.1s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.1s forwards, bounce 3.2s ease-in-out 1.1s infinite' : 'none'};
         }
 
         .float-img:nth-child(3) {
           width: 156px;
           left: 14.2%;
           top: 29.4%;
-          animation: fadeInBounce 1s ease-out 0.2s forwards, bounce 3.4s ease-in-out 1.2s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.2s forwards, bounce 3.4s ease-in-out 1.2s infinite' : 'none'};
         }
 
         .float-img:nth-child(4) {
           width: 111px;
           left: 43.7%;
           top: 63.1%;
-          animation: fadeInBounce 1s ease-out 0.3s forwards, bounce 3.6s ease-in-out 1.3s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.3s forwards, bounce 3.6s ease-in-out 1.3s infinite' : 'none'};
         }
 
         .float-img:nth-child(5) {
           width: 192px;
           left: 60.1%;
           top: 59.8%;
-          animation: fadeInBounce 1s ease-out 0.4s forwards, bounce 3.8s ease-in-out 1.4s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.4s forwards, bounce 3.8s ease-in-out 1.4s infinite' : 'none'};
         }
 
         .float-img:nth-child(6) {
           width: 130px;
           left: 25.1%;
           top: 61.2%;
-          animation: fadeInBounce 1s ease-out 0.5s forwards, bounce 4s ease-in-out 1.5s infinite;
+          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.5s forwards, bounce 4s ease-in-out 1.5s infinite' : 'none'};
         }
 
         .contact-content {
@@ -252,14 +279,11 @@ export default function Home() {
           color: white;
         }
         
-        /* Targets the Link component inside copyright */
         .copyright :global(.copyright-link) {
           color: inherit;
           text-decoration: none;
           transition: opacity 0.2s;
         }
-        
-        
 
         @media (max-width: 768px) {
           .hero-title {
@@ -421,7 +445,6 @@ export default function Home() {
 
       <LoadingScreen />
 
-      {/* Added ref={heroRef} to target this specific DOM element */}
       <section className="hero-section" ref={heroRef}>
         <div className="hero-content" data-aos="fade-up">
           <h1 className="hero-title">
@@ -434,7 +457,6 @@ export default function Home() {
 
       <section id="contact-section">
         <div className="floating-images">
-          {/* Added alt tags to silence React warnings (can be descriptive or empty) */}
           <img
             className="float-img"
             src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
