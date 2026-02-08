@@ -54,6 +54,24 @@ export const metadata = {
 }
 
 export default function RootLayout({ children }) {
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "5feet4 Studio",
+        "url": "https://5feet4.co",
+        "logo": "https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG",
+        "description": "Specializing in creative direction and full-scale production based in Mumbai, India",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Mumbai",
+            "addressCountry": "IN"
+        },
+        "sameAs": [
+            "https://www.instagram.com/5feet4studio",
+            "https://twitter.com/5feet4studio"
+        ]
+    }
+
     return (
         <html lang="en">
             <head>
@@ -62,6 +80,10 @@ export default function RootLayout({ children }) {
                 <link rel="preconnect" href="https://5feet4.co" />
                 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
                 <meta name="google-site-verification" content="KpOQf0rjQOqal4ybI7PdqUXSOJ0HcD7AKyzCRJze5IA" />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+                />
             </head>
             <body className={josefinSans.className} suppressHydrationWarning>
                 <ContextMenu />
