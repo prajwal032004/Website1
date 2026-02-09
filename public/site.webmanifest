@@ -1,14 +1,50 @@
 {
-  "name": "5feet4 Studio",
-  "short_name": "5feet4",
-  "icons": [
-    {
-      "src": "https://apifetch.pythonanywhere.com/static/IMG_9910 (1).JPG",
-      "sizes": "192x192",
-      "type": "image/jpeg"
-    }
-  ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
-  "display": "standalone"
+    "name": "5feet4 Studio - Creative Production Company Mumbai",
+    "short_name": "5feet4",
+    "description": "Creative production studio in Mumbai specializing in commercial video production, brand campaigns, and advertising content",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "entertainment",
+        "video",
+        "production"
+    ],
+    "lang": "en-IN",
+    "dir": "ltr",
+    "scope": "/",
+    "prefer_related_applications": false
 }
