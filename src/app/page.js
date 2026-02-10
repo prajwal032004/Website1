@@ -7,35 +7,36 @@ import LoadingScreen from '../components/LoadingScreen'
 export default function Home() {
   const heroRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [showContent, setShowContent] = useState(false)
 
   useEffect(() => {
-    // Set loaded state after a short delay
-    const timer = setTimeout(() => {
+    // Delay content visibility until after loading screen
+    const contentTimer = setTimeout(() => {
+      setShowContent(true)
+    }, 3500) // Slightly after loading completes
+
+    const loadTimer = setTimeout(() => {
       setIsLoaded(true)
     }, 100)
 
-    // --- AOS Initialization ---
+    // Initialize AOS
     if (typeof window !== 'undefined' && window.AOS) {
-      window.AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100,
-      })
-
-      // Refresh AOS after content is loaded
       setTimeout(() => {
-        window.AOS.refresh()
-      }, 200)
+        window.AOS.init({
+          duration: 1000,
+          once: true,
+          offset: 100,
+          delay: 100,
+        })
+      }, 3600)
     }
 
-    // --- Background Blur Logic ---
+    // Background blur on scroll
     const updateBlur = () => {
       const heroSection = heroRef.current
       if (!heroSection) return
 
       const rect = heroSection.getBoundingClientRect()
-
-      // Trigger blur when hero is 70% scrolled out of view
       if (rect.bottom < window.innerHeight * 0.3) {
         document.body.classList.add('blur-active')
       } else {
@@ -43,7 +44,6 @@ export default function Home() {
       }
     }
 
-    // --- Scroll Listener ---
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
@@ -56,10 +56,11 @@ export default function Home() {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    updateBlur() // Run on mount
+    updateBlur()
 
     return () => {
-      clearTimeout(timer)
+      clearTimeout(contentTimer)
+      clearTimeout(loadTimer)
       window.removeEventListener('scroll', handleScroll)
       document.body.classList.remove('blur-active')
     }
@@ -67,16 +68,19 @@ export default function Home() {
 
   const handleEmailClick = (e) => {
     e.preventDefault()
+    const email = 'business@5feet4.co'
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     )
 
     if (isMobile) {
-      window.location.href = 'mailto:business@5feet4.co'
+      window.location.href = `mailto:${email}`
     } else {
+      // Try Gmail first, fallback to default mail client
       window.open(
-        'https://mail.google.com/mail/?view=cm&fs=1&to=business@5feet4.co',
-        '_blank'
+        `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`,
+        '_blank',
+        'noopener,noreferrer'
       )
     }
   }
@@ -84,10 +88,21 @@ export default function Home() {
   return (
     <>
       <style jsx>{`
-        /* Global Blur Transition */
+        :global(body) {
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
+          background: #000;
+        }
+
         :global(body.blur-active .background-video) {
-          filter: blur(15px) brightness(0.5);
+          filter: blur(15px) brightness(0.4);
           transition: filter 0.8s ease;
+        }
+
+        .main-container {
+          opacity: ${showContent ? '1' : '0'};
+          transition: opacity 0.6s ease-in;
         }
 
         .hero-section {
@@ -97,30 +112,29 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           overflow: hidden;
-          opacity: ${isLoaded ? '1' : '0'};
-          transition: opacity 0.3s ease-in;
         }
 
         .hero-content {
           position: relative;
-          z-index: 2;
+          z-index: 10;
           text-align: center;
-          mix-blend-mode: difference;
         }
 
         .hero-title {
-          font-size: clamp(60px, 10vw, 140px);
+          font-size: clamp(70px, 12vw, 160px);
           font-weight: 700;
-          line-height: 1.1;
-          letter-spacing: -2px;
-          animation: fadeInUp 1s ease-out;
-          color: white;
+          line-height: 1;
+          letter-spacing: -3px;
+          color: #fff;
+          margin: 0;
+          animation: fadeInUp 1.2s ease-out 0.5s both;
+          text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
           }
           to {
             opacity: 1;
@@ -128,7 +142,7 @@ export default function Home() {
           }
         }
 
-        #contact-section {
+        .contact-section {
           min-height: 100vh;
           background: transparent;
           display: flex;
@@ -137,11 +151,9 @@ export default function Home() {
           position: relative;
           padding: 120px 20px;
           overflow: hidden;
-          opacity: ${isLoaded ? '1' : '0'};
-          transition: opacity 0.3s ease-in 0.2s;
         }
 
-        .floating-images {
+        .floating-container {
           position: absolute;
           width: 100%;
           max-width: 1400px;
@@ -155,94 +167,96 @@ export default function Home() {
 
         .float-img {
           position: absolute;
-          border-radius: 12px;
-          box-shadow: 0 20px 60px rgba(255, 255, 255, 0.15);
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(255, 255, 255, 0.2);
           object-fit: cover;
           cursor: pointer;
-          transition: transform 0.3s ease;
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           pointer-events: auto;
           opacity: 0;
         }
 
         .float-img:hover {
-          transform: scale(1.05) !important;
+          transform: scale(1.08) !important;
           z-index: 10;
+          box-shadow: 0 30px 80px rgba(255, 255, 255, 0.3);
         }
 
-        @keyframes fadeInBounce {
+        @keyframes floatIn {
           0% {
             opacity: 0;
-            transform: scale(0.3) translateY(-100px);
+            transform: scale(0.3) translateY(-100px) rotate(-10deg);
           }
-          50% {
-            opacity: 0.8;
-          }
-          70% {
-            transform: scale(1.1) translateY(0);
-          }
-          85% {
-            transform: scale(0.95) translateY(0);
+          60% {
+            opacity: 1;
+            transform: scale(1.1) translateY(10px) rotate(2deg);
           }
           100% {
             opacity: 1;
-            transform: scale(1) translateY(0);
+            transform: scale(1) translateY(0) rotate(0deg);
           }
         }
 
-        @keyframes bounce {
+        @keyframes float {
           0%, 100% {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-25px);
+            transform: translateY(-20px);
           }
         }
 
         .float-img:nth-child(1) {
           width: 119px;
+          height: 119px;
           left: 43.6%;
           top: 24%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out forwards, bounce 3s ease-in-out 1s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.1s forwards, float 4s ease-in-out 1.1s infinite;
         }
 
         .float-img:nth-child(2) {
           width: 137px;
+          height: 137px;
           left: 69.2%;
           top: 27.8%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.1s forwards, bounce 3.2s ease-in-out 1.1s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.2s forwards, float 4.3s ease-in-out 1.2s infinite;
         }
 
         .float-img:nth-child(3) {
           width: 156px;
+          height: 156px;
           left: 14.2%;
           top: 29.4%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.2s forwards, bounce 3.4s ease-in-out 1.2s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.3s forwards, float 4.6s ease-in-out 1.3s infinite;
         }
 
         .float-img:nth-child(4) {
           width: 111px;
+          height: 111px;
           left: 43.7%;
           top: 63.1%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.3s forwards, bounce 3.6s ease-in-out 1.3s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.4s forwards, float 4.9s ease-in-out 1.4s infinite;
         }
 
         .float-img:nth-child(5) {
           width: 192px;
+          height: 192px;
           left: 60.1%;
           top: 59.8%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.4s forwards, bounce 3.8s ease-in-out 1.4s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.5s forwards, float 5.2s ease-in-out 1.5s infinite;
         }
 
         .float-img:nth-child(6) {
           width: 130px;
+          height: 130px;
           left: 25.1%;
           top: 61.2%;
-          animation: ${isLoaded ? 'fadeInBounce 1s ease-out 0.5s forwards, bounce 4s ease-in-out 1.5s infinite' : 'none'};
+          animation: floatIn 1s ease-out 0.6s forwards, float 5.5s ease-in-out 1.6s infinite;
         }
 
         .contact-content {
           text-align: center;
-          z-index: 2;
+          z-index: 10;
           position: relative;
           padding: 0 20px;
           max-width: 1200px;
@@ -250,124 +264,168 @@ export default function Home() {
         }
 
         .contact-subtitle {
-          font-size: clamp(28px, 4vw, 48px);
-          opacity: 0.6;
-          margin-bottom: 20px;
-          font-weight: 400;
-          color: white;
+          font-size: clamp(28px, 4.5vw, 52px);
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 25px;
+          font-weight: 300;
+          letter-spacing: -0.5px;
         }
 
         .contact-email {
-          font-size: clamp(32px, 5vw, 64px);
+          font-size: clamp(32px, 5.5vw, 72px);
           color: #fff;
           text-decoration: none;
-          transition: all 0.3s;
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           font-weight: 700;
           display: inline-block;
           position: relative;
+          letter-spacing: -1px;
         }
 
         .contact-email:hover {
-          color: #437ed1;
+          color: #5B9BF3;
+          transform: scale(1.05);
+          text-shadow: 0 0 30px rgba(91, 155, 243, 0.5);
+        }
+
+        .contact-email::after {
+          content: '';
+          position: absolute;
+          bottom: -5px;
+          left: 0;
+          width: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #5B9BF3, #437ed1);
+          transition: width 0.4s ease;
+        }
+
+        .contact-email:hover::after {
+          width: 100%;
         }
 
         .copyright {
           font-size: 14px;
-          opacity: 0.5;
+          color: rgba(255, 255, 255, 0.4);
           font-weight: 400;
-          margin-top: 60px;
-          color: white;
+          margin-top: 80px;
+          letter-spacing: 0.5px;
         }
         
-        .copyright :global(.copyright-link) {
+        .copyright-link {
           color: inherit;
           text-decoration: none;
-          transition: opacity 0.2s;
+          transition: color 0.3s;
         }
 
+        .copyright-link:hover {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
           .hero-title {
-            font-size: 50px;
+            font-size: 60px;
+            letter-spacing: -2px;
           }
 
-          #contact-section {
-            padding: 100px 20px 80px;
-            flex-direction: column;
-            justify-content: center;
+          .contact-section {
+            padding: 80px 20px 60px;
           }
 
-          .floating-images {
-            width: 100%;
-            max-width: 100%;
-            height: 450px;
-            top: 15%;
-            transform: translateX(-50%);
-            opacity: 0.8;
+          .floating-container {
+            height: 500px;
+            top: 20%;
+          }
+
+          .float-img {
+            border-radius: 12px;
           }
 
           .float-img:nth-child(1) {
             left: 50% !important;
-            top: 5% !important;
+            top: 0% !important;
             transform: translateX(-50%);
-            width: 120px !important;
-            height: 120px !important;
+            width: 100px !important;
+            height: 100px !important;
           }
 
           .float-img:nth-child(2) {
-            right: 5% !important;
-            top: 18% !important;
+            right: 8% !important;
+            top: 15% !important;
             left: auto !important;
-            width: 110px !important;
-            height: 110px !important;
+            width: 95px !important;
+            height: 95px !important;
           }
 
           .float-img:nth-child(3) {
-            left: 5% !important;
-            top: 20% !important;
-            width: 115px !important;
-            height: 115px !important;
-          }
-
-          .float-img:nth-child(4) {
-            left: 50% !important;
-            top: 48% !important;
-            transform: translateX(-50%);
+            left: 8% !important;
+            top: 18% !important;
             width: 105px !important;
             height: 105px !important;
           }
 
+          .float-img:nth-child(4) {
+            left: 50% !important;
+            top: 42% !important;
+            transform: translateX(-50%);
+            width: 90px !important;
+            height: 90px !important;
+          }
+
           .float-img:nth-child(5) {
-            right: 8% !important;
-            bottom: 10% !important;
+            right: 10% !important;
+            bottom: 15% !important;
             top: auto !important;
             left: auto !important;
-            width: 130px !important;
-            height: 130px !important;
+            width: 120px !important;
+            height: 120px !important;
           }
 
           .float-img:nth-child(6) {
-            left: 8% !important;
-            bottom: 12% !important;
+            left: 10% !important;
+            bottom: 18% !important;
             top: auto !important;
-            width: 110px !important;
-            height: 110px !important;
+            width: 100px !important;
+            height: 100px !important;
           }
 
           .contact-content {
-            padding: 0 25px;
             margin-top: auto;
             padding-bottom: 40px;
           }
 
           .contact-subtitle {
             font-size: 24px;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
           }
 
           .contact-email {
-            font-size: 28px;
-            line-height: 1.3;
+            font-size: 26px;
             word-break: break-word;
+          }
+
+          .copyright {
+            font-size: 12px;
+            margin-top: 60px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero-title {
+            font-size: 50px;
+          }
+
+          .floating-container {
+            height: 450px;
+            top: 15%;
+          }
+
+          .contact-subtitle {
+            font-size: 20px;
+          }
+
+          .contact-email {
+            font-size: 22px;
           }
 
           .copyright {
@@ -375,132 +433,78 @@ export default function Home() {
             margin-top: 50px;
           }
         }
-
-        @media (max-width: 480px) {
-          .hero-title {
-            font-size: 110px;
-          }
-
-          .floating-images {
-            height: 400px;
-            top: 12%;
-          }
-
-          .float-img:nth-child(1) {
-            width: 86px !important;
-            height: 144px !important;
-            top: -9% !important;
-            left: 42% !important;
-          }
-
-          .float-img:nth-child(2) {
-            width: 95px !important;
-            height: 95px !important;
-            right: 3% !important;
-            top: 16% !important;
-          }
-
-          .float-img:nth-child(3) {
-            width: 100px !important;
-            height: 100px !important;
-            left: 3% !important;
-            top: 18% !important;
-          }
-
-          .float-img:nth-child(4) {
-            width: 90px !important;
-            height: 90px !important;
-            top: 45% !important;
-            left: 39% !important;
-          }
-
-          .float-img:nth-child(5) {
-            width: 115px !important;
-            height: 115px !important;
-            right: 5% !important;
-            bottom: 8% !important;
-          }
-
-          .float-img:nth-child(6) {
-            width: 95px !important;
-            height: 95px !important;
-            left: 5% !important;
-            bottom: 10% !important;
-          }
-
-          .contact-subtitle {
-            font-size: 22px;
-          }
-
-          .contact-email {
-            font-size: 24px;
-          }
-
-          .copyright {
-            font-size: 10px;
-            margin-top: 40px;
-          }
-        }
       `}</style>
 
       <LoadingScreen />
 
-      <section className="hero-section" ref={heroRef}>
-        <div className="hero-content" data-aos="fade-up">
-          <h1 className="hero-title">
-            Main
-            <br />
-            Page
-          </h1>
-        </div>
-      </section>
-
-      <section id="contact-section">
-        <div className="floating-images">
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
-            alt="Decorative floating element 1"
-          />
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg"
-            alt="Decorative floating element 2"
-          />
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg"
-            alt="Decorative floating element 3"
-          />
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg"
-            alt="Decorative floating element 4"
-          />
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg"
-            alt="Decorative floating element 5"
-          />
-          <img
-            className="float-img"
-            src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png"
-            alt="Decorative floating element 6"
-          />
-        </div>
-
-        <div className="contact-content">
-          <div data-aos="fade-up">
-            <p className="contact-subtitle">Let's have a chat</p>
-            <a href="mailto:business@5feet4.co" className="contact-email" onClick={handleEmailClick}>
-              business@5feet4.co
-            </a>
+      <div className="main-container">
+        <section className="hero-section" ref={heroRef}>
+          <div className="hero-content" data-aos="fade-up">
+            <h1 className="hero-title">
+              Main
+              <br />
+              Page
+            </h1>
           </div>
-          <p data-aos="fade-up" data-aos-delay="100" className="copyright">
-            © 2026 <Link href="/" className="copyright-link">5feet4</Link>. All Rights Reserved.
-          </p>
-        </div>
-      </section>
+        </section>
+
+        <section className="contact-section">
+          <div className="floating-container">
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg"
+              alt="Portfolio work 1"
+              loading="lazy"
+            />
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg"
+              alt="Portfolio work 2"
+              loading="lazy"
+            />
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg"
+              alt="Portfolio work 3"
+              loading="lazy"
+            />
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg"
+              alt="Portfolio work 4"
+              loading="lazy"
+            />
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg"
+              alt="Portfolio work 5"
+              loading="lazy"
+            />
+            <img
+              className="float-img"
+              src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png"
+              alt="Portfolio work 6"
+              loading="lazy"
+            />
+          </div>
+
+          <div className="contact-content">
+            <div data-aos="fade-up" data-aos-delay="200">
+              <p className="contact-subtitle">Let's have a chat</p>
+              <a
+                href="mailto:business@5feet4.co"
+                className="contact-email"
+                onClick={handleEmailClick}
+              >
+                business@5feet4.co
+              </a>
+            </div>
+            <p data-aos="fade-up" data-aos-delay="300" className="copyright">
+              © 2026 <Link href="/" className="copyright-link">5feet4</Link>. All Rights Reserved.
+            </p>
+          </div>
+        </section>
+      </div>
     </>
   )
 }
