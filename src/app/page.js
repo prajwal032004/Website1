@@ -23,10 +23,10 @@ export default function Home() {
     if (typeof window !== 'undefined' && window.AOS) {
       setTimeout(() => {
         window.AOS.init({
-          duration: 1000,
+          duration: 1200,
           once: true,
-          offset: 100,
-          delay: 100,
+          offset: 120,
+          easing: 'ease-out-cubic',
         })
       }, 3600)
     }
@@ -37,7 +37,7 @@ export default function Home() {
       if (!heroSection) return
 
       const rect = heroSection.getBoundingClientRect()
-      if (rect.bottom < window.innerHeight * 0.3) {
+      if (rect.bottom < window.innerHeight * 0.2) {
         document.body.classList.add('blur-active')
       } else {
         document.body.classList.remove('blur-active')
@@ -96,7 +96,7 @@ export default function Home() {
         }
 
         :global(body.blur-active .background-video) {
-          filter: blur(15px) brightness(0.4);
+          filter: blur(15px) brightness(0.5);
           transition: filter 0.8s ease;
         }
 
@@ -116,25 +116,28 @@ export default function Home() {
 
         .hero-content {
           position: relative;
-          z-index: 10;
+          z-index: 2;
           text-align: center;
+          mix-blend-mode: difference;
+          padding: 0 20px;
         }
 
         .hero-title {
-          font-size: clamp(70px, 12vw, 160px);
+          font-size: clamp(60px, 12vw, 160px);
           font-weight: 700;
-          line-height: 1;
-          letter-spacing: -3px;
+          line-height: 0.9;
+          letter-spacing: -4px;
           color: #fff;
           margin: 0;
-          animation: fadeInUp 1.2s ease-out 0.5s both;
-          text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          margin-bottom: 20px;
+          animation: fadeInUp 1.2s ease-out;
+          text-shadow: none;
         }
 
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(30px);
           }
           to {
             opacity: 1;
@@ -144,7 +147,7 @@ export default function Home() {
 
         .contact-section {
           min-height: 100vh;
-          background: transparent;
+          background: linear-gradient(to bottom, transparent, #000);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -324,7 +327,7 @@ export default function Home() {
         /* Mobile Responsive */
         @media (max-width: 768px) {
           .hero-title {
-            font-size: 60px;
+            font-size: 80px;
             letter-spacing: -2px;
           }
 
@@ -439,7 +442,7 @@ export default function Home() {
 
       <div className="main-container">
         <section className="hero-section" ref={heroRef}>
-          <div className="hero-content" data-aos="fade-up">
+          <div className="hero-content">
             <h1 className="hero-title">
               Main
               <br />

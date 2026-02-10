@@ -83,7 +83,7 @@ export const metadata = {
         url: 'https://5feet4.co',
         siteName: '5feet4 Studio',
         title: '5feet4 - Creative Production Studio Mumbai | Full-Scale Video Production',
-        description: 'Award-winning production studio in Mumbai specializing in commercial video production, brand campaigns, TVC production, advertising content, and creative services. From concept to final delivery.',
+        description: 'Production studio in Mumbai specializing in commercial video production, brand campaigns, TVC production, advertising content, and creative services. From concept to final delivery.',
         images: [
             {
                 url: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
@@ -100,7 +100,7 @@ export const metadata = {
         site: '@5feet4studio',
         creator: '@5feet4studio',
         title: '5feet4 - Creative Production Studio Mumbai',
-        description: 'Leading production studio in Mumbai for commercial video production, brand campaigns, TVC production, and creative content.',
+        description: 'Production studio in Mumbai for commercial video production, brand campaigns, TVC production, and creative content.',
         images: ['https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9911.JPG'],
     },
 
