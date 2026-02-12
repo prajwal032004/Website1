@@ -16,15 +16,15 @@ const josefinSans = Josefin_Sans({
 export const metadata = {
     metadataBase: new URL('https://5feet4.co'),
     title: {
-        default: '5feet4 - Creative Production Studio Mumbai | Video Production Company India',
+        default: '5feet4 - Advertising Agency Mumbai | Video Production Company India',
         template: '%s | 5feet4 Studio'
     },
-    description: '5feet4 is a premier creative production studio in Mumbai, India specializing in commercial video production, brand campaigns, advertising content, TVC production, cinematography, and post-production services. Full-scale production from concept to delivery.',
+    description: '5feet4 is a premier creative Advertising Agency in Mumbai, India specializing in commercial video production, brand campaigns, advertising content, TVC production, cinematography, and post-production services. Full-scale production from concept to delivery.',
     keywords: [
         // Core Services
-        'production studio Mumbai',
+        'Advertising Agency Mumbai',
         'video production company Mumbai',
-        'creative production studio India',
+        'creative Advertising Agency India',
         'commercial production Mumbai',
         'advertising production house Mumbai',
         'full-scale production company India',
@@ -56,7 +56,7 @@ export const metadata = {
         // Location-based
         'Mumbai production company',
         'India video production',
-        'Maharashtra production studio',
+        'Maharashtra Advertising Agency',
         'production house in Mumbai',
 
         // Specific Niches
@@ -82,14 +82,14 @@ export const metadata = {
         locale: 'en_IN',
         url: 'https://5feet4.co',
         siteName: '5feet4 Studio',
-        title: '5feet4 - Creative Production Studio Mumbai | Full-Scale Video Production',
-        description: 'Production studio in Mumbai specializing in commercial video production, brand campaigns, TVC production, advertising content, and creative services. From concept to final delivery.',
+        title: '5feet4 - Creative Advertising Agency Mumbai | Full-Scale Video Production',
+        description: 'Advertising Agency in Mumbai specializing in commercial video production, brand campaigns, TVC production, advertising content, and creative services. From concept to final delivery.',
         images: [
             {
                 url: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG',
                 width: 1200,
                 height: 630,
-                alt: '5feet4 Studio - Creative Production Company Mumbai, India',
+                alt: '5feet4 studio - Advertising Agency Mumbai, India',
                 type: 'image/jpeg',
             },
         ],
@@ -99,8 +99,8 @@ export const metadata = {
         card: 'summary_large_image',
         site: '@5feet4studio',
         creator: '@5feet4studio',
-        title: '5feet4 - Creative Production Studio Mumbai',
-        description: 'Production studio in Mumbai for commercial video production, brand campaigns, TVC production, and creative content.',
+        title: '5feet4 - Advertising Agency Mumbai',
+        description: 'Advertising Agency in Mumbai for commercial video production, brand campaigns, TVC production, and creative content.',
         images: ['https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9911.JPG'],
     },
 
@@ -140,7 +140,7 @@ export const metadata = {
     },
 
     category: 'Video Production',
-    classification: 'Production Studio',
+    classification: 'Advertising Agency',
 }
 
 export const viewport = {
@@ -164,7 +164,7 @@ export default function RootLayout({ children }) {
             "height": "630"
         },
         "image": "https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG",
-        "description": "5feet4 is a creative production studio in Mumbai, India specializing in commercial video production, brand campaigns, TVC production, advertising content, and full-scale creative services from concept to delivery.",
+        "description": "5feet4 is a creative Advertising Agency in Mumbai, India specializing in commercial video production, brand campaigns, TVC production, advertising content, and full-scale creative services from concept to delivery.",
         "address": {
             "@type": "PostalAddress",
             "addressLocality": "Mumbai",
@@ -210,7 +210,7 @@ export default function RootLayout({ children }) {
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Service",
-                        "name": "Commercial Video Production",
+                        "name": "Advertising Agency Services",
                         "description": "Full-scale commercial video production services"
                     }
                 },
@@ -241,7 +241,7 @@ export default function RootLayout({ children }) {
             ]
         },
         "sameAs": [
-            "https://www.instagram.com/5feet4studio"
+            "https://www.instagram.com/5feet.4"
         ],
         "contactPoint": {
             "@type": "ContactPoint",
@@ -254,10 +254,10 @@ export default function RootLayout({ children }) {
     const localBusinessData = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        "@id": "https://5feet4.co/#localbusiness",
+        "@id": "https://5feet4.co/",
         "name": "5feet4 Studio",
         "image": "https://ik.imagekit.io/pqkj4p4ii/5feet4/IMG_9910.JPG",
-        "description": "Creative production studio specializing in video production and brand campaigns",
+        "description": "Creative Advertising Agency specializing in video production and brand campaigns",
         "address": {
             "@type": "PostalAddress",
             "addressLocality": "Mumbai",
