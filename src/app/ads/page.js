@@ -153,6 +153,7 @@ export default function Ads() {
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/15.mp4', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Documentary Style', desc: 'Authentic stories, beautifully told', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/12.mp4', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'vertical' },
+    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'vertical' },
   ]
 
   return (
