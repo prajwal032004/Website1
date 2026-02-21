@@ -323,6 +323,7 @@ export default function RootLayout({ children }) {
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
                 />
+                <meta name="msvalidate.01" content="26F642B878FF74306E809B833E64E0A5" />
             </head>
             <body className={josefinSans.className} suppressHydrationWarning>
                 <DynamicFavicon />
