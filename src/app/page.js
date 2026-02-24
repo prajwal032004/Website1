@@ -665,9 +665,9 @@ export default function Home() {
         <section className="hero-section" ref={heroRef}>
           <div className="hero-content">
             <h1 className="hero-title">
-              Main
+
               <br />
-              Page
+
             </h1>
           </div>
           <div className="scroll-hint">
