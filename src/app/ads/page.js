@@ -3,178 +3,24 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-export default function Ads() {
-  const containerRefs = useRef([])
-  const [isMobile, setIsMobile] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // Simulation of loading heavy assets
-  useEffect(() => {
-    const startTime = Date.now()
-    const MIN_LOADING_TIME = 2500
-
-    // We simply use a timer here because waiting for 7+ videos 
-    // to actually preload would take too long and hurt UX.
-    // This gives the "premium app" feel.
-    const timer = setTimeout(() => {
-      setIsLoaded(true)
-    }, MIN_LOADING_TIME)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    // Detect mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    if (!isLoaded) return
-
-    // Initialize AOS if available
-    if (typeof window !== 'undefined' && window.AOS) {
-      window.AOS.init({
-        duration: 1200,
-        once: true,
-        offset: 120,
-        easing: 'ease-out-cubic',
-      })
-    }
-
-    // Background Blur Logic
-    const heroSection = document.querySelector('.hero-section')
-    const updateBlur = () => {
-      if (!heroSection) return
-      const rect = heroSection.getBoundingClientRect()
-      if (rect.bottom < window.innerHeight * 0.3) {
-        document.body.classList.add('blur-active')
-      } else {
-        document.body.classList.remove('blur-active')
-      }
-    }
-
-    // Grid Container Observer (Play/Pause on scroll)
-    const containerObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const container = entry.target
-          const iframe = container.querySelector('iframe')
-          if (!iframe) return
-
-          if (entry.isIntersecting) {
-            // Post message to iframe to play
-            iframe.contentWindow?.postMessage({ method: 'play' }, '*')
-          } else {
-            // Post message to iframe to pause
-            iframe.contentWindow?.postMessage({ method: 'pause' }, '*')
-          }
-        })
-      },
-      { threshold: 0.5 }
-    )
-
-    containerRefs.current.forEach((container) => {
-      if (container) containerObserver.observe(container)
-    })
-
-    // Mobile center detection for overlays
-    let centerObserver
-    if (isMobile) {
-      centerObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-              entry.target.classList.add('in-center')
-            } else {
-              entry.target.classList.remove('in-center')
-            }
-          })
-        },
-        {
-          threshold: [0.5],
-          rootMargin: '-10% 0px -10% 0px',
-        }
-      )
-
-      document.querySelectorAll('.work-item').forEach((item) => {
-        centerObserver.observe(item)
-      })
-    }
-
-    // Scroll Listener
-    let ticking = false
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateBlur()
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    updateBlur()
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', checkMobile)
-      document.body.classList.remove('blur-active')
-      containerObserver.disconnect()
-      if (centerObserver) centerObserver.disconnect()
-    }
-  }, [isMobile, isLoaded])
-
-  const handleSoundToggle = (e, index) => {
-    e.stopPropagation()
-    e.preventDefault()
-
-    const workItem = e.currentTarget.closest('.work-item')
-    const iframe = workItem?.querySelector('iframe')
-    const isCurrentlyUnmuted = workItem?.classList.contains('unmuted')
-
-    // Mute all videos
-    document.querySelectorAll('.work-item iframe').forEach((iFrame) => {
-      iFrame.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
-    })
-    document.querySelectorAll('.work-item').forEach((item) => item.classList.remove('unmuted'))
-
-    // Unmute clicked video if it wasn't already unmuted
-    if (!isCurrentlyUnmuted && iframe) {
-      iframe.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
-      workItem?.classList.add('unmuted')
-    }
-  }
-
-  // Extract video ID and hash from Vimeo URL
-  const getVimeoData = (url) => {
-    const idMatch = url.match(/(?:vimeo\.com\/)(\d+)/)
-    const hashMatch = url.match(/\/([a-f0-9]+)(?:\?|$)/)
-    return {
-      id: idMatch ? idMatch[1] : null,
-      hash: hashMatch ? hashMatch[1] : null
-    }
-  }
-
-  const videos = [
-    { src: 'https://vimeo.com/1167679730/a43599f39f?share=copy&fl=sv&fe=ci', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167682809/d726843f75?share=copy&fl=sv&fe=ci', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167685194/a9c74513ab?share=copy&fl=sv&fe=ci', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167691944?share=copy&fl=sv&fe=ci', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167689020/c15b90820f?share=copy&fl=sv&fe=ci', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167689633?share=copy&fl=sv&fe=ci', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167684995/8a9eb1db9a?share=copy&fl=sv&fe=ci', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
-  ]
-
+const AdsContent = ({ isLoaded, containerRefs, videos, getVimeoData, handleSoundToggle }) => {
   return (
     <>
-      <style jsx>{`
-        /* ===========================
-           AESTHETIC SKELETON STYLES 
-           =========================== */
-        
+      <style jsx suppressHydrationWarning>{`
+        :global(html),
+        :global(body) {
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
+          width: 100%;
+          height: auto;
+          min-height: 100vh;
+        }
+
+        :global(*) {
+          box-sizing: border-box;
+        }
+
         .skeleton-block {
           background-color: #0f0f0f;
           position: relative;
@@ -205,7 +51,6 @@ export default function Ads() {
           }
         }
 
-        /* Hero Text Skeleton */
         .sk-hero-line {
           height: clamp(70px, 12vw, 160px);
           background: #111;
@@ -216,10 +61,10 @@ export default function Ads() {
         .sk-hero-line.bot { width: 20%; }
 
         @media (max-width: 768px) {
-        .sk-hero-line.top { width: 90%; height:80px;}
-        .sk-hero-line.bot { width: 60%; height:60px;}
-      }
-        /* Header Skeleton */
+          .sk-hero-line.top { width: 90%; height:80px;}
+          .sk-hero-line.bot { width: 60%; height:60px;}
+        }
+
         .sk-header-title {
           width: 200px;
           height: 60px;
@@ -236,7 +81,6 @@ export default function Ads() {
           max-width: 90%;
         }
 
-        /* Video Card Skeleton */
         .sk-video-card {
           background: #121212;
           border-radius: 16px;
@@ -273,13 +117,17 @@ export default function Ads() {
           border-radius: 4px;
         }
         
-        /* Mobile adjustment for skeleton grid */
         @media (max-width: 768px) {
             .sk-video-card.horizontal { grid-column: span 1; }
-            .sk-video-card { min-height: 65vh; }
+            .sk-video-card { 
+              min-height: auto;
+              aspect-ratio: 16 / 9;
+            }
+            .sk-video-card.vertical {
+              aspect-ratio: 9 / 16;
+            }
         }
 
-        /* Loading Wrappers */
         .skeleton-wrapper {
           position: absolute;
           top: 0;
@@ -299,16 +147,18 @@ export default function Ads() {
         .content-wrapper {
           opacity: 0;
           transition: opacity 0.8s ease-in;
+          width: 100%;
+          overflow: hidden;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          min-height: auto;
         }
         .content-wrapper.loaded {
           opacity: 1;
         }
 
-
-        /* ===========================
-           EXISTING STYLES
-           =========================== */
-        
         :global(body.blur-active .background-video) {
           filter: blur(15px) brightness(0.7);
         }
@@ -408,7 +258,6 @@ export default function Ads() {
           color: #fff;
         }
 
-        /* NEW SMART GRID - 4 columns for verticals, 2 for horizontals */
         .work-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -472,7 +321,6 @@ export default function Ads() {
           transform: translate(-50%, -50%) scale(1.33);
         }
 
-       
         .work-overlay {
           position: absolute;
           bottom: 0;
@@ -561,16 +409,19 @@ export default function Ads() {
           display: block;
         }
 
-        /* Footer / Copyright Styles */
         .copyright-container {
           width: 100%;
-          padding: 60px 20px;
-          margin-top: 0;
+          padding: 20px 20px 20px;
+          margin: 0;
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
           z-index: 100;
+          min-height: auto;
+          height: auto;
+          background: rgba(0, 0, 0, 0.3);
+          flex-shrink: 0;
         }
 
         .copyright {
@@ -579,7 +430,10 @@ export default function Ads() {
           font-weight: 400;
           letter-spacing: 0.5px;
           margin: 0;
+          padding: 0;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          height: auto;
+          line-height: 1.3;
         }
 
         .copyright-link,
@@ -614,7 +468,6 @@ export default function Ads() {
           transform: translateY(-1px);
         }
 
-        /* LAPTOP/DESKTOP - 4 columns for verticals */
         @media (max-width: 1600px) {
           .work-grid {
             grid-template-columns: repeat(4, 1fr);
@@ -622,7 +475,6 @@ export default function Ads() {
           }
         }
 
-        /* TABLET BREAKPOINT - 3 columns */
         @media (max-width: 1200px) {
           .work-grid {
             grid-template-columns: repeat(3, 1fr);
@@ -640,39 +492,141 @@ export default function Ads() {
           }
         }
 
-        /* MOBILE BREAKPOINT */
         @media (max-width: 768px) {
+          .hero-section {
+            padding: 0 20px;
+          }
+
           .hero-title {
             font-size: 110px;
+            padding: 0;
+            margin: 0 auto;
+            display: block;
+            width: 100%;
+            text-align: center;
           }
 
           #work-section {
-            padding: 100px 20px;
+            padding: 60px 20px;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+          }
+
+          .section-header {
+            margin-bottom: 60px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .section-header h2 {
+            font-size: clamp(36px, 10vw, 56px);
+            margin-bottom: 20px;
+            margin-left: 0;
+            margin-right: 0;
+            width: 100%;
+            text-align: center;
+          }
+
+          .section-header p {
+            font-size: clamp(14px, 4vw, 18px);
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
           }
 
           .work-grid {
             grid-template-columns: 1fr;
             gap: 12px;
             auto-flow: auto;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
           }
 
           .work-item.horizontal,
           .work-item.vertical {
             grid-column: span 1;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            max-width: 100%;
           }
 
-          /* Mobile-specific video heights */
+          .work-item {
+            aspect-ratio: 16 / 9;
+            min-height: unset;
+          }
+
           .work-item.vertical {
-            min-height: 65vh;
-            max-height: 65vh;
+            aspect-ratio: 9 / 16;
+            min-height: unset;
           }
 
           .work-item.horizontal {
-            min-height: 40vh;
-            max-height: 40vh;
+            aspect-ratio: 16 / 9;
+            min-height: unset;
           }
 
-          /* Mobile overlay animation */
+          .vimeo-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+          }
+
+          .vimeo-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: none !important;
+            scale: 1 !important;
+          }
+
+          .work-item.vertical .vimeo-container iframe {
+            transform: none !important;
+            scale: 1 !important;
+          }
+
+          .sound-toggle {
+            width: 40px;
+            height: 40px;
+            top: 12px;
+            right: 12px;
+          }
+
+          .sound-toggle svg {
+            width: 18px;
+            height: 18px;
+          }
+
+          .sound-toggle:hover {
+            transform: scale(1.1);
+          }
+
+          .work-overlay {
+            padding: 24px 18px;
+          }
+
+          .work-overlay h3 {
+            font-size: 18px;
+            margin-bottom: 6px;
+            line-height: 1.3;
+          }
+
+          .work-overlay p {
+            font-size: 12px;
+            line-height: 1.4;
+            opacity: 0.8;
+          }
+
           .work-overlay {
             opacity: 0;
             transform: translateY(25px);
@@ -681,15 +635,25 @@ export default function Ads() {
           }
 
           :global(.work-item.in-center) .work-overlay {
-            animation: fadeInUpBottom 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: fadeInUpBottom 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
 
           .copyright-container {
-            padding: 40px 20px;
+            padding: 20px 20px;
+            margin: 0;
+            width: 100%;
+            text-align: center;
+            height: auto;
+            background: rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
           }
+
           .copyright {
             font-size: 12px;
             text-align: center;
+            line-height: 1.3;
+            margin: 0;
+            padding: 0;
           }
 
           @keyframes fadeInUpBottom {
@@ -704,38 +668,161 @@ export default function Ads() {
           }
         }
 
-        /* SMALL MOBILE */
         @media (max-width: 480px) {
-          .hero-title {
-            font-size: 68px;
+          .hero-section {
+            padding: 0 15px;
           }
 
-          .section-header h2 {
-            font-size: 42px;
+          .hero-title {
+            font-size: 68px;
+            padding: 0;
+            margin: 0 auto;
+            width: 100%;
+            text-align: center;
+          }
+
+          #work-section {
+            padding: 60px 15px;
+            width: 100%;
+            margin: 0 auto;
+          }
+
+          .work-item {
+            aspect-ratio: 16 / 9;
+            min-height: unset;
+          }
+
+          .work-item.vertical {
+            aspect-ratio: 9 / 16;
+            min-height: unset;
+          }
+
+          .work-item.horizontal {
+            aspect-ratio: 16 / 9;
+            min-height: unset;
           }
 
           .work-overlay {
-            padding: 25px 20px;
+            padding: 20px 16px;
           }
 
           .work-overlay h3 {
-            font-size: 22px;
+            font-size: 16px;
+          }
+
+          .work-overlay p {
+            font-size: 11px;
+          }
+
+          .sound-toggle {
+            width: 36px;
+            height: 36px;
+            top: 10px;
+            right: 10px;
+          }
+
+          .sound-toggle svg {
+            width: 16px;
+            height: 16px;
+          }
+
+          .copyright-container {
+            width: 100%;
+            margin: 0;
+            padding: 20px 15px;
+            height: auto;
+            background: rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+          }
+
+          .copyright {
+            width: 100%;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            font-size: 11px;
+            line-height: 1.3;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .hero-section {
+            padding: 0 12px;
+          }
+
+          .hero-title {
+            font-size: 56px;
+            padding: 0;
+            text-align: center;
+            width: 100%;
+            margin: 0 auto;
+          }
+
+          .section-header h2 {
+            font-size: 28px;
+            text-align: center;
+            width: 100%;
+          }
+
+          .section-header p {
+            text-align: center;
+            width: 100%;
+          }
+
+          #work-section {
+            padding: 60px 12px;
+            width: 100%;
+            margin: 0 auto;
+          }
+
+          .work-grid {
+            width: 100%;
+            margin: 0 auto;
+            gap: 10px;
+          }
+
+          .work-item {
+            aspect-ratio: 16 / 9;
+            min-height: unset;
+          }
+
+          .work-item.vertical {
+            aspect-ratio: 9 / 16;
+            min-height: unset;
+          }
+
+          .work-item.horizontal {
+            aspect-ratio: 16 / 9;
+            min-height: unset;
+          }
+
+          .copyright-container {
+            padding: 20px 12px;
+            width: 100%;
+            margin: 0;
+            height: auto;
+            background: rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+          }
+
+          .copyright {
+            font-size: 10px;
+            text-align: center;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            line-height: 1.3;
           }
         }
       `}</style>
 
-      {/* =======================
-          SKELETON LOADER
-          ======================= */}
+      {/* SKELETON LOADER */}
       <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-
-        {/* Hero Skeleton */}
         <section className="hero-section">
           <div className="skeleton-block sk-hero-line top"></div>
           <div className="skeleton-block sk-hero-line bot"></div>
         </section>
 
-        {/* Work Grid Skeleton */}
         <section id="work-section">
           <div className="section-header">
             <div className="skeleton-block sk-header-title"></div>
@@ -744,51 +831,17 @@ export default function Ads() {
           </div>
 
           <div className="work-grid">
-            {/* 1-4: Vertical items in first row */}
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-
-            {/* 5-6: Horizontal items (2 in a row) */}
-            <div className="skeleton-block sk-video-card horizontal">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-            <div className="skeleton-block sk-video-card horizontal">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-
-            {/* 7-8: Vertical items */}
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-            <div className="skeleton-block sk-video-card vertical">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className={`skeleton-block sk-video-card ${i < 4 ? 'vertical' : i < 6 ? 'horizontal' : 'vertical'}`}>
+                <div className="skeleton-block sk-overlay-title"></div>
+                <div className="skeleton-block sk-overlay-desc"></div>
+              </div>
+            ))}
           </div>
         </section>
-
       </div>
 
-      {/* =======================
-          REAL CONTENT
-          ======================= */}
+      {/* REAL CONTENT */}
       <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
         <section className="hero-section">
           <div className="hero-content" data-aos="fade-up">
@@ -876,7 +929,6 @@ export default function Ads() {
           </div>
         </section>
 
-        {/* Footer / Copyright Section */}
         <div className="copyright-container">
           <p data-aos="fade-up" data-aos-offset="0" className="copyright">
             © 2026{' '}
@@ -888,5 +940,171 @@ export default function Ads() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function Ads() {
+  const containerRefs = useRef([])
+  const [isMobile, setIsMobile] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const MIN_LOADING_TIME = 2500
+
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, MIN_LOADING_TIME)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    if (!isLoaded) return
+
+    if (typeof window !== 'undefined' && window.AOS) {
+      window.AOS.init({
+        duration: 1200,
+        once: true,
+        offset: 120,
+        easing: 'ease-out-cubic',
+      })
+    }
+
+    const heroSection = document.querySelector('.hero-section')
+    const updateBlur = () => {
+      if (!heroSection) return
+      const rect = heroSection.getBoundingClientRect()
+      if (rect.bottom < window.innerHeight * 0.3) {
+        document.body.classList.add('blur-active')
+      } else {
+        document.body.classList.remove('blur-active')
+      }
+    }
+
+    const containerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const container = entry.target
+          const iframe = container.querySelector('iframe')
+          if (!iframe) return
+
+          if (entry.isIntersecting) {
+            iframe.contentWindow?.postMessage({ method: 'play' }, '*')
+          } else {
+            iframe.contentWindow?.postMessage({ method: 'pause' }, '*')
+          }
+        })
+      },
+      { threshold: 0.5 }
+    )
+
+    containerRefs.current.forEach((container) => {
+      if (container) containerObserver.observe(container)
+    })
+
+    let centerObserver
+    if (isMobile) {
+      centerObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+              entry.target.classList.add('in-center')
+            } else {
+              entry.target.classList.remove('in-center')
+            }
+          })
+        },
+        {
+          threshold: [0.5],
+          rootMargin: '-10% 0px -10% 0px',
+        }
+      )
+
+      document.querySelectorAll('.work-item').forEach((item) => {
+        centerObserver.observe(item)
+      })
+    }
+
+    let ticking = false
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateBlur()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    updateBlur()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', checkMobile)
+      document.body.classList.remove('blur-active')
+      containerObserver.disconnect()
+      if (centerObserver) centerObserver.disconnect()
+    }
+  }, [isMobile, isLoaded])
+
+  const handleSoundToggle = (e, index) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    const workItem = e.currentTarget.closest('.work-item')
+    const iframe = workItem?.querySelector('iframe')
+    const isCurrentlyUnmuted = workItem?.classList.contains('unmuted')
+
+    document.querySelectorAll('.work-item iframe').forEach((iFrame) => {
+      iFrame.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
+    })
+    document.querySelectorAll('.work-item').forEach((item) => item.classList.remove('unmuted'))
+
+    if (!isCurrentlyUnmuted && iframe) {
+      iframe.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
+      workItem?.classList.add('unmuted')
+    }
+  }
+
+  const getVimeoData = (url) => {
+    const idMatch = url.match(/(?:vimeo\.com\/)(\d+)/)
+    const hashMatch = url.match(/\/([a-f0-9]+)(?:\?|$)/)
+    return {
+      id: idMatch ? idMatch[1] : null,
+      hash: hashMatch ? hashMatch[1] : null
+    }
+  }
+
+  const videos = [
+    { src: 'https://vimeo.com/1167679730/a43599f39f?share=copy&fl=sv&fe=ci', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167682809/d726843f75?share=copy&fl=sv&fe=ci', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167685194/a9c74513ab?share=copy&fl=sv&fe=ci', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167691944?share=copy&fl=sv&fe=ci', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167689020/c15b90820f?share=copy&fl=sv&fe=ci', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167689633?share=copy&fl=sv&fe=ci', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167684995/8a9eb1db9a?share=copy&fl=sv&fe=ci', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
+  ]
+
+  if (!mounted) {
+    return null
+  }
+
+  return (
+    <AdsContent
+      isLoaded={isLoaded}
+      containerRefs={containerRefs}
+      videos={videos}
+      getVimeoData={getVimeoData}
+      handleSoundToggle={handleSoundToggle}
+    />
   )
 }
