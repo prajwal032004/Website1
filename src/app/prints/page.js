@@ -293,22 +293,6 @@ export default function Gallery() {
       width: 1440,
       height: 1800,
     },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/37.png?updatedAt=1771934150984",
-      title: 'new',
-      desc: 'Authentic stories, beautifully told',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/13.png?updatedAt=1771934151017",
-      title: 'new',
-      desc: 'Authentic stories, beautifully told',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
   ]
 
   return (
