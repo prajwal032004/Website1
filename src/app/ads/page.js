@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 export default function Ads() {
-  const videoRefs = useRef([])
+  const containerRefs = useRef([])
   const [isMobile, setIsMobile] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -55,23 +55,28 @@ export default function Ads() {
       }
     }
 
-    // Grid Video Observer (Play/Pause on scroll)
-    const videoObserver = new IntersectionObserver(
+    // Grid Container Observer (Play/Pause on scroll)
+    const containerObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const video = entry.target
+          const container = entry.target
+          const iframe = container.querySelector('iframe')
+          if (!iframe) return
+
           if (entry.isIntersecting) {
-            video.play().catch(() => { })
+            // Post message to iframe to play
+            iframe.contentWindow?.postMessage({ method: 'play' }, '*')
           } else {
-            video.pause()
+            // Post message to iframe to pause
+            iframe.contentWindow?.postMessage({ method: 'pause' }, '*')
           }
         })
       },
       { threshold: 0.5 }
     )
 
-    videoRefs.current.forEach((video) => {
-      if (video) videoObserver.observe(video)
+    containerRefs.current.forEach((container) => {
+      if (container) containerObserver.observe(container)
     })
 
     // Mobile center detection for overlays
@@ -117,7 +122,7 @@ export default function Ads() {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', checkMobile)
       document.body.classList.remove('blur-active')
-      videoObserver.disconnect()
+      containerObserver.disconnect()
       if (centerObserver) centerObserver.disconnect()
     }
   }, [isMobile, isLoaded])
@@ -127,33 +132,40 @@ export default function Ads() {
     e.preventDefault()
 
     const workItem = e.currentTarget.closest('.work-item')
-    const video = videoRefs.current[index]
-    const isCurrentlyUnmuted = workItem.classList.contains('unmuted')
+    const iframe = workItem?.querySelector('iframe')
+    const isCurrentlyUnmuted = workItem?.classList.contains('unmuted')
 
     // Mute all videos
-    videoRefs.current.forEach((v) => {
-      if (v) v.muted = true
+    document.querySelectorAll('.work-item iframe').forEach((iFrame) => {
+      iFrame.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
     })
     document.querySelectorAll('.work-item').forEach((item) => item.classList.remove('unmuted'))
 
     // Unmute clicked video if it wasn't already unmuted
-    if (!isCurrentlyUnmuted) {
-      video.muted = false
-      video.volume = 1
-      workItem.classList.add('unmuted')
-      video.play().catch(() => { })
+    if (!isCurrentlyUnmuted && iframe) {
+      iframe.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
+      workItem?.classList.add('unmuted')
+    }
+  }
+
+  // Extract video ID and hash from Vimeo URL
+  const getVimeoData = (url) => {
+    const idMatch = url.match(/(?:vimeo\.com\/)(\d+)/)
+    const hashMatch = url.match(/\/([a-f0-9]+)(?:\?|$)/)
+    return {
+      id: idMatch ? idMatch[1] : null,
+      hash: hashMatch ? hashMatch[1] : null
     }
   }
 
   const videos = [
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/12.mp4', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/13.mp4', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
-    { src: '/UNIQLO_AD.mp4', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/15.mp4', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Documentary Style', desc: 'Authentic stories, beautifully told', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/12.mp4', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'vertical' },
+    { src: 'https://vimeo.com/1167679730/a43599f39f?share=copy&fl=sv&fe=ci', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167682809/d726843f75?share=copy&fl=sv&fe=ci', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167685194/a9c74513ab?share=copy&fl=sv&fe=ci', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167691944?share=copy&fl=sv&fe=ci', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167689020/c15b90820f?share=copy&fl=sv&fe=ci', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167689633?share=copy&fl=sv&fe=ci', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'horizontal' },
+    { src: 'https://vimeo.com/1167684995/8a9eb1db9a?share=copy&fl=sv&fe=ci', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
   ]
 
   return (
@@ -238,9 +250,12 @@ export default function Ads() {
           padding: 30px;
         }
 
-        /* Grid spans for skeleton matching the real grid */
-        .sk-video-card.wide {
-           grid-column: span 2;
+        .sk-video-card.vertical {
+          grid-column: span 1;
+        }
+
+        .sk-video-card.horizontal {
+          grid-column: span 2;
         }
 
         .sk-overlay-title {
@@ -260,7 +275,7 @@ export default function Ads() {
         
         /* Mobile adjustment for skeleton grid */
         @media (max-width: 768px) {
-            .sk-video-card.wide { grid-column: span 1; }
+            .sk-video-card.horizontal { grid-column: span 1; }
             .sk-video-card { min-height: 65vh; }
         }
 
@@ -393,12 +408,14 @@ export default function Ads() {
           color: #fff;
         }
 
+        /* NEW SMART GRID - 4 columns for verticals, 2 for horizontals */
         .work-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 25px;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
           max-width: 1600px;
           margin: 0 auto;
+          auto-flow: dense;
         }
 
         .work-item {
@@ -410,33 +427,52 @@ export default function Ads() {
           background: #111;
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
           height: 100%;
-          min-height: 500px;
+          min-height: 400px;
         }
 
         .work-item.vertical {
           grid-column: span 1;
+          min-height: 600px;
         }
 
         .work-item.horizontal {
           grid-column: span 2;
+          min-height: 500px;
         }
 
         .work-item:hover {
           transform: translateY(-12px);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 25px 50px rgba(255, 255, 255, 0.39);
         }
 
-        .work-item video {
+        .vimeo-container {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          background: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+
+        .vimeo-container iframe {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(1.11);
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+          border: none;
+          display: block;
         }
 
-        .work-item:hover video {
-          transform: scale(1.08);
+        .work-item.vertical .vimeo-container iframe {
+          transform: translate(-50%, -50%) scale(1.33);
         }
 
+       
         .work-overlay {
           position: absolute;
           bottom: 0;
@@ -452,6 +488,7 @@ export default function Ads() {
           opacity: 0;
           transform: translateY(25px);
           transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+          z-index: 5;
         }
 
         @media (min-width: 769px) {
@@ -577,19 +614,29 @@ export default function Ads() {
           transform: translateY(-1px);
         }
 
-        /* TABLET BREAKPOINT */
+        /* LAPTOP/DESKTOP - 4 columns for verticals */
+        @media (max-width: 1600px) {
+          .work-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+          }
+        }
+
+        /* TABLET BREAKPOINT - 3 columns */
         @media (max-width: 1200px) {
           .work-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
           }
 
           .work-item.horizontal {
-            grid-column: span 2;
+            grid-column: span 1;
+            min-height: 450px;
           }
 
           .work-item.vertical {
             grid-column: span 1;
+            min-height: 450px;
           }
         }
 
@@ -606,6 +653,7 @@ export default function Ads() {
           .work-grid {
             grid-template-columns: 1fr;
             gap: 12px;
+            auto-flow: auto;
           }
 
           .work-item.horizontal,
@@ -696,42 +744,43 @@ export default function Ads() {
           </div>
 
           <div className="work-grid">
-            {/* 1. Vertical */}
-            <div className="skeleton-block sk-video-card">
+            {/* 1-4: Vertical items in first row */}
+            <div className="skeleton-block sk-video-card vertical">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+            <div className="skeleton-block sk-video-card vertical">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+            <div className="skeleton-block sk-video-card vertical">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+            <div className="skeleton-block sk-video-card vertical">
               <div className="skeleton-block sk-overlay-title"></div>
               <div className="skeleton-block sk-overlay-desc"></div>
             </div>
 
-            {/* 2. Vertical */}
-            <div className="skeleton-block sk-video-card">
+            {/* 5-6: Horizontal items (2 in a row) */}
+            <div className="skeleton-block sk-video-card horizontal">
+              <div className="skeleton-block sk-overlay-title"></div>
+              <div className="skeleton-block sk-overlay-desc"></div>
+            </div>
+            <div className="skeleton-block sk-video-card horizontal">
               <div className="skeleton-block sk-overlay-title"></div>
               <div className="skeleton-block sk-overlay-desc"></div>
             </div>
 
-            {/* 3. Vertical */}
-            <div className="skeleton-block sk-video-card">
+            {/* 7-8: Vertical items */}
+            <div className="skeleton-block sk-video-card vertical">
               <div className="skeleton-block sk-overlay-title"></div>
               <div className="skeleton-block sk-overlay-desc"></div>
             </div>
-
-            {/* 4. Horizontal (Wide) */}
-            <div className="skeleton-block sk-video-card wide">
+            <div className="skeleton-block sk-video-card vertical">
               <div className="skeleton-block sk-overlay-title"></div>
               <div className="skeleton-block sk-overlay-desc"></div>
             </div>
-
-            {/* 5. Vertical */}
-            <div className="skeleton-block sk-video-card">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-
-            {/* 6. Vertical */}
-            <div className="skeleton-block sk-video-card">
-              <div className="skeleton-block sk-overlay-title"></div>
-              <div className="skeleton-block sk-overlay-desc"></div>
-            </div>
-
           </div>
         </section>
 
@@ -764,16 +813,18 @@ export default function Ads() {
                 className={`work-item ${video.type}`}
                 data-aos="fade-up"
                 data-aos-delay={index * 100}
+                ref={(el) => (containerRefs.current[index] = el)}
               >
-                <video
-                  ref={(el) => (videoRefs.current[index] = el)}
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                >
-                  <source src={video.src} type="video/mp4" />
-                </video>
+                <div className="vimeo-container">
+                  <iframe
+                    title={video.title}
+                    src={`https://player.vimeo.com/video/${getVimeoData(video.src).id}?h=${getVimeoData(video.src).hash}`}
+                    frameBorder="0"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    allowFullScreen
+                  ></iframe>
+                </div>
 
                 <button
                   className="sound-toggle"
