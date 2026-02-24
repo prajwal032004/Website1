@@ -149,7 +149,7 @@ export default function Ads() {
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/12.mp4', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/13.mp4', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
-    { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/14.mp4', title: 'Cinematic Feature', desc: 'Full-scale production excellence with stunning visuals', type: 'horizontal' },
+    { src: '/UNIQLO_AD.mp4', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/15.mp4', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/11.mp4', title: 'Documentary Style', desc: 'Authentic stories, beautifully told', type: 'vertical' },
     { src: 'https://ik.imagekit.io/pqkj4p4ii/5feet4/12.mp4', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'vertical' },
