@@ -290,7 +290,7 @@ export default function Home() {
         .scroll-hint {
           position: absolute;
           bottom: 36px;
-          left: 50%;
+          left: 47%;
           transform: translateX(-50%);
           z-index: 3;
           display: flex;
@@ -521,7 +521,7 @@ export default function Home() {
            ============================== */
         @media (max-width: 768px) {
           .hero-title { font-size: clamp(58px, 18vw, 100px); letter-spacing: -3px; }
-          .scroll-hint { bottom: 28px; }
+          .scroll-hint { display:none; }
 
           .sound-toggle {
             bottom: 28px;
