@@ -600,8 +600,8 @@ export default function Gallery() {
           right: 0;
           background: linear-gradient(
             to top,
-            rgba(0, 0, 0, 0.95),
-            rgba(0, 0, 0, 0.3) 70%,
+            rgba(0, 0, 0, 0.78),
+            rgba(0, 0, 0, 0.21) 70%,
             transparent
           );
           padding: 35px 30px;
@@ -827,15 +827,18 @@ export default function Gallery() {
           }
 
           .gallery-overlay {
-            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;   
+            padding: 20px 20px 5px;  
           }
 
           .gallery-overlay h3 {
-            font-size: 22px;
+            font-size: 13px;
           }
 
           .gallery-overlay p {
-            font-size: 14px;
+            font-size: 11px;
           }
         }
 
