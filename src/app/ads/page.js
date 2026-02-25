@@ -137,15 +137,22 @@ export default function Ads() {
   const toggleSound = (e, idx) => {
     e.stopPropagation()
     const isUnmuted = unmutedIndex === idx
+
+    // Mute all vimeo players first
     iframeRefs.current.forEach((iframe) => {
       iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
     })
+
     if (!isUnmuted) {
       setUnmutedIndex(idx)
       iframeRefs.current[idx]?.contentWindow?.postMessage(
         { method: 'setVolume', value: 1 },
         '*'
       )
+      // Mute background video so it doesn't clash, and notify home page
+      const bgVideo = document.querySelector('.background-video')
+      if (bgVideo) bgVideo.muted = true
+      window.dispatchEvent(new CustomEvent('ads-video-unmuted'))
     } else {
       setUnmutedIndex(null)
     }
