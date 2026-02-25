@@ -747,10 +747,7 @@ export default function Ads() {
                   Stories
                 </h1>
               </div>
-              <div className="hero-scroll">
-                <span className="hero-scroll-label">Scroll</span>
-                <div className="hero-scroll-line" />
-              </div>
+
             </section>
 
             <section className="work">
