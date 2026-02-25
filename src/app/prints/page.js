@@ -102,7 +102,7 @@ export default function Gallery() {
   // ✅ PERFECT URLs - Single quote is RAW (not encoded), spaces as %20
   const images = [
     {
-      src: '/7.png',
+      src: '/7.avif',
       title: 'Brand Campaign',
       desc: 'Creative storytelling meets brand vision',
       type: 'horizontal',
@@ -926,13 +926,12 @@ export default function Gallery() {
                     width={image.width}
                     height={image.height}
                     priority={index < 2}
-                    quality={85}
-                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                    quality={100}
+                    unoptimized
                     style={{
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      objectPosition: 'center',
                     }}
                   />
                 </div>

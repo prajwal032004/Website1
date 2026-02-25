@@ -29,8 +29,6 @@ const nextConfig = {
     },
     // Performance optimizations
     compress: true,
-    // Use SWC for faster minification
-    swcMinify: true,
     // Optimize bundle
     productionBrowserSourceMaps: false,
     // Enable optimizations
