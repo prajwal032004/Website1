@@ -595,7 +595,7 @@ export default function Ads() {
           .work-divider { margin-bottom: 28px; }
           .bento { gap: 8px; }
           .video-card.horizontal { grid-column: 1 / -1; height: 220px; }
-          .video-card.vertical   { grid-column: span 1; height: auto; aspect-ratio: 9 / 16; }
+          .video-card.vertical   { grid-column: span 1; height: auto; aspect-ratio: 3 / 4; }
           .video-card.vertical .vimeo-wrap { position: absolute !important; inset: 0 !important; }
           .card-info { opacity: 1; padding: 14px; }
           .card-desc { display: none; }

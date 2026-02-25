@@ -1,45 +1,26 @@
-
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Gallery() {
   const [isMobile, setIsMobile] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(true) // Start as true to prevent hydration mismatch
+  // FIX 1: Initialize isLoaded as false to match server render (skeleton shown by default)
+  const [isLoaded, setIsLoaded] = useState(false)
 
-  // Simulation of loading heavy assets
   useEffect(() => {
     const MIN_LOADING_TIME = 2500
-    setIsLoaded(false) // Only change on client side after mount
-
-    const timer = setTimeout(() => {
-      setIsLoaded(true)
-    }, MIN_LOADING_TIME)
-
+    const timer = setTimeout(() => setIsLoaded(true), MIN_LOADING_TIME)
     return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
-    // Detect mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
     if (!isLoaded) return
-
-    // Initialize AOS if available
-    if (typeof window !== 'undefined' && window.AOS) {
-      window.AOS.init({
-        duration: 1200,
-        once: true,
-        offset: 120,
-        easing: 'ease-out-cubic',
-      })
-    }
 
     // Background Blur Logic
     const heroSection = document.querySelector('.hero-section')
@@ -66,25 +47,15 @@ export default function Gallery() {
             }
           })
         },
-        {
-          threshold: [0.5],
-          rootMargin: '-10% 0px -10% 0px',
-        }
+        { threshold: [0.5], rootMargin: '-10% 0px -10% 0px' }
       )
-
-      document.querySelectorAll('.gallery-item').forEach((item) => {
-        centerObserver.observe(item)
-      })
+      document.querySelectorAll('.gallery-item').forEach((item) => centerObserver.observe(item))
     }
 
-    // Scroll Listener
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateBlur()
-          ticking = false
-        })
+        window.requestAnimationFrame(() => { updateBlur(); ticking = false })
         ticking = true
       }
     }
@@ -100,11 +71,9 @@ export default function Gallery() {
     }
   }, [isMobile, isLoaded])
 
-  // ✅ PERFECT URLs - Single quote is RAW (not encoded), spaces as %20
   const images = [
-
     {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/13.png?updatedAt=1771934151017",
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/28.png?updatedAt=1771934151062",
       title: 'APPLE HELLO',
       desc: 'Iconic innovation. Seamless experiences.',
       type: 'horizontal',
@@ -112,157 +81,21 @@ export default function Gallery() {
       height: 1800,
     },
     {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/14.png?updatedAt=1771934151031",
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/29.png?updatedAt=1771934151067",
       title: 'APPLE MUSIC',
       desc: 'Sound elevated. Emotion amplified.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
-
     {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/28.png?updatedAt=1771934151062",
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(6).png?updatedAt=1771934151129",
       title: 'DAILY OBJECTS',
       desc: 'Minimal essentials for modern living.',
-      type: 'horizontal',
+      type: 'center',
       width: 1440,
       height: 1800,
     },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/37.png?updatedAt=1771934150984",
-      title: 'DAILY OBJECTS',
-      desc: 'Design-forward accessories with purpose.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: '/6.png',
-      title: 'DYSON',
-      desc: 'Engineering brilliance meets sleek design.',
-      type: 'horizontal',
-      width: 1516,
-      height: 975,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/11.png?updatedAt=1771934151106",
-      title: 'DYSON',
-      desc: 'Powerful performance. Precision engineered.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/10.png?updatedAt=1771934150979",
-      title: 'DYSON',
-      desc: 'Technology crafted for tomorrow.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/19.png?updatedAt=1771934151074",
-      title: 'MAHINDRA BE6',
-      desc: 'Electric future. Boldly reimagined.',
-      type: 'horizontal',
-      width: 1516,
-      height: 975,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/20.png?updatedAt=1771934151037",
-      title: 'MAHINDRA BE6',
-      desc: 'Performance meets sustainable innovation.',
-      type: 'horizontal',
-      width: 1080,
-      height: 1920,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/18.png?updatedAt=1771934151112",
-      title: 'MAHINDRA BE6',
-      desc: 'Redefining mobility with intelligence.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/17.png?updatedAt=1771934151007",
-      title: 'MAHINDRA BE6',
-      desc: 'Driven by innovation and power.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/16.png?updatedAt=1771934151046",
-      title: 'MAHINDRA BE6',
-      desc: 'Next-gen SUV. Electrified presence.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/34.png?updatedAt=1771934151044",
-      title: 'MASSIMO DUTTI',
-      desc: 'Timeless fashion. Understated elegance.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/35.png?updatedAt=1771934151087",
-      title: 'MASSIMO DUTTI',
-      desc: 'Refined tailoring for modern sophistication.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: '/7.avif',
-      title: 'OAKLEY | META',
-      desc: 'Performance eyewear meets smart innovation.',
-      type: 'horizontal',
-      width: 1920,
-      height: 1080,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/8.png?updatedAt=1771934151092",
-      title: 'OAKLEY | META',
-      desc: 'Future-ready vision. Intelligent design.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/23.png?updatedAt=1771934151127",
-      title: 'PS5',
-      desc: 'Next-level gaming. Immersive power.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/31.jpg?updatedAt=1771934151003",
-      title: 'PUMA',
-      desc: 'Sport meets culture. Performance redefined.',
-      type: 'horizontal',
-      width: 1080,
-      height: 1920,
-    },
-    {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/32.png?updatedAt=1771934151041",
-      title: 'PUMA',
-      desc: 'Bold energy. Street-inspired attitude.',
-      type: 'horizontal',
-      width: 1440,
-      height: 1800,
-    },
-
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/41.png?updatedAt=1771934151065",
       title: 'SWAROVSKI',
@@ -283,11 +116,154 @@ export default function Gallery() {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/39.png?updatedAt=1771934150990",
       title: 'SWAROVSKI',
       desc: 'Sparkle that defines sophistication.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/34.png?updatedAt=1771934151044",
+      title: 'MASSIMO DUTTI',
+      desc: 'Timeless fashion. Understated elegance.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
-
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/35.png?updatedAt=1771934151087",
+      title: 'MASSIMO DUTTI',
+      desc: 'Refined tailoring for modern sophistication.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(8).png?updatedAt=1771934151124",
+      title: 'MASSIMO DUTTI',
+      desc: 'Timeless fashion. Understated elegance.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/31.jpg?updatedAt=1771934151003",
+      title: 'PUMA',
+      desc: 'Sport meets culture. Performance redefined.',
+      type: 'horizontal',
+      width: 1080,
+      height: 1920,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/32.png?updatedAt=1771934151041",
+      title: 'PUMA',
+      desc: 'Bold energy. Street-inspired attitude.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(7).png?updatedAt=1771934151138",
+      title: 'PUMA',
+      desc: 'Sport meets culture. Performance redefined.',
+      type: 'center',
+      width: 1080,
+      height: 1920,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/11.png?updatedAt=1771934151106",
+      title: 'DYSON',
+      desc: 'Powerful performance. Precision engineered.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/10.png?updatedAt=1771934150979",
+      title: 'DYSON',
+      desc: 'Technology crafted for tomorrow.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(1).png?updatedAt=1771934151081",
+      title: 'DYSON',
+      desc: 'Engineering brilliance meets sleek design.',
+      type: 'center',
+      width: 1516,
+      height: 975,
+    },
+    {
+      src: '/7.avif',
+      title: 'OAKLEY | META',
+      desc: 'Performance eyewear meets smart innovation.',
+      type: 'horizontal',
+      width: 1920,
+      height: 1080,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/8.png?updatedAt=1771934151092",
+      title: 'OAKLEY | META',
+      desc: 'Future-ready vision. Intelligent design.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup.png?updatedAt=1771934151049",
+      title: 'OAKLEY | META',
+      desc: 'Cravings satisfied at lightning speed.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/23.png?updatedAt=1771934151127",
+      title: 'PS5',
+      desc: 'Next-level gaming. Immersive power.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/22.jpg?updatedAt=1771934150974",
+      title: 'PS5',
+      desc: 'Next-level gaming. Immersive power.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(3).png?updatedAt=1771934151077",
+      title: 'PS5',
+      desc: 'Next-level gaming. Immersive power.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/13.png?updatedAt=1771934151017",
+      title: 'APPLE',
+      desc: 'Design-forward accessories with purpose.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/14.png?updatedAt=1771934151031",
+      title: 'APPLE',
+      desc: 'Electric future. Boldly reimagined.',
+      type: 'horizontal',
+      width: 1516,
+      height: 975,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(11).png?updatedAt=1771934151084",
+      title: 'APPLE',
+      desc: 'Performance meets sustainable innovation.',
+      type: 'center',
+      width: 1080,
+      height: 1920,
+    },
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/44.png?updatedAt=1771934151122",
       title: 'SWIGGY',
@@ -304,128 +280,100 @@ export default function Gallery() {
       width: 1440,
       height: 1800,
     },
-
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/25.jpg?updatedAt=1771934150955",
+      title: 'RAYMOND',
+      desc: 'Redefining mobility with intelligence.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(4).png?updatedAt=1771934151051",
+      title: 'RAYMOND',
+      desc: 'Driven by innovation and power.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(10).png?updatedAt=1771934151145",
+      title: 'RAYMOND',
+      desc: 'Next-gen SUV. Electrified presence.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/18.png?updatedAt=1771934151112",
+      title: 'MAHINDRA BE6',
+      desc: 'Redefining mobility with intelligence.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/17.png?updatedAt=1771934151007",
+      title: 'MAHINDRA BE6',
+      desc: 'Driven by innovation and power.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/19.png?updatedAt=1771934151074",
+      title: 'MAHINDRA BE6',
+      desc: 'Next-gen SUV. Electrified presence.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/20.png?updatedAt=1771934151037",
+      title: 'MAHINDRA BE6',
+      desc: 'Driven by innovation and power.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/16.png?updatedAt=1771934151046",
+      title: 'MAHINDRA BE6',
+      desc: 'Next-gen SUV. Electrified presence.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
   ]
 
   return (
     <>
       <style jsx>{`
-        /* ===========================
-           AESTHETIC SKELETON STYLES 
-           =========================== */
 
-        .skeleton-block {
-          background-color: #0f0f0f;
-          position: relative;
-          overflow: hidden;
+        /* ============================================
+           SKELETON KEYFRAMES
+           ============================================ */
+        @keyframes skPulse {
+          0%, 100% { opacity: 0.5; }
+          50%       { opacity: 1; }
         }
-
-        .skeleton-block::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          transform: translateX(-100%);
-          background-image: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.05) 20%,
-            rgba(255, 255, 255, 0.09) 60%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          animation: shimmer 2s infinite;
+        @keyframes skShine {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
 
-        @keyframes shimmer {
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        /* Hero Text Skeleton */
-        .sk-hero-line {
-          height: clamp(70px, 12vw, 160px);
-          background: #111;
-          border-radius: 12px;
-          margin-bottom: 20px;
-        }
-        .sk-hero-line.top {
-          width: 25%;
-        }
-        .sk-hero-line.bot {
-          width: 20%;
-        }
-
-        @media (max-width: 768px) {
-          .sk-hero-line.top {
-            width: 90%;
-            height: 80px;
-          }
-          .sk-hero-line.bot {
-            width: 60%;
-            height: 60px;
-          }
-        }
-
-        /* Header Skeleton */
-        .sk-header-title {
-          width: 200px;
-          height: 60px;
-          margin: 0 auto 30px;
-          border-radius: 8px;
-          background: #111;
-        }
-        .sk-header-p {
-          width: 600px;
-          height: 24px;
-          margin: 0 auto 10px;
-          border-radius: 4px;
-          background: #161616;
-          max-width: 90%;
-        }
-
-        /* Image Card Skeleton */
-        .sk-image-card {
-          background: #121212;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          position: relative;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 30px;
-        }
-
-        .sk-overlay-title {
-          width: 50%;
-          height: 28px;
-          background: #1e1e1e;
-          border-radius: 4px;
-          margin-bottom: 12px;
-        }
-
-        .sk-overlay-desc {
-          width: 80%;
-          height: 16px;
-          background: #1e1e1e;
-          border-radius: 4px;
-        }
-
-        /* Loading Wrappers */
+        /* ============================================
+           SKELETON WRAPPER — covers full viewport
+           ============================================ */
         .skeleton-wrapper {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          z-index: 50;
-          transition: opacity 0.6s ease-out, visibility 0.6s;
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          overflow-y: auto;
+          background: #000;
+          transition: opacity 0.7s ease-out, visibility 0.7s;
           opacity: 1;
           visibility: visible;
-          pointer-events: auto;
         }
         .skeleton-wrapper.hidden {
           opacity: 0;
@@ -433,47 +381,210 @@ export default function Gallery() {
           pointer-events: none;
         }
 
-        .content-wrapper {
-          opacity: 1;
-          visibility: visible;
-          transition: opacity 0.8s ease-in;
+        /* ============================================
+           SKELETON HERO
+           ============================================ */
+        .sk-hero {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+          padding: 40px;
         }
-        .content-wrapper.loading {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
+        .sk-hero-line {
+          border-radius: 14px;
+          background: rgba(255,255,255,0.06);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.05);
+          position: relative;
+          overflow: hidden;
+          animation: skPulse 2.2s ease-in-out infinite;
+        }
+        .sk-hero-line::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            105deg,
+            transparent 25%,
+            rgba(255,255,255,0.06) 50%,
+            transparent 75%
+          );
+          animation: skShine 2.6s ease-in-out infinite;
+        }
+        .sk-hero-line.title {
+          width: clamp(280px, 38vw, 620px);
+          height: clamp(70px, 12vw, 155px);
+        }
+        .sk-hero-line.sub {
+          width: clamp(160px, 22vw, 360px);
+          height: clamp(50px, 8vw, 110px);
+          animation-delay: 0.35s;
         }
 
-        /* ===========================
-           MAIN STYLES
-           =========================== */
+        /* ============================================
+           SKELETON GALLERY SECTION
+           ============================================ */
+        .sk-gallery-section {
+          padding: 120px 40px;
+        }
+
+        .sk-section-header {
+          text-align: center;
+          margin-bottom: 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        }
+        .sk-heading {
+          width: clamp(160px, 20vw, 280px);
+          height: clamp(48px, 6vw, 72px);
+          border-radius: 10px;
+          background: rgba(255,255,255,0.07);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.06);
+          animation: skPulse 2.2s ease-in-out infinite;
+          position: relative;
+          overflow: hidden;
+        }
+        .sk-heading::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
+          animation: skShine 2.6s ease-in-out infinite;
+        }
+        .sk-subtext {
+          width: clamp(260px, 50vw, 700px);
+          height: 22px;
+          border-radius: 6px;
+          background: rgba(255,255,255,0.05);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.04);
+          animation: skPulse 2.2s ease-in-out infinite 0.2s;
+          max-width: 90vw;
+        }
+        .sk-subtext.short {
+          width: clamp(160px, 28vw, 420px);
+          animation-delay: 0.45s;
+        }
+
+        /* ============================================
+           SKELETON GRID
+           ============================================ */
+        .sk-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+          max-width: 1600px;
+          margin: 0 auto;
+        }
+
+        .sk-card {
+          border-radius: 16px;
+          background: rgba(10,10,10,0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.07);
+          position: relative;
+          overflow: hidden;
+          animation: skPulse 2.2s ease-in-out infinite;
+        }
+        .sk-card::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            115deg,
+            transparent 20%,
+            rgba(255,255,255,0.05) 50%,
+            transparent 80%
+          );
+          animation: skShine 3s ease-in-out infinite;
+        }
+
+        .sk-card-bars {
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          padding: 28px 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          z-index: 2;
+        }
+        .sk-bar {
+          border-radius: 5px;
+          background: rgba(255,255,255,0.07);
+        }
+        .sk-bar.title-bar { height: 20px; width: 52%; }
+        .sk-bar.desc-bar  { height: 13px; width: 76%; }
+
+        .sk-card.horizontal {
+          grid-column: span 2;
+          aspect-ratio: 4 / 5;
+        }
+        .sk-card.vertical {
+          grid-column: span 1;
+          aspect-ratio: 9 / 12;
+        }
+
+        /* FIX 3: Center skeleton — same gap behavior as real grid items */
+        .sk-center-row {
+          grid-column: 1 / -1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          /* No extra padding/margin — gap from the grid handles spacing uniformly */
+        }
+        .sk-center-card {
+          width: 50%;
+          aspect-ratio: 4 / 5;
+          border-radius: 16px;
+          background: rgba(10,10,10,0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.07);
+          position: relative;
+          overflow: hidden;
+          animation: skPulse 2.2s ease-in-out infinite;
+        }
+        .sk-center-card::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
+          animation: skShine 3s ease-in-out infinite;
+        }
+
+        /* ============================================
+           MAIN PAGE STYLES
+           ============================================ */
 
         :global(body.blur-active .background-video) {
           filter: blur(15px) brightness(0.7);
         }
-
         :global(body.blur-active .video-overlay) {
-          background: rgba(0, 0, 0, 0.7);
+          background: rgba(0,0,0,0.7);
         }
 
         .background-video {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
           object-fit: cover;
           z-index: -1;
           transition: filter 0.5s ease;
         }
-
         .video-overlay {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background: rgba(0,0,0,0.5);
           z-index: -1;
           pointer-events: none;
           transition: background 0.5s ease;
@@ -487,33 +598,19 @@ export default function Gallery() {
           justify-content: center;
           flex-direction: column;
         }
-
         .hero-content {
           position: relative;
           z-index: 2;
           text-align: center;
           mix-blend-mode: difference;
         }
-
         .hero-title {
           font-size: clamp(70px, 12vw, 160px);
           font-weight: 700;
           line-height: 1;
           letter-spacing: -3px;
-          animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1);
           text-transform: uppercase;
           color: #fff;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
 
         #gallery-section {
@@ -522,12 +619,10 @@ export default function Gallery() {
           position: relative;
           z-index: 1;
         }
-
         .section-header {
           text-align: center;
           margin-bottom: 80px;
         }
-
         .section-header h2 {
           font-size: clamp(52px, 7vw, 80px);
           font-weight: 700;
@@ -536,7 +631,6 @@ export default function Gallery() {
           text-transform: uppercase;
           color: #fff;
         }
-
         .section-header p {
           font-size: clamp(18px, 2.2vw, 26px);
           opacity: 0.75;
@@ -548,7 +642,9 @@ export default function Gallery() {
         }
 
         /* ============================================
-           DESKTOP GRID - 4 cols for vertical, 2 for horizontal
+           REAL GALLERY GRID
+           FIX 3: Uniform gap — all item types use the same gap value.
+           Center items sit inside the grid flow, no extra margins.
            ============================================ */
         .gallery-grid {
           display: grid;
@@ -556,7 +652,6 @@ export default function Gallery() {
           gap: 20px;
           max-width: 1600px;
           margin: 0 auto;
-          auto-flow: dense;
         }
 
         .gallery-item {
@@ -566,23 +661,14 @@ export default function Gallery() {
           cursor: pointer;
           transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
           background: #111;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-          aspect-ratio: auto;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+        .gallery-item.vertical   { grid-column: span 1; }
+        .gallery-item.horizontal { grid-column: span 2; }
 
-        .gallery-item.vertical {
-          grid-column: span 1;
-        }
-
-        .gallery-item.horizontal {
-          grid-column: span 2;
-        }
-
-        /* Image wrapper to maintain aspect ratio */
         .gallery-image-wrapper {
           position: relative;
-          width: 100%;
-          height: 100%;
+          width: 100%; height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -590,45 +676,25 @@ export default function Gallery() {
 
         .gallery-item:hover {
           transform: translateY(-12px);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
-
         .gallery-item img {
-          width: 100%;
-          height: 100%;
+          width: 100%; height: 100%;
           object-fit: cover;
           object-position: center;
           transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-        .gallery-item:hover img {
-          transform: scale(1.08);
-        }
+        .gallery-item:hover img { transform: scale(1.08); }
 
         .gallery-overlay {
           position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background: linear-gradient(
-            to top,
-            rgba(0, 0, 0, 0.78),
-            rgba(0, 0, 0, 0.18) 70%,
-            transparent
-          );
+          bottom: 0; left: 0; right: 0;
+          background: linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.18) 70%, transparent);
           padding: 35px 30px;
           opacity: 0;
           transform: translateY(25px);
           transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-        @media (min-width: 769px) {
-          .gallery-item:hover .gallery-overlay {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         .gallery-overlay h3 {
           font-size: 26px;
           font-weight: 700;
@@ -636,7 +702,6 @@ export default function Gallery() {
           letter-spacing: -0.5px;
           color: #fff;
         }
-
         .gallery-overlay p {
           font-size: 15px;
           opacity: 0.85;
@@ -645,31 +710,69 @@ export default function Gallery() {
           color: #fff;
         }
 
-        /* Footer / Copyright Styles */
+        /* CENTER type — full grid row, card centered at 50% width.
+           The grid gap naturally separates it from adjacent rows. */
+        .gallery-item.center {
+          grid-column: 1 / -1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: transparent;
+          box-shadow: none;
+          border-radius: 0;
+          overflow: visible;
+        }
+        .gallery-item.center .center-inner {
+          position: relative;
+          width: 50%;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #111;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .gallery-item.center:hover .center-inner {
+          transform: translateY(-12px);
+          box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+        }
+        .gallery-item.center .center-inner img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          object-position: center;
+          transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+          display: block;
+        }
+        .gallery-item.center:hover .center-inner img { transform: scale(1.08); }
+        .gallery-item.center:hover { transform: none; box-shadow: none; }
+        .gallery-item.center:hover > img { transform: none; }
+
+        @media (min-width: 769px) {
+          .gallery-item:hover .gallery-overlay { opacity: 1; transform: translateY(0); }
+          .gallery-item.center:hover .center-inner .gallery-overlay { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
         .copyright-container {
           width: 100%;
           padding: 60px 20px;
-          margin-top: 0;
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
           z-index: 100;
         }
-
         .copyright {
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255,255,255,0.9);
           font-weight: 400;
           letter-spacing: 0.5px;
           margin: 0;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-
         .copyright-link,
         .copyright-link:visited,
         .copyright-link:active {
-          color: #ffffff;
+          color: #fff;
           font-weight: 700;
           text-decoration: none;
           position: relative;
@@ -677,299 +780,302 @@ export default function Gallery() {
           margin: 0 4px;
           cursor: pointer;
         }
-
         .copyright-link::after {
           content: '';
           position: absolute;
-          width: 0;
-          height: 1px;
-          bottom: -2px;
-          left: 0;
-          background-color: #ffffff;
+          width: 0; height: 1px;
+          bottom: -2px; left: 0;
+          background-color: #fff;
           transition: width 0.3s ease;
         }
-
-        .copyright-link:hover::after {
-          width: 100%;
-        }
-
-        .copyright-link:hover {
-          opacity: 0.8;
-          transform: translateY(-1px);
-        }
+        .copyright-link:hover::after { width: 100%; }
+        .copyright-link:hover { opacity: 0.8; transform: translateY(-1px); }
 
         /* ============================================
-           TABLET BREAKPOINT - 3 columns
+           TABLET — 3 columns
            ============================================ */
         @media (max-width: 1200px) {
-          .gallery-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-          }
-
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
+          .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+          .sk-grid      { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+          .gallery-item.horizontal { grid-column: span 1; }
+          .gallery-item.vertical   { grid-column: span 1; }
+          .gallery-item.center     { grid-column: 1 / -1; }
+          .gallery-item.center .center-inner { width: 55%; }
+          .sk-card.horizontal { grid-column: span 1; }
+          .sk-center-card { width: 55%; }
         }
 
         /* ============================================
-           TABLET/SMALL DEVICE - 2 columns with aspect ratios
+           TABLET SMALL — 2 columns
            ============================================ */
         @media (max-width: 1024px) {
-          .gallery-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-          }
-
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
+          .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .sk-grid      { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .gallery-item.horizontal { grid-column: span 1; }
+          .gallery-item.vertical   { grid-column: span 1; }
+          .gallery-item.center     { grid-column: 1 / -1; }
+          .gallery-item.center .center-inner { width: 60%; }
+          .sk-card.horizontal { grid-column: span 1; }
+          .sk-center-card { width: 60%; }
         }
 
         /* ============================================
-           MOBILE BREAKPOINT - Optimized for all aspect ratios
+           MOBILE — 2-col, center full width
            ============================================ */
         @media (max-width: 768px) {
-          .hero-title {
-            font-size: 110px;
-          }
+          /* FIX 2: Explicit font size for mobile title visibility */
+          .hero-title { font-size: 110px; }
 
-          #gallery-section {
-            padding: 100px 20px;
-          }
+          #gallery-section    { padding: 100px 20px; }
+          .sk-gallery-section { padding: 100px 20px; }
 
-          .gallery-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            auto-flow: auto;
-          }
+          /* FIX 3: Same gap (12px) for all item types on mobile */
+          .gallery-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+          .sk-grid      { grid-template-columns: 1fr 1fr; gap: 12px; }
 
-          .gallery-item.horizontal {
+          .gallery-item.horizontal { grid-column: span 2; aspect-ratio: 16 / 9; }
+          .gallery-item.vertical   { grid-column: span 1; aspect-ratio: 9 / 12; }
+
+          /* Center becomes a normal full-width card — same gap applies automatically */
+          .gallery-item.center {
             grid-column: span 2;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
-
-          /* Responsive height calculation for mobile */
-          .gallery-item {
-            min-height: auto;
-          }
-
-          .gallery-item.vertical {
-            aspect-ratio: 9 / 12;
-          }
-
-          .gallery-item.horizontal {
+            display: block;
+            background: #111;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            overflow: hidden;
             aspect-ratio: 16 / 9;
+            position: relative;
+          }
+          .gallery-item.center:hover { transform: none; box-shadow: none; }
+          .gallery-item.center .center-inner {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+            transform: none !important;
           }
 
-          /* Mobile overlay animation */
+          .sk-card.horizontal { grid-column: span 2; aspect-ratio: 16 / 9; }
+          .sk-card.vertical   { grid-column: span 1; aspect-ratio: 9 / 12; }
+
+          /* FIX 3: sk-center-row on mobile is a plain grid card — same gap */
+          .sk-center-row {
+            grid-column: span 2;
+            display: block;
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.07);
+            animation: skPulse 2.2s ease-in-out infinite;
+            position: relative;
+          }
+          .sk-center-row::after {
+            display: block;
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
+            animation: skShine 3s ease-in-out infinite;
+          }
+          .sk-center-card {
+            width: 100%;
+            aspect-ratio: unset;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+            background: transparent;
+            animation: none;
+          }
+          .sk-center-card::after { display: none; }
+
           .gallery-overlay {
             opacity: 0;
             transform: translateY(25px);
             transition: none;
             animation: none;
           }
-
           :global(.gallery-item.in-center) .gallery-overlay {
-            animation: fadeInUpBottom 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: fadeInUpMobile 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          :global(.gallery-item.center.in-center) .center-inner .gallery-overlay {
+            animation: fadeInUpMobile 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          @keyframes fadeInUpMobile {
+            from { opacity: 0; transform: translateY(25px); }
+            to   { opacity: 1; transform: translateY(0); }
           }
 
-          .copyright-container {
-            padding: 40px 20px;
-          }
-          .copyright {
-            font-size: 12px;
-            text-align: center;
-          }
-
-          @keyframes fadeInUpBottom {
-            from {
-              opacity: 0;
-              transform: translateY(25px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
+          .copyright-container { padding: 40px 20px; }
+          .copyright { font-size: 12px; text-align: center; }
+          .sk-hero { padding: 20px; }
         }
 
         /* ============================================
-           SMALL MOBILE - Single column with proper spacing
+           SMALL MOBILE — single column
            ============================================ */
         @media (max-width: 480px) {
-          .hero-title {
-            font-size: 68px;
-          }
+          /* FIX 2: Smaller but still clearly visible */
+          .hero-title { font-size: 68px; }
+          .section-header h2 { font-size: 42px; }
 
-          .section-header h2 {
-            font-size: 42px;
-          }
+          .gallery-grid { grid-template-columns: 1fr; gap: 10px; }
+          .sk-grid      { grid-template-columns: 1fr; gap: 10px; }
 
-          .gallery-grid {
-            grid-template-columns: 1fr;
-            gap: 10px;
-          }
+          /* FIX 3: All types collapse to single column with same gap */
+          .gallery-item.horizontal,
+          .gallery-item.vertical,
+          .gallery-item.center { grid-column: span 1; }
+          .gallery-item.vertical   { aspect-ratio: 9 / 12; }
+          .gallery-item.horizontal,
+          .gallery-item.center     { aspect-ratio: 16 / 9; }
 
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            aspect-ratio: 9 / 12;
-          }
-
-          .gallery-item.horizontal {
-            aspect-ratio: 16 / 9;
-          }
+          .sk-card.horizontal,
+          .sk-card.vertical { grid-column: span 1; }
+          .sk-center-row { grid-column: span 1; }
 
           .gallery-overlay {
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;   
-            padding: 20px 20px 5px;  
+            justify-content: flex-end;
+            padding: 20px 20px 5px;
           }
-
-          .gallery-overlay h3 {
-            font-size: 13px;
-          }
-
-          .gallery-overlay p {
-            font-size: 11px;
-          }
+          .gallery-overlay h3 { font-size: 13px; }
+          .gallery-overlay p  { font-size: 11px; }
         }
 
-        /* ============================================
-           EXTRA SMALL - Optimize for very small phones
-           ============================================ */
         @media (max-width: 360px) {
-          .gallery-grid {
-            gap: 8px;
-          }
-
-          .gallery-overlay {
-            padding: 20px 15px;
-          }
-
-          .gallery-overlay h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
-          }
-
-          .gallery-overlay p {
-            font-size: 12px;
-          }
+          .gallery-grid { gap: 8px; }
+          .sk-grid      { gap: 8px; }
+          .gallery-overlay { padding: 20px 15px; }
+          .gallery-overlay h3 { font-size: 18px; margin-bottom: 5px; }
+          .gallery-overlay p  { font-size: 12px; }
         }
       `}</style>
 
-      {/* =======================
-          SKELETON LOADER
-          ======================= */}
+      {/* SKELETON LOADER */}
       <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-        {/* Hero Skeleton */}
-        <section className="hero-section">
-          <div className="skeleton-block sk-hero-line top"></div>
-          <div className="skeleton-block sk-hero-line bot"></div>
-        </section>
+        <div className="sk-hero">
+          <div className="sk-hero-line title" />
+          <div className="sk-hero-line sub" />
+        </div>
 
-        {/* Gallery Grid Skeleton */}
-        <section id="gallery-section">
-          <div className="section-header">
-            <div className="skeleton-block sk-header-title"></div>
-            <div className="skeleton-block sk-header-p"></div>
-            <div className="skeleton-block sk-header-p" style={{ width: '400px' }}></div>
+        <div className="sk-gallery-section">
+          <div className="sk-section-header">
+            <div className="sk-heading" />
+            <div className="sk-subtext" />
+            <div className="sk-subtext short" />
           </div>
 
-          <div className="gallery-grid">
-            {/* Desktop view skeletons */}
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="skeleton-block sk-image-card">
-                <div className="skeleton-block sk-overlay-title"></div>
-                <div className="skeleton-block sk-overlay-desc"></div>
-              </div>
-            ))}
+          <div className="sk-grid">
+            {images.map((img, i) => {
+              if (img.type === 'center') {
+                return (
+                  <div key={i} className="sk-center-row" style={{ animationDelay: `${(i % 5) * 0.15}s` }}>
+                    <div className="sk-center-card">
+                      <div className="sk-card-bars">
+                        <div className="sk-bar title-bar" />
+                        <div className="sk-bar desc-bar" />
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div
+                  key={i}
+                  className={`sk-card ${img.type}`}
+                  style={{ animationDelay: `${(i % 5) * 0.15}s` }}
+                >
+                  <div className="sk-card-bars">
+                    <div className="sk-bar title-bar" />
+                    <div className="sk-bar desc-bar" />
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        </section>
+        </div>
       </div>
 
-      {/* =======================
-          REAL CONTENT
-          ======================= */}
-      <div className={`content-wrapper ${isLoaded ? 'loaded' : 'loading'}`}>
-        <section className="hero-section">
-          <div className="hero-content" data-aos="fade-up">
-            <h1 className="hero-title">
-              Prints & <br />
-              banners
-            </h1>
-          </div>
-        </section>
+      {/* REAL CONTENT */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">
+            Prints & <br />
+            banners
+          </h1>
+        </div>
+      </section>
 
-        <section id="gallery-section">
-          <div className="section-header" data-aos="fade-up">
-            <h2>Our Work</h2>
-            <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
-          </div>
+      <section id="gallery-section">
+        <div className="section-header">
+          <h2>Our Work</h2>
+          <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
+        </div>
 
-          <div className="gallery-grid">
-            {images.map((image, index) => (
-              <div
-                key={index}
-                className={`gallery-item ${image.type}`}
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-              >
+        <div className="gallery-grid">
+          {images.map((image, index) => {
+            if (image.type === 'center') {
+              return (
+                <div key={index} className="gallery-item center">
+                  <div className="center-inner">
+                    <Image
+                      src={image.src}
+                      alt={image.title}
+                      width={image.width}
+                      height={image.height}
+                      priority
+                      quality={100}
+                      unoptimized
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div className="gallery-overlay">
+                      <h3>{image.title}</h3>
+                      <p>{image.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div key={index} className={`gallery-item ${image.type}`}>
                 <div className="gallery-image-wrapper">
                   <Image
                     src={image.src}
                     alt={image.title}
                     width={image.width}
                     height={image.height}
-                    priority={index < 2}
+                    priority
                     quality={100}
                     unoptimized
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
-
                 <div className="gallery-overlay">
                   <h3>{image.title}</h3>
                   <p>{image.desc}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Footer / Copyright Section */}
-        <div className="copyright-container">
-          <p data-aos="fade-up" data-aos-offset="0" className="copyright">
-            © 2026{' '}
-            <Link href="/" className="copyright-link">
-              5feet4
-            </Link>
-            . All Rights Reserved.
-          </p>
+            )
+          })}
         </div>
+      </section>
+
+      <div className="copyright-container">
+        <p className="copyright">
+          © 2026{' '}
+          <Link href="/" className="copyright-link">
+            5feet4
+          </Link>
+          . All Rights Reserved.
+        </p>
       </div>
     </>
   )
