@@ -6,12 +6,11 @@ import Link from 'next/link'
 
 export default function Gallery() {
   const [isMobile, setIsMobile] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(true) // Start as true to prevent hydration mismatch
+  const [isLoaded, setIsLoaded] = useState(true)
 
-  // Simulation of loading heavy assets
   useEffect(() => {
     const MIN_LOADING_TIME = 2500
-    setIsLoaded(false) // Only change on client side after mount
+    setIsLoaded(false)
 
     const timer = setTimeout(() => {
       setIsLoaded(true)
@@ -21,7 +20,6 @@ export default function Gallery() {
   }, [])
 
   useEffect(() => {
-    // Detect mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768)
     }
@@ -30,7 +28,6 @@ export default function Gallery() {
 
     if (!isLoaded) return
 
-    // Initialize AOS if available
     if (typeof window !== 'undefined' && window.AOS) {
       window.AOS.init({
         duration: 1200,
@@ -40,7 +37,6 @@ export default function Gallery() {
       })
     }
 
-    // Background Blur Logic
     const heroSection = document.querySelector('.hero-section')
     const updateBlur = () => {
       if (!heroSection) return
@@ -52,7 +48,6 @@ export default function Gallery() {
       }
     }
 
-    // Mobile center detection for overlays
     let centerObserver
     if (isMobile) {
       centerObserver = new IntersectionObserver(
@@ -76,7 +71,6 @@ export default function Gallery() {
       })
     }
 
-    // Scroll Listener
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
@@ -99,7 +93,6 @@ export default function Gallery() {
     }
   }, [isMobile, isLoaded])
 
-  // ✅ PERFECT URLs - Single quote is RAW (not encoded), spaces as %20
   const images = [
     {
       src: '/7.avif',
@@ -295,126 +288,313 @@ export default function Gallery() {
     },
   ]
 
+  // Build skeleton items mirroring the real grid exactly
+  // All images are 'horizontal' (span 2 cols on desktop 4-col grid)
+  // On desktop: 4 cols → horizontal = span 2 → 2 cards per row
+  // On tablet 1200px: 3 cols → horizontal = span 1
+  // On mobile 768px: horizontal = span 2 (full width)
+  const skeletonItems = images.map((img, i) => ({
+    type: img.type, // all 'horizontal'
+    index: i,
+  }))
+
   return (
     <>
       <style jsx>{`
         /* ===========================
-           AESTHETIC SKELETON STYLES 
+           SKELETON SHIMMER ENGINE
            =========================== */
 
-        .skeleton-block {
-          background-color: #0f0f0f;
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.7; }
+        }
+
+        @keyframes noiseDrift {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 100% 100%; }
+        }
+
+        /* Base skeleton block with shimmer */
+        .sk {
+          position: relative;
+          overflow: hidden;
+          border-radius: 4px;
+          background: #0d0d0d;
+        }
+
+        .sk::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            ellipse at 30% 50%,
+            rgba(255,255,255,0.03) 0%,
+            transparent 70%
+          );
+          animation: pulseGlow 3s ease-in-out infinite;
+          z-index: 1;
+        }
+
+        .sk::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(
+            105deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.025) 45%,
+            rgba(255, 255, 255, 0.06) 50%,
+            rgba(255, 255, 255, 0.025) 55%,
+            transparent 70%
+          );
+          animation: shimmer 2.8s ease-in-out infinite;
+          z-index: 2;
+        }
+
+        /* Staggered shimmer delays per card */
+        .sk-card:nth-child(1) .sk::after { animation-delay: 0s; }
+        .sk-card:nth-child(2) .sk::after { animation-delay: 0.15s; }
+        .sk-card:nth-child(3) .sk::after { animation-delay: 0.3s; }
+        .sk-card:nth-child(4) .sk::after { animation-delay: 0.45s; }
+        .sk-card:nth-child(5) .sk::after { animation-delay: 0.6s; }
+        .sk-card:nth-child(6) .sk::after { animation-delay: 0.75s; }
+        .sk-card:nth-child(7) .sk::after { animation-delay: 0.9s; }
+        .sk-card:nth-child(8) .sk::after { animation-delay: 1.05s; }
+        .sk-card:nth-child(9) .sk::after { animation-delay: 1.2s; }
+        .sk-card:nth-child(10) .sk::after { animation-delay: 1.35s; }
+        .sk-card:nth-child(11) .sk::after { animation-delay: 1.5s; }
+        .sk-card:nth-child(12) .sk::after { animation-delay: 1.65s; }
+
+        /* Hero skeleton */
+        .sk-hero {
+          position: relative;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          gap: 20px;
+          background: #080808;
+        }
+
+        .sk-hero-bg {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,255,255,0.015) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .sk-hero-line-1 {
+          width: clamp(280px, 30vw, 520px);
+          height: clamp(70px, 12vw, 160px);
+          border-radius: 16px;
+          background: linear-gradient(135deg, #111 0%, #161616 50%, #111 100%);
           position: relative;
           overflow: hidden;
         }
 
-        .skeleton-block::after {
+        .sk-hero-line-2 {
+          width: clamp(200px, 22vw, 380px);
+          height: clamp(70px, 12vw, 160px);
+          border-radius: 16px;
+          background: linear-gradient(135deg, #0e0e0e 0%, #141414 50%, #0e0e0e 100%);
+          position: relative;
+          overflow: hidden;
+          margin-left: clamp(-20px, -3vw, -60px);
+          align-self: flex-start;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Section header skeleton */
+        .sk-header {
+          text-align: center;
+          margin-bottom: 80px;
+        }
+
+        .sk-header-title {
+          width: clamp(140px, 15vw, 220px);
+          height: clamp(48px, 7vw, 80px);
+          border-radius: 10px;
+          background: #111;
+          margin: 0 auto 28px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .sk-header-p1 {
+          width: clamp(280px, 50vw, 600px);
+          height: 22px;
+          border-radius: 4px;
+          background: #0f0f0f;
+          margin: 0 auto 12px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .sk-header-p2 {
+          width: clamp(180px, 30vw, 380px);
+          height: 22px;
+          border-radius: 4px;
+          background: #0e0e0e;
+          margin: 0 auto;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* ==============================
+           SKELETON CARD — mirrors real gallery-item
+           ============================== */
+        .sk-card {
+          position: relative;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #0c0c0c;
+          border: 1px solid rgba(255,255,255,0.04);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.02),
+            0 10px 30px rgba(0,0,0,0.5),
+            inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+
+        /* Match real card type classes */
+        .sk-card.horizontal {
+          grid-column: span 2;
+        }
+
+        .sk-card.vertical {
+          grid-column: span 1;
+        }
+
+        /* The dark image area */
+        .sk-card-image {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          background:
+            linear-gradient(
+              160deg,
+              #0f0f0f 0%,
+              #111 40%,
+              #0d0d0d 60%,
+              #0f0f0f 100%
+            );
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* Subtle vignette on image area */
+        .sk-card-image::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse at 20% 80%, rgba(255,255,255,0.015) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.01) 0%, transparent 50%);
+          z-index: 1;
+          animation: pulseGlow 4s ease-in-out infinite alternate;
+        }
+
+        /* Shimmer on image area */
+        .sk-card-image::after {
           content: '';
           position: absolute;
           top: 0;
+          left: 0;
           right: 0;
           bottom: 0;
-          left: 0;
           transform: translateX(-100%);
-          background-image: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.05) 20%,
-            rgba(255, 255, 255, 0.09) 60%,
-            rgba(255, 255, 255, 0) 100%
+          background: linear-gradient(
+            105deg,
+            transparent 25%,
+            rgba(255,255,255,0.018) 40%,
+            rgba(255,255,255,0.055) 50%,
+            rgba(255,255,255,0.018) 60%,
+            transparent 75%
           );
-          animation: shimmer 2s infinite;
+          animation: shimmer 2.8s ease-in-out infinite;
+          z-index: 2;
         }
 
-        @keyframes shimmer {
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        /* Hero Text Skeleton */
-        .sk-hero-line {
-          height: clamp(70px, 12vw, 160px);
-          background: #111;
-          border-radius: 12px;
-          margin-bottom: 20px;
-        }
-        .sk-hero-line.top {
-          width: 25%;
-        }
-        .sk-hero-line.bot {
-          width: 20%;
-        }
-
-        @media (max-width: 768px) {
-          .sk-hero-line.top {
-            width: 90%;
-            height: 80px;
-          }
-          .sk-hero-line.bot {
-            width: 60%;
-            height: 60px;
-          }
-        }
-
-        /* Header Skeleton */
-        .sk-header-title {
-          width: 200px;
-          height: 60px;
-          margin: 0 auto 30px;
-          border-radius: 8px;
-          background: #111;
-        }
-        .sk-header-p {
-          width: 600px;
-          height: 24px;
-          margin: 0 auto 10px;
-          border-radius: 4px;
-          background: #161616;
-          max-width: 90%;
-        }
-
-        /* Image Card Skeleton */
-        .sk-image-card {
-          background: #121212;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+        /* Overlay bar at bottom of card */
+        .sk-card-overlay {
+          padding: 22px 26px 26px;
+          background: linear-gradient(
+            to top,
+            rgba(0,0,0,0.55) 0%,
+            transparent 100%
+          );
           position: relative;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 30px;
+          z-index: 3;
         }
 
-        .sk-overlay-title {
-          width: 50%;
-          height: 28px;
-          background: #1e1e1e;
-          border-radius: 4px;
-          margin-bottom: 12px;
+        .sk-card-title {
+          width: 42%;
+          height: 20px;
+          border-radius: 3px;
+          background: rgba(255,255,255,0.055);
+          margin-bottom: 10px;
+          position: relative;
+          overflow: hidden;
         }
 
-        .sk-overlay-desc {
-          width: 80%;
-          height: 16px;
-          background: #1e1e1e;
-          border-radius: 4px;
+        .sk-card-desc {
+          width: 68%;
+          height: 14px;
+          border-radius: 3px;
+          background: rgba(255,255,255,0.035);
+          position: relative;
+          overflow: hidden;
         }
 
-        /* Loading Wrappers */
+        /* Shimmer on text bars */
+        .sk-card-title::after,
+        .sk-card-desc::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(
+            90deg,
+            transparent 20%,
+            rgba(255,255,255,0.07) 50%,
+            transparent 80%
+          );
+          animation: shimmer 2.8s ease-in-out infinite;
+        }
+
+        /* Stagger delays on image areas per card index */
+        .sk-card:nth-child(even) .sk-card-image::after { animation-delay: 0.4s; }
+        .sk-card:nth-child(3n) .sk-card-image::after { animation-delay: 0.8s; }
+        .sk-card:nth-child(4n) .sk-card-image::after { animation-delay: 1.2s; }
+        .sk-card:nth-child(5n) .sk-card-image::after { animation-delay: 1.6s; }
+        .sk-card:nth-child(6n) .sk-card-image::after { animation-delay: 2s; }
+
+        /* Loading wrappers */
         .skeleton-wrapper {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           z-index: 50;
-          transition: opacity 0.6s ease-out, visibility 0.6s;
+          transition: opacity 0.7s ease-out, visibility 0.7s;
           opacity: 1;
           visibility: visible;
           pointer-events: auto;
+          background: #080808;
+          min-height: 100vh;
         }
+
         .skeleton-wrapper.hidden {
           opacity: 0;
           visibility: hidden;
@@ -424,8 +604,9 @@ export default function Gallery() {
         .content-wrapper {
           opacity: 1;
           visibility: visible;
-          transition: opacity 0.8s ease-in;
+          transition: opacity 0.9s ease-in 0.1s;
         }
+
         .content-wrapper.loading {
           opacity: 0;
           visibility: hidden;
@@ -433,7 +614,7 @@ export default function Gallery() {
         }
 
         /* ===========================
-           MAIN STYLES
+           MAIN STYLES (unchanged)
            =========================== */
 
         :global(body.blur-active .background-video) {
@@ -494,14 +675,8 @@ export default function Gallery() {
         }
 
         @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         #gallery-section {
@@ -535,16 +710,13 @@ export default function Gallery() {
           color: #fff;
         }
 
-        /* ============================================
-           DESKTOP GRID - 4 cols for vertical, 2 for horizontal
-           ============================================ */
         .gallery-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 20px;
           max-width: 1600px;
           margin: 0 auto;
-          auto-flow: dense;
+          grid-auto-flow: dense;
         }
 
         .gallery-item {
@@ -566,7 +738,6 @@ export default function Gallery() {
           grid-column: span 2;
         }
 
-        /* Image wrapper to maintain aspect ratio */
         .gallery-image-wrapper {
           position: relative;
           width: 100%;
@@ -633,7 +804,6 @@ export default function Gallery() {
           color: #fff;
         }
 
-        /* Footer / Copyright Styles */
         .copyright-container {
           width: 100%;
           padding: 60px 20px;
@@ -686,82 +856,134 @@ export default function Gallery() {
           transform: translateY(-1px);
         }
 
-        /* ============================================
-           TABLET BREAKPOINT - 3 columns
-           ============================================ */
+        /* ============ SKELETON RESPONSIVE ============ */
+
+        /* Skeleton grid mirrors exact same breakpoints as real grid */
+        .sk-gallery-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+          max-width: 1600px;
+          margin: 0 auto;
+          grid-auto-flow: dense;
+        }
+
+        .sk-gallery-grid .sk-card.horizontal {
+          grid-column: span 2;
+        }
+
+        .sk-gallery-grid .sk-card.vertical {
+          grid-column: span 1;
+        }
+
+        /* Skeleton section padding mirrors real section */
+        .sk-gallery-section {
+          padding: 120px 40px;
+        }
+
+        @media (max-width: 1200px) {
+          .sk-gallery-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+          }
+          .sk-gallery-grid .sk-card.horizontal {
+            grid-column: span 1;
+          }
+          .sk-gallery-grid .sk-card.vertical {
+            grid-column: span 1;
+          }
+        }
+
+        @media (max-width: 1024px) {
+          .sk-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+          }
+          .sk-gallery-grid .sk-card.horizontal {
+            grid-column: span 1;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .sk-gallery-section {
+            padding: 100px 20px;
+          }
+          .sk-gallery-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+          .sk-gallery-grid .sk-card.horizontal {
+            grid-column: span 2;
+          }
+          .sk-card-image {
+            aspect-ratio: 16 / 9;
+          }
+          .sk-hero-line-1,
+          .sk-hero-line-2 {
+            width: 85%;
+            height: 80px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .sk-hero-line-2 {
+            width: 60%;
+            height: 65px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .sk-gallery-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+          .sk-gallery-grid .sk-card.horizontal {
+            grid-column: span 1;
+          }
+          .sk-card-image {
+            aspect-ratio: 16 / 9;
+          }
+        }
+
+        /* ============ REAL GRID RESPONSIVE ============ */
+
         @media (max-width: 1200px) {
           .gallery-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: 18px;
           }
-
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
+          .gallery-item.horizontal { grid-column: span 1; }
+          .gallery-item.vertical { grid-column: span 1; }
         }
 
-        /* ============================================
-           TABLET/SMALL DEVICE - 2 columns with aspect ratios
-           ============================================ */
         @media (max-width: 1024px) {
           .gallery-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
           }
-
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
+          .gallery-item.horizontal { grid-column: span 1; }
+          .gallery-item.vertical { grid-column: span 1; }
         }
 
-        /* ============================================
-           MOBILE BREAKPOINT - Optimized for all aspect ratios
-           ============================================ */
         @media (max-width: 768px) {
-          .hero-title {
-            font-size: 110px;
-          }
+          .hero-title { font-size: 110px; }
 
-          #gallery-section {
-            padding: 100px 20px;
-          }
+          #gallery-section { padding: 100px 20px; }
 
           .gallery-grid {
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            auto-flow: auto;
+            grid-auto-flow: auto;
           }
 
-          .gallery-item.horizontal {
-            grid-column: span 2;
-          }
+          .gallery-item.horizontal { grid-column: span 2; }
+          .gallery-item.vertical { grid-column: span 1; }
 
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
-
-          /* Responsive height calculation for mobile */
           .gallery-item {
             min-height: auto;
           }
+          .gallery-item.vertical { aspect-ratio: 9 / 12; }
+          .gallery-item.horizontal { aspect-ratio: 16 / 9; }
 
-          .gallery-item.vertical {
-            aspect-ratio: 9 / 12;
-          }
-
-          .gallery-item.horizontal {
-            aspect-ratio: 16 / 9;
-          }
-
-          /* Mobile overlay animation */
           .gallery-overlay {
             opacity: 0;
             transform: translateY(25px);
@@ -773,95 +995,44 @@ export default function Gallery() {
             animation: fadeInUpBottom 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
 
-          .copyright-container {
-            padding: 40px 20px;
-          }
-          .copyright {
-            font-size: 12px;
-            text-align: center;
-          }
+          .copyright-container { padding: 40px 20px; }
+          .copyright { font-size: 12px; text-align: center; }
 
           @keyframes fadeInUpBottom {
-            from {
-              opacity: 0;
-              transform: translateY(25px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         }
 
-        /* ============================================
-           SMALL MOBILE - Single column with proper spacing
-           ============================================ */
         @media (max-width: 480px) {
-          .hero-title {
-            font-size: 68px;
-          }
-
-          .section-header h2 {
-            font-size: 42px;
-          }
+          .hero-title { font-size: 68px; }
+          .section-header h2 { font-size: 42px; }
 
           .gallery-grid {
             grid-template-columns: 1fr;
             gap: 10px;
           }
 
-          .gallery-item.horizontal {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            grid-column: span 1;
-          }
-
-          .gallery-item.vertical {
-            aspect-ratio: 9 / 12;
-          }
-
-          .gallery-item.horizontal {
-            aspect-ratio: 16 / 9;
-          }
+          .gallery-item.horizontal { grid-column: span 1; }
+          .gallery-item.vertical { grid-column: span 1; }
+          .gallery-item.vertical { aspect-ratio: 9 / 12; }
+          .gallery-item.horizontal { aspect-ratio: 16 / 9; }
 
           .gallery-overlay {
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;   
-            padding: 20px 20px 5px;  
+            justify-content: flex-end;
+            padding: 20px 20px 5px;
           }
-
-          .gallery-overlay h3 {
-            font-size: 13px;
-          }
-
-          .gallery-overlay p {
-            font-size: 11px;
-          }
+          .gallery-overlay h3 { font-size: 13px; }
+          .gallery-overlay p { font-size: 11px; }
         }
 
-        /* ============================================
-           EXTRA SMALL - Optimize for very small phones
-           ============================================ */
         @media (max-width: 360px) {
-          .gallery-grid {
-            gap: 8px;
-          }
-
-          .gallery-overlay {
-            padding: 20px 15px;
-          }
-
-          .gallery-overlay h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
-          }
-
-          .gallery-overlay p {
-            font-size: 12px;
-          }
+          .gallery-grid { gap: 8px; }
+          .gallery-overlay { padding: 20px 15px; }
+          .gallery-overlay h3 { font-size: 18px; margin-bottom: 5px; }
+          .gallery-overlay p { font-size: 12px; }
         }
       `}</style>
 
@@ -869,30 +1040,38 @@ export default function Gallery() {
           SKELETON LOADER
           ======================= */}
       <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-        {/* Hero Skeleton */}
-        <section className="hero-section">
-          <div className="skeleton-block sk-hero-line top"></div>
-          <div className="skeleton-block sk-hero-line bot"></div>
-        </section>
 
-        {/* Gallery Grid Skeleton */}
-        <section id="gallery-section">
-          <div className="section-header">
-            <div className="skeleton-block sk-header-title"></div>
-            <div className="skeleton-block sk-header-p"></div>
-            <div className="skeleton-block sk-header-p" style={{ width: '400px' }}></div>
+        {/* Hero Skeleton */}
+        <div className="sk-hero">
+          <div className="sk-hero-bg" />
+          <div className="sk sk-hero-line-1" />
+          <div className="sk sk-hero-line-2" />
+        </div>
+
+        {/* Gallery Skeleton */}
+        <div className="sk-gallery-section">
+          {/* Section header */}
+          <div className="sk-header">
+            <div className="sk sk-header-title" />
+            <div className="sk sk-header-p1" />
+            <div className="sk sk-header-p2" />
           </div>
 
-          <div className="gallery-grid">
-            {/* Desktop view skeletons */}
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="skeleton-block sk-image-card">
-                <div className="skeleton-block sk-overlay-title"></div>
-                <div className="skeleton-block sk-overlay-desc"></div>
+          {/* Grid — exact same structure as real gallery */}
+          <div className="sk-gallery-grid">
+            {skeletonItems.map((item, i) => (
+              <div key={i} className={`sk-card ${item.type}`}>
+                {/* Image area */}
+                <div className="sk-card-image" />
+                {/* Overlay text area */}
+                <div className="sk-card-overlay">
+                  <div className="sk-card-title" />
+                  <div className="sk-card-desc" />
+                </div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
       </div>
 
       {/* =======================
