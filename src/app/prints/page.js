@@ -6,7 +6,6 @@ import Link from 'next/link'
 
 export default function Gallery() {
   const [isMobile, setIsMobile] = useState(false)
-  // FIX 1: Initialize isLoaded as false to match server render (skeleton shown by default)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -351,29 +350,26 @@ export default function Gallery() {
       <style jsx>{`
 
         /* ============================================
-           SKELETON KEYFRAMES
+           SHIMMER KEYFRAMES
            ============================================ */
-        @keyframes skPulse {
-          0%, 100% { opacity: 0.5; }
-          50%       { opacity: 1; }
-        }
-        @keyframes skShine {
+        @keyframes shimmer {
           0%   { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
         }
 
         /* ============================================
-           SKELETON WRAPPER — covers full viewport
+           SKELETON WRAPPER — position absolute pattern
            ============================================ */
         .skeleton-wrapper {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          overflow-y: auto;
-          background: #000;
-          transition: opacity 0.7s ease-out, visibility 0.7s;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 50;
+          transition: opacity 0.6s ease-out, visibility 0.6s;
           opacity: 1;
           visibility: visible;
+          pointer-events: auto;
         }
         .skeleton-wrapper.hidden {
           opacity: 0;
@@ -382,9 +378,33 @@ export default function Gallery() {
         }
 
         /* ============================================
-           SKELETON HERO
+           SKELETON BASE — shimmer effect
            ============================================ */
-        .sk-hero {
+        .sk-block {
+          background-color: #0f0f0f;
+          position: relative;
+          overflow: hidden;
+        }
+        .sk-block::after {
+          content: '';
+          position: absolute;
+          top: 0; right: 0; bottom: 0; left: 0;
+          transform: translateX(-100%);
+          background-image: linear-gradient(
+            90deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.08) 20%,
+            rgba(255,255,255,0.12) 60%,
+            rgba(255,255,255,0) 100%
+          );
+          animation: shimmer 2s infinite;
+        }
+
+        /* ============================================
+           HERO SKELETON
+           ============================================ */
+        .sk-hero-section {
+          position: relative;
           height: 100vh;
           display: flex;
           flex-direction: column;
@@ -394,44 +414,20 @@ export default function Gallery() {
           padding: 40px;
         }
         .sk-hero-line {
-          border-radius: 14px;
-          background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255,255,255,0.05);
-          position: relative;
-          overflow: hidden;
-          animation: skPulse 2.2s ease-in-out infinite;
+          border-radius: 12px;
+          background: #111;
+          height: clamp(60px, 10vw, 140px);
         }
-        .sk-hero-line::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            105deg,
-            transparent 25%,
-            rgba(255,255,255,0.06) 50%,
-            transparent 75%
-          );
-          animation: skShine 2.6s ease-in-out infinite;
-        }
-        .sk-hero-line.title {
-          width: clamp(280px, 38vw, 620px);
-          height: clamp(70px, 12vw, 155px);
-        }
-        .sk-hero-line.sub {
-          width: clamp(160px, 22vw, 360px);
-          height: clamp(50px, 8vw, 110px);
-          animation-delay: 0.35s;
-        }
+        .sk-hero-line.line1 { width: 37%; }
+        .sk-hero-line.line2 { width: 40%; }
 
         /* ============================================
-           SKELETON GALLERY SECTION
+           GALLERY SECTION SKELETON
            ============================================ */
         .sk-gallery-section {
           padding: 120px 40px;
+          background: transparent;
         }
-
         .sk-section-header {
           text-align: center;
           margin-bottom: 80px;
@@ -441,14 +437,10 @@ export default function Gallery() {
           gap: 16px;
         }
         .sk-heading {
-          width: clamp(160px, 20vw, 280px);
-          height: clamp(48px, 6vw, 72px);
+          width: clamp(200px, 25vw, 350px);
+          height: clamp(50px, 7vw, 90px);
           border-radius: 10px;
-          background: rgba(255,255,255,0.07);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255,255,255,0.06);
-          animation: skPulse 2.2s ease-in-out infinite;
+          background: #111;
           position: relative;
           overflow: hidden;
         }
@@ -456,26 +448,34 @@ export default function Gallery() {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
-          animation: skShine 2.6s ease-in-out infinite;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+          animation: shimmer 2.2s ease-in-out infinite;
         }
         .sk-subtext {
-          width: clamp(260px, 50vw, 700px);
-          height: 22px;
+          width: clamp(250px, 50vw, 700px);
+          height: 18px;
           border-radius: 6px;
-          background: rgba(255,255,255,0.05);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.04);
-          animation: skPulse 2.2s ease-in-out infinite 0.2s;
+          background: #0d0d0d;
+          position: relative;
+          overflow: hidden;
           max-width: 90vw;
         }
+        .sk-subtext::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+          animation: shimmer 2.2s ease-in-out infinite 0.15s;
+        }
         .sk-subtext.short {
-          width: clamp(160px, 28vw, 420px);
-          animation-delay: 0.45s;
+          width: clamp(180px, 30vw, 450px);
+          animation-delay: 0.3s;
         }
 
         /* ============================================
-           SKELETON GRID
+           GALLERY GRID SKELETON
            ============================================ */
         .sk-grid {
           display: grid;
@@ -487,78 +487,146 @@ export default function Gallery() {
 
         .sk-card {
           border-radius: 16px;
-          background: rgba(10,10,10,0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: #0a0a0a;
+          border: 1px solid rgba(255,255,255,0.05);
           position: relative;
           overflow: hidden;
-          animation: skPulse 2.2s ease-in-out infinite;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
         .sk-card::after {
           content: '';
           position: absolute;
           inset: 0;
+          transform: translateX(-100%);
           background: linear-gradient(
-            115deg,
-            transparent 20%,
-            rgba(255,255,255,0.05) 50%,
-            transparent 80%
+            90deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.08) 50%,
+            rgba(255,255,255,0) 100%
           );
-          animation: skShine 3s ease-in-out infinite;
+          animation: shimmer 2.4s ease-in-out infinite;
         }
-
-        .sk-card-bars {
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          padding: 28px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          z-index: 2;
-        }
-        .sk-bar {
-          border-radius: 5px;
-          background: rgba(255,255,255,0.07);
-        }
-        .sk-bar.title-bar { height: 20px; width: 52%; }
-        .sk-bar.desc-bar  { height: 13px; width: 76%; }
 
         .sk-card.horizontal {
           grid-column: span 2;
-          aspect-ratio: 4 / 5;
+          aspect-ratio: 16 / 10;
         }
         .sk-card.vertical {
           grid-column: span 1;
           aspect-ratio: 9 / 12;
         }
 
-        /* FIX 3: Center skeleton — same gap behavior as real grid items */
+        /* Center card row */
         .sk-center-row {
           grid-column: 1 / -1;
           display: flex;
           justify-content: center;
           align-items: center;
-          /* No extra padding/margin — gap from the grid handles spacing uniformly */
         }
         .sk-center-card {
           width: 50%;
-          aspect-ratio: 4 / 5;
+          aspect-ratio: 16 / 10;
           border-radius: 16px;
-          background: rgba(10,10,10,0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: #0a0a0a;
+          border: 1px solid rgba(255,255,255,0.05);
           position: relative;
           overflow: hidden;
-          animation: skPulse 2.2s ease-in-out infinite;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
         .sk-center-card::after {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
-          animation: skShine 3s ease-in-out infinite;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+          animation: shimmer 2.4s ease-in-out infinite;
+        }
+
+        /* Stagger animation delays */
+        .sk-card:nth-child(1)::after { animation-delay: 0s; }
+        .sk-card:nth-child(2)::after { animation-delay: 0.1s; }
+        .sk-card:nth-child(3)::after { animation-delay: 0.2s; }
+        .sk-card:nth-child(4)::after { animation-delay: 0.3s; }
+        .sk-card:nth-child(5)::after { animation-delay: 0.4s; }
+        .sk-card:nth-child(6)::after { animation-delay: 0.5s; }
+        .sk-card:nth-child(7)::after { animation-delay: 0.6s; }
+
+        /* ============================================
+           FOOTER SKELETON
+           ============================================ */
+        .sk-footer {
+          padding: 60px 20px;
+          display: flex;
+          justify-content: center;
+          border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .sk-footer-line {
+          width: 250px;
+          height: 14px;
+          border-radius: 4px;
+          background: #111;
+          position: relative;
+          overflow: hidden;
+        }
+        .sk-footer-line::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+          animation: shimmer 2.2s ease-in-out infinite;
+        }
+
+        /* ============================================
+           RESPONSIVE SKELETON
+           ============================================ */
+        @media (max-width: 1200px) {
+          .sk-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+          .sk-card.horizontal { grid-column: span 1; aspect-ratio: 9 / 10; }
+          .sk-card.vertical { grid-column: span 1; aspect-ratio: 9 / 12; }
+          .sk-center-card { width: 55%; }
+        }
+
+        @media (max-width: 1024px) {
+          .sk-gallery-section { padding: 100px 24px; }
+          .sk-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .sk-card.horizontal { grid-column: span 1; aspect-ratio: 1 / 1; }
+          .sk-center-card { width: 60%; }
+        }
+
+        @media (max-width: 768px) {
+          .sk-gallery-section { padding: 100px 20px; }
+          .sk-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+          .sk-card.horizontal { grid-column: span 2; aspect-ratio: 16 / 9; }
+          .sk-card.vertical { grid-column: span 1; aspect-ratio: 9 / 12; }
+          .sk-center-row { grid-column: span 2; }
+          .sk-center-card { width: 100%; aspect-ratio: 16 / 9; }
+          .sk-hero-line.line1 { width: 80%; height: 80px; }
+          .sk-hero-line.line2 { width: 55%; height: 60px; }
+        }
+
+        @media (max-width: 480px) {
+          .sk-gallery-section { padding: 60px 16px; }
+          .sk-grid { grid-template-columns: 1fr; gap: 10px; }
+          .sk-card.horizontal { grid-column: 1; aspect-ratio: 16 / 9; }
+          .sk-card.vertical { grid-column: 1; aspect-ratio: 9 / 16; }
+          .sk-center-row { grid-column: 1; }
+          .sk-center-card { width: 100%; aspect-ratio: 16 / 9; }
+          .sk-hero-line { height: 60px; }
+          .sk-hero-line.line1 { width: 85%; }
+          .sk-hero-line.line2 { width: 60%; }
+        }
+
+        /* ============================================
+           CONTENT WRAPPER — fade in on load
+           ============================================ */
+        .content-wrapper {
+          opacity: 0;
+          transition: opacity 0.8s ease-in;
+          position: relative;
+        }
+        .content-wrapper.loaded {
+          opacity: 1;
         }
 
         /* ============================================
@@ -643,8 +711,6 @@ export default function Gallery() {
 
         /* ============================================
            REAL GALLERY GRID
-           FIX 3: Uniform gap — all item types use the same gap value.
-           Center items sit inside the grid flow, no extra margins.
            ============================================ */
         .gallery-grid {
           display: grid;
@@ -710,8 +776,7 @@ export default function Gallery() {
           color: #fff;
         }
 
-        /* CENTER type — full grid row, card centered at 50% width.
-           The grid gap naturally separates it from adjacent rows. */
+        /* CENTER type — full grid row, card centered at 50% width. */
         .gallery-item.center {
           grid-column: 1 / -1;
           display: flex;
@@ -799,13 +864,10 @@ export default function Gallery() {
            ============================================ */
         @media (max-width: 1200px) {
           .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
-          .sk-grid      { grid-template-columns: repeat(3, 1fr); gap: 18px; }
           .gallery-item.horizontal { grid-column: span 1; }
           .gallery-item.vertical   { grid-column: span 1; }
           .gallery-item.center     { grid-column: 1 / -1; }
           .gallery-item.center .center-inner { width: 55%; }
-          .sk-card.horizontal { grid-column: span 1; }
-          .sk-center-card { width: 55%; }
         }
 
         /* ============================================
@@ -813,21 +875,16 @@ export default function Gallery() {
            ============================================ */
         @media (max-width: 1024px) {
           .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .sk-grid      { grid-template-columns: repeat(2, 1fr); gap: 16px; }
           .gallery-item.horizontal { grid-column: span 1; }
           .gallery-item.vertical   { grid-column: span 1; }
           .gallery-item.center     { grid-column: 1 / -1; }
           .gallery-item.center .center-inner { width: 60%; }
-          .sk-card.horizontal { grid-column: span 1; }
-          .sk-center-card { width: 60%; }
         }
 
         /* ============================================
            MOBILE — 2-col, center full width
            ============================================ */
         @media (max-width: 768px) {
-          /* Keep mix-blend-mode: difference working on mobile — add a subtle
-             radial glow behind the hero so the blend has contrast to invert against */
           .hero-section::before {
             content: '';
             position: absolute;
@@ -839,16 +896,12 @@ export default function Gallery() {
           .hero-title { font-size: 110px; }
 
           #gallery-section    { padding: 100px 20px; }
-          .sk-gallery-section { padding: 100px 20px; }
 
-          /* FIX 3: Same gap (12px) for all item types on mobile */
           .gallery-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-          .sk-grid      { grid-template-columns: 1fr 1fr; gap: 12px; }
 
           .gallery-item.horizontal { grid-column: span 2; aspect-ratio: 16 / 9; }
           .gallery-item.vertical   { grid-column: span 1; aspect-ratio: 9 / 12; }
 
-          /* Center becomes a normal full-width card — same gap applies automatically */
           .gallery-item.center {
             grid-column: span 2;
             display: block;
@@ -871,41 +924,6 @@ export default function Gallery() {
             transform: none !important;
           }
 
-          .sk-card.horizontal { grid-column: span 2; aspect-ratio: 16 / 9; }
-          .sk-card.vertical   { grid-column: span 1; aspect-ratio: 9 / 12; }
-
-          /* FIX 3: sk-center-row on mobile is a plain grid card — same gap */
-          .sk-center-row {
-            grid-column: span 2;
-            display: block;
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 16 / 9;
-            background: rgba(10,10,10,0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.07);
-            animation: skPulse 2.2s ease-in-out infinite;
-            position: relative;
-          }
-          .sk-center-row::after {
-            display: block;
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
-            animation: skShine 3s ease-in-out infinite;
-          }
-          .sk-center-card {
-            width: 100%;
-            aspect-ratio: unset;
-            height: 100%;
-            border-radius: 0;
-            border: none;
-            background: transparent;
-            animation: none;
-          }
-          .sk-center-card::after { display: none; }
-
           .gallery-overlay {
             opacity: 0;
             transform: translateY(25px);
@@ -925,7 +943,6 @@ export default function Gallery() {
 
           .copyright-container { padding: 40px 20px; gap: 20px; }
           .copyright { font-size: 12px; text-align: center; }
-          .sk-hero { padding: 20px; }
         }
 
         /* ============================================
@@ -936,19 +953,13 @@ export default function Gallery() {
           .section-header h2 { font-size: 42px; }
 
           .gallery-grid { grid-template-columns: 1fr; gap: 10px; }
-          .sk-grid      { grid-template-columns: 1fr; gap: 10px; }
 
-          /* FIX 3: All types collapse to single column with same gap */
           .gallery-item.horizontal,
           .gallery-item.vertical,
           .gallery-item.center { grid-column: span 1; }
           .gallery-item.vertical   { aspect-ratio: 9 / 12; }
           .gallery-item.horizontal,
           .gallery-item.center     { aspect-ratio: 16 / 9; }
-
-          .sk-card.horizontal,
-          .sk-card.vertical { grid-column: span 1; }
-          .sk-center-row { grid-column: span 1; }
 
           .gallery-overlay {
             display: flex;
@@ -962,131 +973,142 @@ export default function Gallery() {
 
         @media (max-width: 360px) {
           .gallery-grid { gap: 8px; }
-          .sk-grid      { gap: 8px; }
           .gallery-overlay { padding: 20px 15px; }
           .gallery-overlay h3 { font-size: 18px; margin-bottom: 5px; }
           .gallery-overlay p  { font-size: 12px; }
         }
       `}</style>
 
-      {/* SKELETON LOADER */}
-      <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-        <div className="sk-hero">
-          <div className="sk-hero-line title" />
-          <div className="sk-hero-line sub" />
-        </div>
+      {/* ════════════════════════════════════════
+          SKELETON LOADER — absolute positioning
+          Scrolls with page, fades out on load
+          Pattern from ads.jsx
+      ════════════════════════════════════════ */}
+      <div style={{ position: 'relative' }}>
+        <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
 
-        <div className="sk-gallery-section">
-          <div className="sk-section-header">
-            <div className="sk-heading" />
-            <div className="sk-subtext" />
-            <div className="sk-subtext short" />
+          {/* HERO SKELETON */}
+          <section className="sk-hero-section">
+            <div className="sk-block sk-hero-line line1" />
+            <div className="sk-block sk-hero-line line2" />
+          </section>
+
+          {/* GALLERY SECTION SKELETON */}
+          <div className="sk-gallery-section">
+            <div className="sk-section-header">
+              <div className="sk-block sk-heading" />
+              <div className="sk-block sk-subtext" />
+              <div className="sk-block sk-subtext short" />
+            </div>
+
+            {/* GRID SKELETON — mirrors real layout */}
+            <div className="sk-grid">
+              {images.map((img, i) => {
+                if (img.type === 'center') {
+                  return (
+                    <div key={i} className="sk-center-row">
+                      <div className="sk-block sk-center-card" style={{ animationDelay: `${(i % 5) * 0.12}s` }} />
+                    </div>
+                  )
+                }
+                return (
+                  <div
+                    key={i}
+                    className={`sk-block sk-card ${img.type}`}
+                    style={{ animationDelay: `${(i % 5) * 0.12}s` }}
+                  />
+                )
+              })}
+            </div>
           </div>
 
-          <div className="sk-grid">
-            {images.map((img, i) => {
-              if (img.type === 'center') {
-                return (
-                  <div key={i} className="sk-center-row" style={{ animationDelay: `${(i % 5) * 0.15}s` }}>
-                    <div className="sk-center-card">
-                      <div className="sk-card-bars">
-                        <div className="sk-bar title-bar" />
-                        <div className="sk-bar desc-bar" />
+          {/* FOOTER SKELETON */}
+          <div className="sk-footer">
+            <div className="sk-block sk-footer-line" />
+          </div>
+
+        </div>
+
+        {/* ════════════════════════════════════════
+            REAL CONTENT — fades in on load
+        ════════════════════════════════════════ */}
+        <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
+
+          <section className="hero-section">
+            <div className="hero-content">
+              <h1 className="hero-title">
+                Prints & <br />
+                banners
+              </h1>
+            </div>
+          </section>
+
+          <section id="gallery-section">
+            <div className="section-header">
+              <h2>Our Work</h2>
+              <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
+            </div>
+
+            <div className="gallery-grid">
+              {images.map((image, index) => {
+                if (image.type === 'center') {
+                  return (
+                    <div key={index} className="gallery-item center">
+                      <div className="center-inner">
+                        <Image
+                          src={image.src}
+                          alt={image.title}
+                          width={image.width}
+                          height={image.height}
+                          priority
+                          quality={100}
+                          unoptimized
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div className="gallery-overlay">
+                          <h3>{image.title}</h3>
+                          <p>{image.desc}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              }
-              return (
-                <div
-                  key={i}
-                  className={`sk-card ${img.type}`}
-                  style={{ animationDelay: `${(i % 5) * 0.15}s` }}
-                >
-                  <div className="sk-card-bars">
-                    <div className="sk-bar title-bar" />
-                    <div className="sk-bar desc-bar" />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
+                  )
+                }
 
-      {/* REAL CONTENT */}
-      <section className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Prints & <br />
-            banners
-          </h1>
-        </div>
-      </section>
-
-      <section id="gallery-section">
-        <div className="section-header">
-          <h2>Our Work</h2>
-          <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
-        </div>
-
-        <div className="gallery-grid">
-          {images.map((image, index) => {
-            if (image.type === 'center') {
-              return (
-                <div key={index} className="gallery-item center">
-                  <div className="center-inner">
-                    <Image
-                      src={image.src}
-                      alt={image.title}
-                      width={image.width}
-                      height={image.height}
-                      priority
-                      quality={100}
-                      unoptimized
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                return (
+                  <div key={index} className={`gallery-item ${image.type}`}>
+                    <div className="gallery-image-wrapper">
+                      <Image
+                        src={image.src}
+                        alt={image.title}
+                        width={image.width}
+                        height={image.height}
+                        priority
+                        quality={100}
+                        unoptimized
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
                     <div className="gallery-overlay">
                       <h3>{image.title}</h3>
                       <p>{image.desc}</p>
                     </div>
                   </div>
-                </div>
-              )
-            }
+                )
+              })}
+            </div>
+          </section>
 
-            return (
-              <div key={index} className={`gallery-item ${image.type}`}>
-                <div className="gallery-image-wrapper">
-                  <Image
-                    src={image.src}
-                    alt={image.title}
-                    width={image.width}
-                    height={image.height}
-                    priority
-                    quality={100}
-                    unoptimized
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </div>
-                <div className="gallery-overlay">
-                  <h3>{image.title}</h3>
-                  <p>{image.desc}</p>
-                </div>
-              </div>
-            )
-          })}
+          <div className="copyright-container">
+            <p className="copyright">
+              © 2026{' '}
+              <Link href="/" className="copyright-link">
+                5feet4
+              </Link>
+              . All Rights Reserved.
+            </p>
+          </div>
+
         </div>
-      </section>
-
-      <div className="copyright-container">
-        <p className="copyright">
-          © 2026{' '}
-          <Link href="/" className="copyright-link">
-            5feet4
-          </Link>
-          . All Rights Reserved.
-        </p>
       </div>
     </>
   )

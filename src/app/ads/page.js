@@ -232,8 +232,8 @@ export default function Ads() {
           background: #111;
           height: clamp(60px, 10vw, 140px);
         }
-        .sk-hero-line.line1 { width: 55%; }
-        .sk-hero-line.line2 { width: 35%; }
+        .sk-hero-line.line1 { width: 40%; }
+        .sk-hero-line.line2 { width: 37%; }
 
         /* Work section skeleton */
         .sk-work-section {
