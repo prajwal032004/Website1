@@ -764,58 +764,6 @@ export default function Gallery() {
           z-index: 100;
         }
 
-        /* Instagram button */
-        .instagram-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0px;
-          text-decoration: none;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 50px;
-          padding: 12px 18px;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-          overflow: hidden;
-          max-width: 52px;
-          cursor: pointer;
-          color: #fff;
-        }
-        .instagram-link:hover {
-          max-width: 220px;
-          gap: 10px;
-          background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
-          border-color: transparent;
-          padding: 12px 22px;
-          box-shadow: 0 8px 32px rgba(253, 29, 29, 0.35);
-        }
-        .instagram-icon {
-          flex-shrink: 0;
-          width: 26px;
-          height: 26px;
-          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .instagram-link:hover .instagram-icon {
-          transform: rotate(-10deg) scale(1.1);
-        }
-        .instagram-text {
-          font-size: 15px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          white-space: nowrap;
-          opacity: 0;
-          transform: translateX(-8px);
-          transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s;
-          overflow: hidden;
-          max-width: 0;
-        }
-        .instagram-link:hover .instagram-text {
-          opacity: 1;
-          transform: translateX(0);
-          max-width: 160px;
-        }
-
         .copyright {
           font-size: 14px;
           color: rgba(255,255,255,0.9);
@@ -1132,21 +1080,6 @@ export default function Gallery() {
       </section>
 
       <div className="copyright-container">
-        <a
-          href="https://www.instagram.com/5feet4.in/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="instagram-link"
-          aria-label="Follow us on Instagram"
-        >
-          {/* Instagram SVG icon */}
-          <svg className="instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5" stroke="white" strokeWidth="2" fill="none" />
-            <circle cx="12" cy="12" r="4.5" stroke="white" strokeWidth="2" fill="none" />
-            <circle cx="17.5" cy="6.5" r="1.2" fill="white" />
-          </svg>
-          <span className="instagram-text">Instagram</span>
-        </a>
         <p className="copyright">
           © 2026{' '}
           <Link href="/" className="copyright-link">

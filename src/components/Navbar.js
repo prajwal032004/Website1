@@ -46,7 +46,7 @@ export default function Navbar() {
                 }
 
                 .logo {
-                    height: 70px;
+                    height: 100px;
                     width: auto;
                     transition: opacity 0.3s ease;
                     cursor: pointer;
@@ -181,7 +181,7 @@ export default function Navbar() {
                     <Link href="/">
                         <img
                             className="logo"
-                            src="/logo.png"
+                            src="/logov2.png"
                             alt="5feet4 Studio"
                         />
                     </Link>

@@ -245,7 +245,7 @@ export default function Home() {
         .contact-subtitle,
         .contact-email,
         .divider-line,
-        .copyright {
+        .copyright-container {
           opacity: 0;
           transform: translateY(24px);
           transition: opacity 0.7s ease-out, transform 0.7s ease-out;
@@ -254,7 +254,7 @@ export default function Home() {
         .main-container.visible .contact-subtitle    { opacity: 1; transform: translateY(0); transition-delay: 0.28s; }
         .main-container.visible .contact-email       { opacity: 1; transform: translateY(0); transition-delay: 0.40s; }
         .main-container.visible .divider-line        { opacity: 1; transform: translateY(0); transition-delay: 0.52s; }
-        .main-container.visible .copyright           { opacity: 1; transform: translateY(0); transition-delay: 0.62s; }
+        .main-container.visible .copyright-container { opacity: 1; transform: translateY(0); transition-delay: 0.62s; }
 
         /* ---- HERO ---- */
         .hero-section {
@@ -441,7 +441,7 @@ export default function Home() {
         .float-img:nth-child(1) { width: 119px; height: 119px; left: 43.6%; top: 24%;   animation: floatIn 0.9s ease-out 0.1s forwards, float 4.0s ease-in-out 1.0s infinite; }
         .float-img:nth-child(2) { width: 137px; height: 137px; left: 69.2%; top: 27.8%; animation: floatIn 0.9s ease-out 0.2s forwards, float 4.3s ease-in-out 1.1s infinite; }
         .float-img:nth-child(3) { width: 156px; height: 156px; left: 14.2%; top: 29.4%; animation: floatIn 0.9s ease-out 0.3s forwards, float 4.6s ease-in-out 1.2s infinite; }
-        .float-img:nth-child(4) { width: 111px; height: 111px; left: 43.7%; top: 63.1%; animation: floatIn 0.9s ease-out 0.4s forwards, float 4.9s ease-in-out 1.3s infinite; }
+        .float-img:nth-child(4) { width: 130px; height: 131px; left: 22.7%; top: 64.1%; animation: floatIn 0.9s ease-out 0.4s forwards, float 4.9s ease-in-out 1.3s infinite; }
         .float-img:nth-child(5) { width: 192px; height: 192px; left: 60.1%; top: 59.8%; animation: floatIn 0.9s ease-out 0.5s forwards, float 5.2s ease-in-out 1.4s infinite; }
         .float-img:nth-child(6) { width: 130px; height: 130px; left: 25.1%; top: 61.2%; animation: floatIn 0.9s ease-out 0.6s forwards, float 5.5s ease-in-out 1.5s infinite; }
 
@@ -506,12 +506,84 @@ export default function Home() {
           background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
           margin: 40px auto;
         }
+
+        /* ============================================
+           COPYRIGHT CONTAINER WITH INSTAGRAM BUTTON
+           ============================================ */
+        .copyright-container {
+          width: 100%;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 28px;
+          position: relative;
+          z-index: 100;
+        }
+
+        /* ============================================
+           INSTAGRAM BUTTON — Uiverse style
+           Black and grey gradient with expansion animation
+           ============================================ */
+        .instagram-link {
+          border: none;
+          border-radius: 50%;
+          width: 45px;
+          height: 45px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.4s ease;
+          cursor: pointer;
+          position: relative;
+          background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+          overflow: hidden;
+          text-decoration: none;
+          color: #fff;
+        }
+
+        .instagram-icon {
+          width: 24px;
+          height: 24px;
+          transition: opacity 0.3s ease;
+        }
+
+        .instagram-text {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 15px;
+          letter-spacing: 0.5px;
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+
+        /* Hover state */
+        .instagram-link:hover {
+          width: 110px;
+          border-radius: 30px;
+          background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 50%, #1a1a1a 100%);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .instagram-link:hover .instagram-text {
+          opacity: 1;
+        }
+
+        .instagram-link:hover .instagram-icon {
+          opacity: 0;
+        }
+
         .copyright {
           font-size: 13px;
           color: rgba(255,255,255,0.3);
           font-weight: 400;
           letter-spacing: 0.5px;
-          margin-top: 0;
+          margin: 0;
         }
         .copyright-link { color: inherit; text-decoration: none; transition: color 0.3s; }
         .copyright-link:hover { color: rgba(255,255,255,0.65); }
@@ -547,7 +619,8 @@ export default function Home() {
           .contact-subtitle { font-size: clamp(18px, 5.5vw, 28px); margin-bottom: 14px; }
           .contact-email { font-size: clamp(22px, 7vw, 38px); word-break: break-word; }
           .divider-line { height: 40px; margin: 28px auto; }
-          .copyright { font-size: 11px; }
+          .copyright-container { gap: 20px; padding: 0; }
+          .copyright { font-size: 11px; text-align: center; }
         }
 
         @media (max-width: 480px) {
@@ -649,7 +722,6 @@ export default function Home() {
             <img className="float-img" src="https://framerusercontent.com/images/W3b7GDV4XQVsSrHdhkRlv9NUU.jpg" alt="Portfolio work 1" loading="lazy" />
             <img className="float-img" src="https://framerusercontent.com/images/nBAbSF2jsYWNlnzuGllEEDf3zIg.jpg" alt="Portfolio work 2" loading="lazy" />
             <img className="float-img" src="https://framerusercontent.com/images/pg0d0nNtcT9BhUuLbSw3Fzr6iOE.jpeg" alt="Portfolio work 3" loading="lazy" />
-            <img className="float-img" src="https://framerusercontent.com/images/wsyzQwaYYJG6SEPJvyMJ3In9qMQ.jpg" alt="Portfolio work 4" loading="lazy" />
             <img className="float-img" src="https://framerusercontent.com/images/Udo1gQX7crsTSWxQ2sUxyZoupI.jpg" alt="Portfolio work 5" loading="lazy" />
             <img className="float-img" src="https://framerusercontent.com/images/UKGoy93tcBEGklBQdyZXhFQ.png" alt="Portfolio work 6" loading="lazy" />
           </div>
@@ -664,11 +736,25 @@ export default function Home() {
               business@5feet4.co
             </a>
             <div className="divider-line" />
-            <p className="copyright">
-              © 2026{' '}
-              <Link href="/" className="copyright-link">5feet4</Link>
-              . All Rights Reserved.
-            </p>
+            <div className="copyright-container">
+              <a
+                href="https://www.instagram.com/5feet.4/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="instagram-link"
+                aria-label="Follow us on Instagram"
+              >
+                <svg className="instagram-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z" fill="white" />
+                </svg>
+                <span className="instagram-text">Instagram</span>
+              </a>
+              <p className="copyright">
+                © 2026{' '}
+                <Link href="/" className="copyright-link">5feet4</Link>
+                . All Rights Reserved.
+              </p>
+            </div>
           </div>
         </section>
 
