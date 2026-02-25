@@ -3,200 +3,323 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-const AdsContent = ({ isLoaded, containerRefs, videos, getVimeoData, handleSoundToggle }) => {
+const videos = [
+  {
+    src: 'https://vimeo.com/1167679730/a43599f39f',
+    title: 'Brand Campaign',
+    desc: 'Creative storytelling meets brand vision',
+    tag: 'Campaign',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167682809/d726843f75',
+    title: 'Social Content',
+    desc: 'Viral-ready content that drives engagement',
+    tag: 'Social',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167685194/a9c74513ab',
+    title: 'Uniqlo',
+    desc: "Stay cool with UNIQLO's Summer Collection",
+    tag: 'Commercial',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167691944',
+    title: 'Music Video',
+    desc: 'Rhythm and visuals in perfect harmony',
+    tag: 'Music',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167689633',
+    title: 'Documentary',
+    desc: 'Authentic stories, beautifully told',
+    tag: 'Doc',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167689020/c15b90820f',
+    title: 'Commercial',
+    desc: 'High-impact commercials that convert',
+    tag: 'Production',
+    type: 'horizontal',
+  },
+  {
+    src: 'https://vimeo.com/1167684995/8a9eb1db9a',
+    title: 'Fashion Film',
+    desc: 'Elegance captured frame by frame',
+    tag: 'Fashion',
+    type: 'vertical',
+  },
+]
+
+function getVimeoData(url) {
+  const idMatch = url.match(/vimeo\.com\/(\d+)/)
+  const hashMatch = url.match(/\/(\d+)\/([a-f0-9]+)/)
+  return {
+    id: idMatch ? idMatch[1] : null,
+    hash: hashMatch ? hashMatch[2] : null,
+  }
+}
+
+export default function Ads() {
+  const [loaded, setLoaded] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [unmutedIndex, setUnmutedIndex] = useState(null)
+  const containerRefs = useRef([])
+  const iframeRefs = useRef([])
+
+  useEffect(() => {
+    setMounted(true)
+    const t = setTimeout(() => setLoaded(true), 2200)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (!loaded) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          const idx = parseInt(e.target.dataset.idx)
+          const iframe = iframeRefs.current[idx]
+          if (!iframe) return
+          iframe.contentWindow?.postMessage(
+            { method: e.isIntersecting ? 'play' : 'pause' },
+            '*'
+          )
+        })
+      },
+      { threshold: 0.4 }
+    )
+    containerRefs.current.forEach((el) => el && obs.observe(el))
+    return () => obs.disconnect()
+  }, [loaded])
+
+  const toggleSound = (e, idx) => {
+    e.stopPropagation()
+    const isUnmuted = unmutedIndex === idx
+    iframeRefs.current.forEach((iframe) => {
+      iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
+    })
+    if (!isUnmuted) {
+      setUnmutedIndex(idx)
+      iframeRefs.current[idx]?.contentWindow?.postMessage(
+        { method: 'setVolume', value: 1 },
+        '*'
+      )
+    } else {
+      setUnmutedIndex(null)
+    }
+  }
+
+  if (!mounted) return null
+
   return (
     <>
       <style jsx suppressHydrationWarning>{`
-        :global(html),
-        :global(body) {
-          margin: 0;
-          padding: 0;
+        :global(html), :global(body) {
+          margin: 0; padding: 0;
           overflow-x: hidden;
           width: 100%;
-          height: auto;
-          min-height: 100vh;
+          background: #050505;   /* ← dark bg so white text is always visible */
+          color: #fff;
         }
+        :global(*) { box-sizing: border-box; }
 
-        :global(*) {
-          box-sizing: border-box;
-        }
-
-        .skeleton-block {
-          background-color: #0f0f0f;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .skeleton-block::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          transform: translateX(-100%);
-          background-image: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.05) 20%,
-            rgba(255, 255, 255, 0.09) 60%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        .sk-hero-line {
-          height: clamp(70px, 12vw, 160px);
-          background: #111;
-          border-radius: 12px;
-          margin-bottom: 20px;
-        }
-        .sk-hero-line.top { width: 25%; }
-        .sk-hero-line.bot { width: 20%; }
-
-        @media (max-width: 768px) {
-          .sk-hero-line.top { width: 90%; height:80px;}
-          .sk-hero-line.bot { width: 60%; height:60px;}
-        }
-
-        .sk-header-title {
-          width: 200px;
-          height: 60px;
-          margin: 0 auto 30px;
-          border-radius: 8px;
-          background: #111;
-        }
-        .sk-header-p {
-          width: 600px;
-          height: 24px;
-          margin: 0 auto 10px;
-          border-radius: 4px;
-          background: #161616;
-          max-width: 90%;
-        }
-
-        .sk-video-card {
-          background: #121212;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          position: relative;
-          min-height: 500px;
-          height: 100%;
+        /* ─────────────────────────────────────
+           SKELETON
+        ───────────────────────────────────── */
+        .skeleton {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          background: #050505;
           display: flex;
           flex-direction: column;
-          justify-content: flex-end;
-          padding: 30px;
-        }
-
-        .sk-video-card.vertical {
-          grid-column: span 1;
-        }
-
-        .sk-video-card.horizontal {
-          grid-column: span 2;
-        }
-
-        .sk-overlay-title {
-          width: 50%;
-          height: 28px;
-          background: #1e1e1e;
-          border-radius: 4px;
-          margin-bottom: 12px;
-        }
-
-        .sk-overlay-desc {
-          width: 80%;
-          height: 16px;
-          background: #1e1e1e;
-          border-radius: 4px;
-        }
-        
-        @media (max-width: 768px) {
-            .sk-video-card.horizontal { grid-column: span 1; }
-            .sk-video-card { 
-              min-height: auto;
-              aspect-ratio: 16 / 9;
-            }
-            .sk-video-card.vertical {
-              aspect-ratio: 9 / 16;
-            }
-        }
-
-        .skeleton-wrapper {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          z-index: 50;
-          transition: opacity 0.6s ease-out, visibility 0.6s;
-          opacity: 1;
-          visibility: visible;
-        }
-        .skeleton-wrapper.hidden {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
-
-        .content-wrapper {
-          opacity: 0;
-          transition: opacity 0.8s ease-in;
-          width: 100%;
-          overflow: hidden;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          min-height: auto;
-        }
-        .content-wrapper.loaded {
-          opacity: 1;
-        }
-
-        :global(body.blur-active .background-video) {
-          filter: blur(15px) brightness(0.7);
-        }
-
-        :global(body.blur-active .video-overlay) {
-          background: rgba(0, 0, 0, 0.7);
-        }
-
-        .background-video {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          z-index: -1;
-          transition: filter 0.5s ease;
-        }
-
-        .video-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: -1;
-          pointer-events: none;
-          transition: background 0.5s ease;
-        }
-
-        .hero-section {
-          position: relative;
-          height: 100vh;
-          display: flex;
           align-items: center;
           justify-content: center;
+          gap: 0;
+          transition: opacity 0.7s ease, visibility 0.7s;
+          opacity: 1; visibility: visible;
+        }
+        .skeleton.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .sk-noise {
+          position: absolute; inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+          pointer-events: none;
+        }
+
+        .sk-logo-area {
+          text-align: center;
+          margin-bottom: 36px;
+          position: relative; z-index: 1;
+        }
+        .sk-logo-bar {
+          width: 100px; height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+          margin: 0 auto 22px;
+        }
+        .sk-title {
+          width: 240px; height: 68px;
+          background: rgba(255,255,255,0.04);
+          border-radius: 4px;
+          margin: 0 auto 12px;
+          animation: skPulse 2s ease-in-out infinite;
+        }
+        .sk-subtitle {
+          width: 160px; height: 14px;
+          background: rgba(255,255,255,0.025);
+          border-radius: 2px;
+          margin: 0 auto;
+          animation: skPulse 2s ease-in-out infinite 0.3s;
+        }
+
+        /*
+          Skeleton grid mirrors the exact bento layout:
+          4 columns, 6 horizontal cards (span 2) + 1 vertical card (span 1).
+
+          Desktop rows:
+            Row 1: sk-h  sk-h   (cols 1-2, cols 3-4)
+            Row 2: sk-h  sk-h
+            Row 3: sk-h  sk-h
+            Row 4: sk-v  (col 1 only)
+        */
+        .sk-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+          width: min(1400px, 92vw);
+          position: relative; z-index: 1;
+          align-items: start;
+          grid-auto-flow: dense;
+        }
+
+        /* Horizontal skeleton card — matches .video-card.horizontal */
+        .sk-h {
+          grid-column: span 2;
+          height: 420px;
+        }
+
+        /* Vertical skeleton card — matches .video-card.vertical */
+        .sk-v {
+          grid-column: span 1;
+          height: 550px;
+        }
+
+        .sk-card {
+          background: rgba(255,255,255,0.03);
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.05);
+          overflow: hidden;
+          position: relative;
+          animation: skPulse 2s ease-in-out infinite;
+          width: 100%;
+        }
+        .sk-card::after {
+          content: '';
+          position: absolute; inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+          animation: skSweep 2.2s ease-in-out infinite;
+        }
+        .sk-card:nth-child(2) { animation-delay: 0.1s; }
+        .sk-card:nth-child(3) { animation-delay: 0.2s; }
+        .sk-card:nth-child(4) { animation-delay: 0.3s; }
+        .sk-card:nth-child(5) { animation-delay: 0.4s; }
+        .sk-card:nth-child(6) { animation-delay: 0.5s; }
+        .sk-card:nth-child(7) { animation-delay: 0.6s; }
+
+        .sk-progress {
+          position: absolute;
+          bottom: 36px; left: 50%;
+          transform: translateX(-50%);
+          width: 150px; height: 1px;
+          background: rgba(255,255,255,0.06);
+          overflow: hidden;
+          z-index: 1;
+        }
+        .sk-progress-fill {
+          height: 100%; width: 0%;
+          background: rgba(255,255,255,0.28);
+          animation: skLoad 2.2s ease-in-out forwards;
+        }
+
+        @keyframes skPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        @keyframes skSweep {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes skLoad {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+
+        /* ── Tablet skeleton ── */
+        @media (max-width: 1024px) {
+          .sk-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .sk-h { grid-column: 1 / -1; height: 340px; }
+          .sk-v { grid-column: span 1; height: 0; padding-bottom: 177.78%; }
+          /* Show only 4 cards so it doesn't overflow the preview area */
+          .sk-card:nth-child(n+5) { display: none; }
+        }
+
+        /* ── Mobile skeleton ── */
+        @media (max-width: 768px) {
+          .sk-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; width: 92vw; }
+          .sk-h { grid-column: 1 / -1; height: 220px; }
+          .sk-v { grid-column: span 1; height: 0; padding-bottom: 177.78%; }
+          .sk-card:nth-child(n+4) { display: none; }
+          .sk-logo-area { margin-bottom: 24px; }
+        }
+
+        /* ── Small mobile skeleton ── */
+        @media (max-width: 480px) {
+          .sk-grid { grid-template-columns: 1fr; }
+          .sk-h { grid-column: 1; height: 0; padding-bottom: 56.25%; }
+          .sk-v { grid-column: 1; height: 0; padding-bottom: 177.78%; }
+          .sk-card:nth-child(n+4) { display: none; }
+        }
+
+        /* ─────────────────────────────────────
+           PAGE
+        ───────────────────────────────────── */
+        .page {
+          min-height: 100vh;
+          background: #050505;   /* ← ensures dark bg even if body override fails */
+          opacity: 0;
+          transition: opacity 0.9s ease;
+          display: flex;
           flex-direction: column;
+        }
+        .page.loaded { opacity: 1; }
+
+        /* ─────────────────────────────────────
+           HERO
+        ───────────────────────────────────── */
+        .hero {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          padding: 0 24px;
+        }
+
+        .hero-eyebrow {
+          font-size: 11px;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.35);
+          margin-bottom: 28px;
+          opacity: 0;
+          animation: heroFade 1s ease 0.4s forwards;
         }
 
         .hero-content {
@@ -207,233 +330,339 @@ const AdsContent = ({ isLoaded, containerRefs, videos, getVimeoData, handleSound
         }
 
         .hero-title {
-          font-size: clamp(70px, 12vw, 160px);
-          font-weight: 700;
-          line-height: 1;
-          letter-spacing: -3px;
-          animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+          font-size: clamp(72px, 13vw, 180px);
+          font-weight: 800;
+          line-height: 0.9;
+          letter-spacing: -0.04em;
           text-transform: uppercase;
           color: #fff;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        #work-section {
-          min-height: 100vh;
-          padding: 120px 40px;
-          position: relative;
-          z-index: 1;
-        }
-
-        .section-header {
           text-align: center;
-          margin-bottom: 80px;
+          opacity: 0;
+          animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
         }
 
-        .section-header h2 {
-          font-size: clamp(52px, 7vw, 80px);
-          font-weight: 700;
-          margin-bottom: 25px;
-          letter-spacing: -2px;
+        .hero-scroll {
+          position: absolute;
+          bottom: 40px; left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          opacity: 0;
+          animation: heroFade 1s ease 1.3s forwards;
+        }
+        .hero-scroll-label {
+          font-size: 9px;
+          letter-spacing: 0.3em;
           text-transform: uppercase;
-          color: #fff;
+          color: rgba(255,255,255,0.28);
+        }
+        .hero-scroll-line {
+          width: 1px; height: 44px;
+          background: linear-gradient(to bottom, rgba(255,255,255,0.28), transparent);
+          animation: scrollPulse 1.6s ease-in-out infinite;
         }
 
-        .section-header p {
-          font-size: clamp(18px, 2.2vw, 26px);
-          opacity: 0.75;
-          max-width: 800px;
+        @keyframes scrollPulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes heroFade {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+          .hero-title { font-size: clamp(58px, 18vw, 110px); }
+          .hero-eyebrow { font-size: 10px; }
+          .hero-scroll { bottom: 24px; }
+        }
+        @media (max-width: 480px) {
+          .hero-title { font-size: clamp(50px, 20vw, 88px); }
+        }
+
+        /* ─────────────────────────────────────
+           WORK
+        ───────────────────────────────────── */
+        .work {
+          padding: 100px 32px 80px;
+          max-width: 1500px;
           margin: 0 auto;
-          line-height: 1.7;
-          font-weight: 400;
+          width: 100%;
+        }
+        .work-header {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 52px;
+        }
+        .work-title {
+          font-size: clamp(40px, 6vw, 72px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          text-transform: uppercase;
+          line-height: 1;
           color: #fff;
+          text-align: center;
+        }
+        .work-count {
+          position: absolute;
+          right: 0;
+          bottom: 6px;
+          font-size: 10px;
+          letter-spacing: 0.2em;
+          color: rgba(255,255,255,0.28);
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .work-divider {
+          width: 40px; height: 1px;
+          background: rgba(255,255,255,0.1);
+          margin-bottom: 44px;
         }
 
-        .work-grid {
+        /* ─────────────────────────────────────
+           BENTO GRID
+        ───────────────────────────────────── */
+        .bento {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-          max-width: 1600px;
-          margin: 0 auto;
-          auto-flow: dense;
+          gap: 12px;
+          grid-auto-flow: dense;
+          align-items: start;
         }
 
-        .work-item {
+        .video-card {
           position: relative;
-          border-radius: 16px;
+          border-radius: 14px;
           overflow: hidden;
+          background: #080808;
+          border: 1px solid rgba(255,255,255,0.07);
           cursor: pointer;
-          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-          background: #111;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-          height: 100%;
-          min-height: 400px;
+          transition: transform 0.45s cubic-bezier(0.16,1,0.3,1),
+                      box-shadow 0.45s ease,
+                      border-color 0.3s ease;
+        }
+        .video-card:hover {
+          transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 28px 70px rgba(0,0,0,0.65);
+          border-color: rgba(255,255,255,0.14);
         }
 
-        .work-item.vertical {
-          grid-column: span 1;
-          min-height: 600px;
-        }
-
-        .work-item.horizontal {
+        .video-card.horizontal {
           grid-column: span 2;
-          min-height: 500px;
+          height: 420px;
+        }
+        .video-card.vertical {
+          grid-column: span 1;
+          height: 550px;
         }
 
-        .work-item:hover {
-          transform: translateY(-12px);
-          box-shadow: 0 25px 50px rgba(255, 255, 255, 0.39);
-        }
-
-        .vimeo-container {
-          width: 100%;
-          height: 100%;
-          position: relative;
+        .vimeo-wrap {
+          position: absolute; inset: 0;
           background: #000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           overflow: hidden;
         }
-
-        .vimeo-container iframe {
+        .vimeo-wrap iframe {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) scale(1.11);
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: 170%; height: 170%;
           border: none;
-          display: block;
+          pointer-events: none;
+        }
+        .video-card.vertical .vimeo-wrap iframe {
+          width: 130%; height: 130%;
         }
 
-        .work-item.vertical .vimeo-container iframe {
-          transform: translate(-50%, -50%) scale(1.33);
-        }
-
-        .work-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
+        .card-info {
+          position: absolute; inset: 0;
           background: linear-gradient(
             to top,
-            rgba(0, 0, 0, 0.95),
-            rgba(0, 0, 0, 0.3) 70%,
-            transparent
+            rgba(0,0,0,0.92) 0%,
+            rgba(0,0,0,0.35) 50%,
+            transparent 100%
           );
-          padding: 35px 30px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 28px 28px;
           opacity: 0;
-          transform: translateY(25px);
-          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-          z-index: 5;
+          transition: opacity 0.35s ease;
+        }
+        .video-card:hover .card-info { opacity: 1; }
+
+        .card-tag {
+          font-size: 9px;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 8px;
+        }
+        .card-title {
+          font-size: 24px;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          color: #fff;
+          line-height: 1.1;
+          margin-bottom: 8px;
+        }
+        .card-desc {
+          font-size: 14px;
+          color: rgba(255,255,255,0.6);
+          line-height: 1.5;
         }
 
-        @media (min-width: 769px) {
-          .work-item:hover .work-overlay {
-            opacity: 1;
-            transform: translateY(0);
+        .card-badge {
+          position: absolute;
+          top: 16px; left: 16px;
+          font-size: 9px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.55);
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(10px);
+          padding: 5px 12px;
+          border-radius: 100px;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sound-btn {
+          position: absolute;
+          top: 16px; right: 16px;
+          width: 42px; height: 42px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.6);
+          border: 1px solid rgba(255,255,255,0.15);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          backdrop-filter: blur(10px);
+          z-index: 10;
+        }
+        .sound-btn:hover {
+          background: rgba(255,255,255,0.12);
+          transform: scale(1.1);
+        }
+        .sound-btn svg {
+          width: 17px; height: 17px;
+          stroke: #fff; fill: none;
+        }
+
+        /* ─── TABLET ≤1024px ─── */
+        @media (max-width: 1024px) {
+          .bento {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+          .video-card.horizontal {
+            grid-column: 1 / -1;
+            height: 340px;
+          }
+          .video-card.vertical {
+            grid-column: span 1;
+            height: auto;
+            aspect-ratio: 9 / 16;
+          }
+          .video-card.vertical .vimeo-wrap {
+            position: absolute !important;
+            inset: 0 !important;
           }
         }
 
-        .work-overlay h3 {
-          font-size: 26px;
-          font-weight: 700;
-          margin-bottom: 10px;
-          letter-spacing: -0.5px;
-          color: #fff;
+        /* ─── MOBILE ≤768px ─── */
+        @media (max-width: 768px) {
+          .work { padding: 60px 16px 56px; }
+          .work-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 6px;
+          }
+          .work-divider { margin-bottom: 28px; }
+          .bento { gap: 8px; }
+
+          .video-card.horizontal {
+            grid-column: 1 / -1;
+            height: 220px;
+          }
+          .video-card.vertical {
+            grid-column: span 1;
+            height: auto;
+            aspect-ratio: 9 / 16;
+          }
+          .video-card.vertical .vimeo-wrap {
+            position: absolute !important;
+            inset: 0 !important;
+          }
+
+          .card-info { opacity: 1; padding: 14px; }
+          .card-desc { display: none; }
+          .card-title { font-size: 14px; margin-bottom: 0; }
+          .card-tag { font-size: 8px; margin-bottom: 4px; }
+          .card-badge { font-size: 8px; padding: 3px 8px; top: 10px; left: 10px; }
+
+          .sound-btn { width: 34px; height: 34px; top: 10px; right: 10px; }
+          .sound-btn svg { width: 13px; height: 13px; }
+          .video-card:hover { transform: none; box-shadow: none; }
         }
 
-        .work-overlay p {
-          font-size: 15px;
-          opacity: 0.85;
-          line-height: 1.6;
-          font-weight: 400;
-          color: #fff;
+        /* ─── SMALL MOBILE ≤480px ─── */
+        @media (max-width: 480px) {
+          .work { padding: 52px 14px 48px; }
+          .bento {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+          .video-card.horizontal {
+            grid-column: 1;
+            height: auto;
+            aspect-ratio: 16 / 9;
+          }
+          .video-card.vertical {
+            grid-column: 1;
+            height: auto;
+            aspect-ratio: 9 / 16;
+          }
+          .video-card.horizontal .vimeo-wrap,
+          .video-card.vertical .vimeo-wrap {
+            position: absolute !important;
+            inset: 0 !important;
+          }
+          .video-card.vertical .vimeo-wrap iframe {
+            width: 130%; height: 130%;
+          }
         }
 
-        .sound-toggle {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          width: 45px;
-          height: 45px;
-          border-radius: 50%;
-          background: rgba(0, 0, 0, 0.7);
-          border: 1.5px solid rgba(255, 255, 255, 0.25);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          z-index: 10;
-          backdrop-filter: blur(10px);
-        }
-
-        .sound-toggle:hover {
-          background: rgba(0, 0, 0, 0.9);
-          transform: scale(1.15);
-          border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .sound-toggle svg {
-          width: 22px;
-          height: 22px;
-          stroke: #fff;
-          pointer-events: none;
-        }
-
-        .icon-muted {
-          display: block;
-        }
-
-        .icon-unmuted {
-          display: none;
-        }
-
-        :global(.work-item.unmuted) .icon-muted {
-          display: none;
-        }
-
-        :global(.work-item.unmuted) .icon-unmuted {
-          display: block;
-        }
-
+        /* ─────────────────────────────────────
+           FOOTER
+        ───────────────────────────────────── */
         .copyright-container {
           width: 100%;
-          padding: 20px 20px 20px;
-          margin: 0;
+          padding: 60px 20px;
+          margin-top: 0;
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
           z-index: 100;
-          min-height: auto;
-          height: auto;
-          background: rgba(0, 0, 0, 0.3);
-          flex-shrink: 0;
+          /* subtle top separator so footer reads clearly */
+          border-top: 1px solid rgba(255,255,255,0.07);
         }
 
         .copyright {
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255,255,255,0.9);
           font-weight: 400;
           letter-spacing: 0.5px;
           margin: 0;
-          padding: 0;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-          height: auto;
-          line-height: 1.3;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .copyright-link,
@@ -459,478 +688,129 @@ const AdsContent = ({ isLoaded, containerRefs, videos, getVimeoData, handleSound
           transition: width 0.3s ease;
         }
 
-        .copyright-link:hover::after {
-          width: 100%;
-        }
-
+        .copyright-link:hover::after { width: 100%; }
         .copyright-link:hover {
           opacity: 0.8;
           transform: translateY(-1px);
         }
-
-        @media (max-width: 1600px) {
-          .work-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-          }
-        }
-
-        @media (max-width: 1200px) {
-          .work-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-          }
-
-          .work-item.horizontal {
-            grid-column: span 1;
-            min-height: 450px;
-          }
-
-          .work-item.vertical {
-            grid-column: span 1;
-            min-height: 450px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .hero-section {
-            padding: 0 20px;
-          }
-
-          .hero-title {
-            font-size: 110px;
-            padding: 0;
-            margin: 0 auto;
-            display: block;
-            width: 100%;
-            text-align: center;
-          }
-
-          #work-section {
-            padding: 60px 20px;
-            margin: 0 auto;
-            max-width: 100%;
-            width: 100%;
-          }
-
-          .section-header {
-            margin-bottom: 60px;
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;
-            max-width: 100%;
-          }
-
-          .section-header h2 {
-            font-size: clamp(36px, 10vw, 56px);
-            margin-bottom: 20px;
-            margin-left: 0;
-            margin-right: 0;
-            width: 100%;
-            text-align: center;
-          }
-
-          .section-header p {
-            font-size: clamp(14px, 4vw, 18px);
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;
-            max-width: 100%;
-            text-align: center;
-          }
-
-          .work-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            auto-flow: auto;
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;
-            max-width: 100%;
-            padding: 0;
-          }
-
-          .work-item.horizontal,
-          .work-item.vertical {
-            grid-column: span 1;
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;
-            max-width: 100%;
-          }
-
-          .work-item {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .work-item.vertical {
-            aspect-ratio: 9 / 16;
-            min-height: unset;
-          }
-
-          .work-item.horizontal {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .vimeo-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-          }
-
-          .vimeo-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: none !important;
-            scale: 1 !important;
-          }
-
-          .work-item.vertical .vimeo-container iframe {
-            transform: none !important;
-            scale: 1 !important;
-          }
-
-          .sound-toggle {
-            width: 40px;
-            height: 40px;
-            top: 12px;
-            right: 12px;
-          }
-
-          .sound-toggle svg {
-            width: 18px;
-            height: 18px;
-          }
-
-          .sound-toggle:hover {
-            transform: scale(1.1);
-          }
-
-          .work-overlay {
-            padding: 24px 18px;
-          }
-
-          .work-overlay h3 {
-            font-size: 18px;
-            margin-bottom: 6px;
-            line-height: 1.3;
-          }
-
-          .work-overlay p {
-            font-size: 12px;
-            line-height: 1.4;
-            opacity: 0.8;
-          }
-
-          .work-overlay {
-            opacity: 0;
-            transform: translateY(25px);
-            transition: none;
-            animation: none;
-          }
-
-          :global(.work-item.in-center) .work-overlay {
-            animation: fadeInUpBottom 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-          }
-
-          .copyright-container {
-            padding: 20px 20px;
-            margin: 0;
-            width: 100%;
-            text-align: center;
-            height: auto;
-            background: rgba(0, 0, 0, 0.3);
-            flex-shrink: 0;
-          }
-
-          .copyright {
-            font-size: 12px;
-            text-align: center;
-            line-height: 1.3;
-            margin: 0;
-            padding: 0;
-          }
-
-          @keyframes fadeInUpBottom {
-            from {
-              opacity: 0;
-              transform: translateY(25px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        }
-
-        @media (max-width: 480px) {
-          .hero-section {
-            padding: 0 15px;
-          }
-
-          .hero-title {
-            font-size: 68px;
-            padding: 0;
-            margin: 0 auto;
-            width: 100%;
-            text-align: center;
-          }
-
-          #work-section {
-            padding: 60px 15px;
-            width: 100%;
-            margin: 0 auto;
-          }
-
-          .work-item {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .work-item.vertical {
-            aspect-ratio: 9 / 16;
-            min-height: unset;
-          }
-
-          .work-item.horizontal {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .work-overlay {
-            padding: 20px 16px;
-          }
-
-          .work-overlay h3 {
-            font-size: 16px;
-          }
-
-          .work-overlay p {
-            font-size: 11px;
-          }
-
-          .sound-toggle {
-            width: 36px;
-            height: 36px;
-            top: 10px;
-            right: 10px;
-          }
-
-          .sound-toggle svg {
-            width: 16px;
-            height: 16px;
-          }
-
-          .copyright-container {
-            width: 100%;
-            margin: 0;
-            padding: 20px 15px;
-            height: auto;
-            background: rgba(0, 0, 0, 0.3);
-            flex-shrink: 0;
-          }
-
-          .copyright {
-            width: 100%;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            font-size: 11px;
-            line-height: 1.3;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .hero-section {
-            padding: 0 12px;
-          }
-
-          .hero-title {
-            font-size: 56px;
-            padding: 0;
-            text-align: center;
-            width: 100%;
-            margin: 0 auto;
-          }
-
-          .section-header h2 {
-            font-size: 28px;
-            text-align: center;
-            width: 100%;
-          }
-
-          .section-header p {
-            text-align: center;
-            width: 100%;
-          }
-
-          #work-section {
-            padding: 60px 12px;
-            width: 100%;
-            margin: 0 auto;
-          }
-
-          .work-grid {
-            width: 100%;
-            margin: 0 auto;
-            gap: 10px;
-          }
-
-          .work-item {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .work-item.vertical {
-            aspect-ratio: 9 / 16;
-            min-height: unset;
-          }
-
-          .work-item.horizontal {
-            aspect-ratio: 16 / 9;
-            min-height: unset;
-          }
-
-          .copyright-container {
-            padding: 20px 12px;
-            width: 100%;
-            margin: 0;
-            height: auto;
-            background: rgba(0, 0, 0, 0.3);
-            flex-shrink: 0;
-          }
-
-          .copyright {
-            font-size: 10px;
-            text-align: center;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            line-height: 1.3;
-          }
-        }
       `}</style>
 
-      {/* SKELETON LOADER */}
-      <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-        <section className="hero-section">
-          <div className="skeleton-block sk-hero-line top"></div>
-          <div className="skeleton-block sk-hero-line bot"></div>
-        </section>
-
-        <section id="work-section">
-          <div className="section-header">
-            <div className="skeleton-block sk-header-title"></div>
-            <div className="skeleton-block sk-header-p"></div>
-            <div className="skeleton-block sk-header-p" style={{ width: '400px' }}></div>
-          </div>
-
-          <div className="work-grid">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className={`skeleton-block sk-video-card ${i < 4 ? 'vertical' : i < 6 ? 'horizontal' : 'vertical'}`}>
-                <div className="skeleton-block sk-overlay-title"></div>
-                <div className="skeleton-block sk-overlay-desc"></div>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* ── SKELETON ──
+          Mirrors exact bento layout:
+          6 horizontal cards (span 2 each) → 3 rows of 2
+          1 vertical card  (span 1)        → row 4, col 1
+      */}
+      <div className={`skeleton ${loaded ? 'hidden' : ''}`}>
+        <div className="sk-noise" />
+        <div className="sk-logo-area">
+          <div className="sk-logo-bar" />
+          <div className="sk-title" />
+          <div className="sk-subtitle" />
+        </div>
+        <div className="sk-grid">
+          {/* Row 1 */}
+          <div className="sk-card sk-h" />
+          <div className="sk-card sk-h" />
+          {/* Row 2 */}
+          <div className="sk-card sk-h" />
+          <div className="sk-card sk-h" />
+          {/* Row 3 */}
+          <div className="sk-card sk-h" />
+          <div className="sk-card sk-h" />
+          {/* Row 4 — single vertical */}
+          <div className="sk-card sk-v" />
+        </div>
+        <div className="sk-progress">
+          <div className="sk-progress-fill" />
+        </div>
       </div>
 
-      {/* REAL CONTENT */}
-      <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
-        <section className="hero-section">
-          <div className="hero-content" data-aos="fade-up">
+      {/* ── PAGE ── */}
+      <div className={`page ${loaded ? 'loaded' : ''}`}>
+
+        <section className="hero">
+          <p className="hero-eyebrow">5feet4 Studio — Mumbai</p>
+          <div className="hero-content">
             <h1 className="hero-title">
-              Creative
-              <br />
+              Creative <br />
               Stories
             </h1>
           </div>
+          <div className="hero-scroll">
+            <span className="hero-scroll-label">Scroll</span>
+            <div className="hero-scroll-line" />
+          </div>
         </section>
 
-        <section id="work-section">
-          <div className="section-header" data-aos="fade-up">
-            <h2>Our Work</h2>
-            <p>Crafting visual stories that captivate, engage, and inspire audiences worldwide</p>
+        <section className="work">
+          <div className="work-header">
+            <h2 className="work-title">Our Work</h2>
+            <span className="work-count">0{videos.length} Projects</span>
           </div>
+          <div className="work-divider" />
 
-          <div className="work-grid">
-            {videos.map((video, index) => (
-              <div
-                key={index}
-                className={`work-item ${video.type}`}
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-                ref={(el) => (containerRefs.current[index] = el)}
-              >
-                <div className="vimeo-container">
-                  <iframe
-                    title={video.title}
-                    src={`https://player.vimeo.com/video/${getVimeoData(video.src).id}?h=${getVimeoData(video.src).hash}`}
-                    frameBorder="0"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                    allowFullScreen
-                  ></iframe>
-                </div>
+          <div className="bento">
+            {videos.map((video, i) => {
+              const { id, hash } = getVimeoData(video.src)
+              const iframeSrc = hash
+                ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=1&loop=1&background=1`
+                : `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&loop=1&background=1`
+              const isUnmuted = unmutedIndex === i
 
-                <button
-                  className="sound-toggle"
-                  aria-label="Toggle sound"
-                  onClick={(e) => handleSoundToggle(e, index)}
+              return (
+                <div
+                  key={i}
+                  className={`video-card ${video.type}`}
+                  ref={(el) => (containerRefs.current[i] = el)}
+                  data-idx={i}
                 >
-                  <svg className="icon-muted" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M11 5L6 9H2V15H6L11 19V5Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                  <div className="vimeo-wrap">
+                    <iframe
+                      ref={(el) => (iframeRefs.current[i] = el)}
+                      src={iframeSrc}
+                      title={video.title}
+                      frameBorder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
                     />
-                    <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  <svg className="icon-unmuted" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M11 5L6 9H2V15H6L11 19V5Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M18.364 5.63599C19.9926 7.26465 20.9087 9.49077 20.9087 11.8095C20.9087 14.1282 19.9926 16.3543 18.364 17.983"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                  </div>
 
-                <div className="work-overlay">
-                  <h3>{video.title}</h3>
-                  <p>{video.desc}</p>
+                  <div className="card-badge">{video.tag}</div>
+
+                  <button
+                    className="sound-btn"
+                    aria-label="Toggle sound"
+                    onClick={(e) => toggleSound(e, i)}
+                  >
+                    {isUnmuted ? (
+                      <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                        <line x1="23" y1="9" x2="17" y2="15" />
+                        <line x1="17" y1="9" x2="23" y2="15" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <div className="card-info">
+                    <p className="card-tag">{video.tag}</p>
+                    <h3 className="card-title">{video.title}</h3>
+                    <p className="card-desc">{video.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
+        {/* ── FOOTER ── */}
         <div className="copyright-container">
-          <p data-aos="fade-up" data-aos-offset="0" className="copyright">
+          <p className="copyright">
             © 2026{' '}
             <Link href="/" className="copyright-link">
               5feet4
@@ -938,173 +818,8 @@ const AdsContent = ({ isLoaded, containerRefs, videos, getVimeoData, handleSound
             . All Rights Reserved.
           </p>
         </div>
+
       </div>
     </>
-  )
-}
-
-export default function Ads() {
-  const containerRefs = useRef([])
-  const [isMobile, setIsMobile] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    const MIN_LOADING_TIME = 2500
-
-    const timer = setTimeout(() => {
-      setIsLoaded(true)
-    }, MIN_LOADING_TIME)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    if (!isLoaded) return
-
-    if (typeof window !== 'undefined' && window.AOS) {
-      window.AOS.init({
-        duration: 1200,
-        once: true,
-        offset: 120,
-        easing: 'ease-out-cubic',
-      })
-    }
-
-    const heroSection = document.querySelector('.hero-section')
-    const updateBlur = () => {
-      if (!heroSection) return
-      const rect = heroSection.getBoundingClientRect()
-      if (rect.bottom < window.innerHeight * 0.3) {
-        document.body.classList.add('blur-active')
-      } else {
-        document.body.classList.remove('blur-active')
-      }
-    }
-
-    const containerObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const container = entry.target
-          const iframe = container.querySelector('iframe')
-          if (!iframe) return
-
-          if (entry.isIntersecting) {
-            iframe.contentWindow?.postMessage({ method: 'play' }, '*')
-          } else {
-            iframe.contentWindow?.postMessage({ method: 'pause' }, '*')
-          }
-        })
-      },
-      { threshold: 0.5 }
-    )
-
-    containerRefs.current.forEach((container) => {
-      if (container) containerObserver.observe(container)
-    })
-
-    let centerObserver
-    if (isMobile) {
-      centerObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-              entry.target.classList.add('in-center')
-            } else {
-              entry.target.classList.remove('in-center')
-            }
-          })
-        },
-        {
-          threshold: [0.5],
-          rootMargin: '-10% 0px -10% 0px',
-        }
-      )
-
-      document.querySelectorAll('.work-item').forEach((item) => {
-        centerObserver.observe(item)
-      })
-    }
-
-    let ticking = false
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateBlur()
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    updateBlur()
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', checkMobile)
-      document.body.classList.remove('blur-active')
-      containerObserver.disconnect()
-      if (centerObserver) centerObserver.disconnect()
-    }
-  }, [isMobile, isLoaded])
-
-  const handleSoundToggle = (e, index) => {
-    e.stopPropagation()
-    e.preventDefault()
-
-    const workItem = e.currentTarget.closest('.work-item')
-    const iframe = workItem?.querySelector('iframe')
-    const isCurrentlyUnmuted = workItem?.classList.contains('unmuted')
-
-    document.querySelectorAll('.work-item iframe').forEach((iFrame) => {
-      iFrame.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
-    })
-    document.querySelectorAll('.work-item').forEach((item) => item.classList.remove('unmuted'))
-
-    if (!isCurrentlyUnmuted && iframe) {
-      iframe.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
-      workItem?.classList.add('unmuted')
-    }
-  }
-
-  const getVimeoData = (url) => {
-    const idMatch = url.match(/(?:vimeo\.com\/)(\d+)/)
-    const hashMatch = url.match(/\/([a-f0-9]+)(?:\?|$)/)
-    return {
-      id: idMatch ? idMatch[1] : null,
-      hash: hashMatch ? hashMatch[1] : null
-    }
-  }
-
-  const videos = [
-    { src: 'https://vimeo.com/1167679730/a43599f39f?share=copy&fl=sv&fe=ci', title: 'Brand Campaign', desc: 'Creative storytelling meets brand vision', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167682809/d726843f75?share=copy&fl=sv&fe=ci', title: 'Social Media Content', desc: 'Viral-ready content that drives engagement', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167685194/a9c74513ab?share=copy&fl=sv&fe=ci', title: 'Uniqlo', desc: 'Stay cool with UNIQLO\'s Summer Collection', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167691944?share=copy&fl=sv&fe=ci', title: 'Music Video', desc: 'Rhythm and visuals in perfect harmony', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167689020/c15b90820f?share=copy&fl=sv&fe=ci', title: 'Fashion Film', desc: 'Elegance captured frame by frame', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167689633?share=copy&fl=sv&fe=ci', title: 'Documentary', desc: 'Authentic stories, beautifully told', type: 'horizontal' },
-    { src: 'https://vimeo.com/1167684995/8a9eb1db9a?share=copy&fl=sv&fe=ci', title: 'Commercial Production', desc: 'High-impact commercials that convert', type: 'vertical' },
-  ]
-
-  if (!mounted) {
-    return null
-  }
-
-  return (
-    <AdsContent
-      isLoaded={isLoaded}
-      containerRefs={containerRefs}
-      videos={videos}
-      getVimeoData={getVimeoData}
-      handleSoundToggle={handleSoundToggle}
-    />
   )
 }
