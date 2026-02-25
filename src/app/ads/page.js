@@ -70,6 +70,7 @@ export default function Ads() {
   const [unmutedIndex, setUnmutedIndex] = useState(null)
   const containerRefs = useRef([])
   const iframeRefs = useRef([])
+  const heroRef = useRef(null)
 
   useEffect(() => {
     setMounted(true)
@@ -77,6 +78,42 @@ export default function Ads() {
     return () => clearTimeout(t)
   }, [])
 
+  // Background video blur on scroll — same pattern as about/prints
+  useEffect(() => {
+    if (!loaded) return
+
+    const updateBlur = () => {
+      const heroSection = heroRef.current
+      if (!heroSection) return
+      const rect = heroSection.getBoundingClientRect()
+      if (rect.bottom < window.innerHeight * 0.2) {
+        document.body.classList.add('blur-active')
+      } else {
+        document.body.classList.remove('blur-active')
+      }
+    }
+
+    let ticking = false
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateBlur()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    updateBlur()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.body.classList.remove('blur-active')
+    }
+  }, [loaded])
+
+  // IntersectionObserver for auto-play/pause Vimeo iframes on scroll
   useEffect(() => {
     if (!loaded) return
     const obs = new IntersectionObserver(
@@ -119,14 +156,14 @@ export default function Ads() {
   return (
     <>
       <style jsx suppressHydrationWarning>{`
-        :global(html), :global(body) {
-          margin: 0; padding: 0;
-          overflow-x: hidden;
-          width: 100%;
-          background: #050505;   /* ← dark bg so white text is always visible */
-          color: #fff;
+
+        /* ─────────────────────────────────────
+           BACKGROUND VIDEO BLUR — matches about/prints
+        ───────────────────────────────────── */
+        :global(body.blur-active .background-video) {
+          filter: blur(12px) brightness(0.6);
+          transition: filter 0.8s ease;
         }
-        :global(*) { box-sizing: border-box; }
 
         /* ─────────────────────────────────────
            SKELETON
@@ -135,14 +172,16 @@ export default function Ads() {
           position: fixed;
           inset: 0;
           z-index: 200;
-          background: #050505;
+          /* transparent so the background video is visible during load */
+          background: rgba(0, 0, 0, 0.92);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           gap: 0;
           transition: opacity 0.7s ease, visibility 0.7s;
-          opacity: 1; visibility: visible;
+          opacity: 1;
+          visibility: visible;
         }
         .skeleton.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
@@ -177,16 +216,6 @@ export default function Ads() {
           animation: skPulse 2s ease-in-out infinite 0.3s;
         }
 
-        /*
-          Skeleton grid mirrors the exact bento layout:
-          4 columns, 6 horizontal cards (span 2) + 1 vertical card (span 1).
-
-          Desktop rows:
-            Row 1: sk-h  sk-h   (cols 1-2, cols 3-4)
-            Row 2: sk-h  sk-h
-            Row 3: sk-h  sk-h
-            Row 4: sk-v  (col 1 only)
-        */
         .sk-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -196,19 +225,14 @@ export default function Ads() {
           align-items: start;
           grid-auto-flow: dense;
         }
-
-        /* Horizontal skeleton card — matches .video-card.horizontal */
         .sk-h {
           grid-column: span 2;
           height: 420px;
         }
-
-        /* Vertical skeleton card — matches .video-card.vertical */
         .sk-v {
           grid-column: span 1;
           height: 550px;
         }
-
         .sk-card {
           background: rgba(255,255,255,0.03);
           border-radius: 12px;
@@ -260,16 +284,12 @@ export default function Ads() {
           100% { width: 100%; }
         }
 
-        /* ── Tablet skeleton ── */
         @media (max-width: 1024px) {
           .sk-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .sk-h { grid-column: 1 / -1; height: 340px; }
           .sk-v { grid-column: span 1; height: 0; padding-bottom: 177.78%; }
-          /* Show only 4 cards so it doesn't overflow the preview area */
           .sk-card:nth-child(n+5) { display: none; }
         }
-
-        /* ── Mobile skeleton ── */
         @media (max-width: 768px) {
           .sk-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; width: 92vw; }
           .sk-h { grid-column: 1 / -1; height: 220px; }
@@ -277,8 +297,6 @@ export default function Ads() {
           .sk-card:nth-child(n+4) { display: none; }
           .sk-logo-area { margin-bottom: 24px; }
         }
-
-        /* ── Small mobile skeleton ── */
         @media (max-width: 480px) {
           .sk-grid { grid-template-columns: 1fr; }
           .sk-h { grid-column: 1; height: 0; padding-bottom: 56.25%; }
@@ -287,11 +305,12 @@ export default function Ads() {
         }
 
         /* ─────────────────────────────────────
-           PAGE
+           PAGE — transparent background so video shows through
         ───────────────────────────────────── */
         .page {
           min-height: 100vh;
-          background: #050505;   /* ← ensures dark bg even if body override fails */
+          /* NO solid background — let the global BackgroundVideo show through */
+          background: transparent;
           opacity: 0;
           transition: opacity 0.9s ease;
           display: flex;
@@ -652,7 +671,6 @@ export default function Ads() {
           align-items: center;
           position: relative;
           z-index: 100;
-          /* subtle top separator so footer reads clearly */
           border-top: 1px solid rgba(255,255,255,0.07);
         }
 
@@ -695,11 +713,7 @@ export default function Ads() {
         }
       `}</style>
 
-      {/* ── SKELETON ──
-          Mirrors exact bento layout:
-          6 horizontal cards (span 2 each) → 3 rows of 2
-          1 vertical card  (span 1)        → row 4, col 1
-      */}
+      {/* ── SKELETON ── */}
       <div className={`skeleton ${loaded ? 'hidden' : ''}`}>
         <div className="sk-noise" />
         <div className="sk-logo-area">
@@ -728,7 +742,7 @@ export default function Ads() {
       {/* ── PAGE ── */}
       <div className={`page ${loaded ? 'loaded' : ''}`}>
 
-        <section className="hero">
+        <section className="hero" ref={heroRef}>
           <p className="hero-eyebrow">5feet4 Studio — Mumbai</p>
           <div className="hero-content">
             <h1 className="hero-title">
