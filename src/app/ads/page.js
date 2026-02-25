@@ -66,19 +66,20 @@ function getVimeoData(url) {
 
 export default function Ads() {
   const [loaded, setLoaded] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [unmutedIndex, setUnmutedIndex] = useState(null)
+  const [fullscreenIndex, setFullscreenIndex] = useState(null)
+  const [volumes, setVolumes] = useState({})
+  const [lastTapTime, setLastTapTime] = useState({})
   const containerRefs = useRef([])
   const iframeRefs = useRef([])
   const heroRef = useRef(null)
 
   useEffect(() => {
-    setMounted(true)
     const t = setTimeout(() => setLoaded(true), 2200)
     return () => clearTimeout(t)
   }, [])
 
-  // Background video blur on scroll — same as about/prints
+  // Background video blur on scroll
   useEffect(() => {
     if (!loaded) return
 
@@ -134,11 +135,31 @@ export default function Ads() {
     return () => obs.disconnect()
   }, [loaded])
 
+  // Handle double tap for fullscreen - FIXED
+  const handleDoubleTap = (idx) => {
+    const now = Date.now()
+    const lastTap = lastTapTime[idx] || 0
+
+    if (now - lastTap < 300) {
+      // Double tap detected - open fullscreen
+      setFullscreenIndex(idx)
+      document.body.style.overflow = 'hidden'
+      setLastTapTime({})
+    } else {
+      setLastTapTime({ ...lastTapTime, [idx]: now })
+    }
+  }
+
+  // Handle double click on desktop
+  const handleDoubleClick = (idx) => {
+    setFullscreenIndex(idx)
+    document.body.style.overflow = 'hidden'
+  }
+
   const toggleSound = (e, idx) => {
     e.stopPropagation()
     const isUnmuted = unmutedIndex === idx
 
-    // Mute all vimeo players first
     iframeRefs.current.forEach((iframe) => {
       iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
     })
@@ -149,7 +170,6 @@ export default function Ads() {
         { method: 'setVolume', value: 1 },
         '*'
       )
-      // Mute background video so it doesn't clash, and notify home page
       const bgVideo = document.querySelector('.background-video')
       if (bgVideo) bgVideo.muted = true
       window.dispatchEvent(new CustomEvent('ads-video-unmuted'))
@@ -158,11 +178,260 @@ export default function Ads() {
     }
   }
 
-  if (!mounted) return null
+  const handleVolumeChange = (idx, value) => {
+    const volumeValue = parseFloat(value) / 100
+    setVolumes({ ...volumes, [idx]: parseFloat(value) })
+    iframeRefs.current[idx]?.contentWindow?.postMessage(
+      { method: 'setVolume', value: volumeValue },
+      '*'
+    )
+    if (volumeValue > 0 && unmutedIndex !== idx) {
+      setUnmutedIndex(idx)
+    } else if (volumeValue === 0) {
+      setUnmutedIndex(null)
+    }
+  }
+
+  const exitFullscreen = () => {
+    setFullscreenIndex(null)
+    document.body.style.overflow = ''
+  }
+
+  // Handle escape key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && fullscreenIndex !== null) {
+        exitFullscreen()
+      }
+    }
+
+    if (fullscreenIndex !== null) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [fullscreenIndex])
 
   return (
     <>
       <style jsx suppressHydrationWarning>{`
+
+        /* ─────────────────────────────────────
+           VOLUME SLIDER STYLES
+        ───────────────────────────────────── */
+        .slider {
+          --slider-width: 120px;
+          --slider-height: 4px;
+          --slider-bg: rgba(255, 255, 255, 0.2);
+          --slider-border-radius: 4px;
+          --level-color: #fff;
+          --level-transition-duration: 0.1s;
+          --icon-margin: 8px;
+          --icon-color: #fff;
+          --icon-size: 16px;
+
+          position: relative;
+          cursor: pointer;
+          display: inline-flex;
+          flex-direction: row-reverse;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .slider .volume {
+          display: inline-block;
+          vertical-align: top;
+          color: var(--icon-color);
+          width: var(--icon-size);
+          height: auto;
+          flex-shrink: 0;
+          pointer-events: none;
+        }
+
+        .slider .level {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          width: var(--slider-width);
+          height: var(--slider-height);
+          background: var(--slider-bg);
+          border-radius: var(--slider-border-radius);
+          cursor: inherit;
+          outline: none;
+          padding: 0;
+          border: none;
+        }
+
+        .slider .level::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: var(--level-color);
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider .level::-moz-range-thumb {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: var(--level-color);
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider .level::-moz-range-track {
+          background: transparent;
+          border: none;
+        }
+
+        .slider .level::-moz-range-progress {
+          background: var(--level-color);
+          height: var(--slider-height);
+          border-radius: var(--slider-border-radius);
+        }
+
+        /* ─────────────────────────────────────
+           FULLSCREEN VIDEO PLAYER
+        ───────────────────────────────────── */
+        .fullscreen-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: #000;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .fullscreen-container {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+        }
+
+        .fullscreen-video-wrap {
+          position: relative;
+          width: 100%;
+          flex: 1;
+          background: #000;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .fullscreen-video-wrap iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
+          max-width: 100vw;
+          max-height: calc(100vh - 100px);
+        }
+
+        .fullscreen-controls {
+          position: relative;
+          width: 100%;
+          background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8), transparent);
+          padding: 40px 20px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          z-index: 100;
+          animation: slideUp 0.3s ease-in;
+          flex-wrap: wrap;
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(100px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .fs-info {
+          flex: 1;
+          min-width: 250px;
+        }
+
+        .fs-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #fff;
+          margin-bottom: 4px;
+          line-height: 1.2;
+        }
+
+        .fs-desc {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.4;
+        }
+
+        .fs-controls-group {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-shrink: 0;
+        }
+
+        /* Perfect Close Button Styles */
+        .fs-close-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1.5px solid rgba(255, 255, 255, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          backdrop-filter: blur(12px);
+          padding: 0;
+          position: relative;
+          flex-shrink: 0;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .fs-close-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.35);
+          transform: scale(1.08) rotate(90deg);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .fs-close-btn:active {
+          transform: scale(0.95);
+        }
+
+        .fs-close-btn svg {
+          width: 22px;
+          height: 22px;
+          stroke: #fff;
+          stroke-width: 2.5;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        }
 
         /* ─────────────────────────────────────
            BACKGROUND VIDEO BLUR
@@ -173,8 +442,7 @@ export default function Ads() {
         }
 
         /* ─────────────────────────────────────
-           SKELETON — prints.js pattern:
-           position: absolute, scrolls with page
+           SKELETON STYLES
         ───────────────────────────────────── */
         .skeleton-wrapper {
           position: absolute;
@@ -193,7 +461,6 @@ export default function Ads() {
           pointer-events: none;
         }
 
-        /* Shimmer base */
         .sk-block {
           background-color: #0f0f0f;
           position: relative;
@@ -217,7 +484,6 @@ export default function Ads() {
           100% { transform: translateX(100%); }
         }
 
-        /* Hero skeleton */
         .sk-hero-section {
           position: relative;
           height: 100vh;
@@ -235,7 +501,6 @@ export default function Ads() {
         .sk-hero-line.line1 { width: 40%; }
         .sk-hero-line.line2 { width: 37%; }
 
-        /* Work section skeleton */
         .sk-work-section {
           padding: 100px 32px 80px;
           max-width: 1500px;
@@ -261,7 +526,6 @@ export default function Ads() {
           margin-bottom: 44px;
         }
 
-        /* Bento skeleton — mirrors real grid exactly */
         .sk-bento {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -297,7 +561,6 @@ export default function Ads() {
         .sk-card.sk-h { grid-column: span 2; height: 420px; }
         .sk-card.sk-v { grid-column: span 1; height: 550px; }
 
-        /* Inner ghost elements on each card */
         .sk-card-badge {
           position: absolute;
           top: 16px; left: 16px;
@@ -324,7 +587,6 @@ export default function Ads() {
         .sk-card-title { width: 55%; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.08); }
         .sk-card-desc { width: 75%; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.05); }
 
-        /* Footer skeleton */
         .sk-footer {
           padding: 60px 20px;
           display: flex;
@@ -337,7 +599,6 @@ export default function Ads() {
           background: #111;
         }
 
-        /* Skeleton responsive */
         @media (max-width: 1024px) {
           .sk-bento { grid-template-columns: repeat(2, 1fr); gap: 10px; }
           .sk-card.sk-h { grid-column: 1 / -1; height: 340px; }
@@ -358,9 +619,6 @@ export default function Ads() {
           .sk-card.sk-v { grid-column: 1; height: auto; aspect-ratio: 9 / 16; }
         }
 
-        /* ─────────────────────────────────────
-           CONTENT WRAPPER — prints.js pattern
-        ───────────────────────────────────── */
         .content-wrapper {
           opacity: 0;
           transition: opacity 0.8s ease-in;
@@ -369,9 +627,6 @@ export default function Ads() {
           opacity: 1;
         }
 
-        /* ─────────────────────────────────────
-           PAGE — transparent, video shows through
-        ───────────────────────────────────── */
         .page {
           min-height: 100vh;
           background: transparent;
@@ -379,9 +634,6 @@ export default function Ads() {
           flex-direction: column;
         }
 
-        /* ─────────────────────────────────────
-           HERO
-        ───────────────────────────────────── */
         .hero {
           height: 100vh;
           display: flex;
@@ -455,9 +707,6 @@ export default function Ads() {
         }
         @media (max-width: 480px) { .hero-title { font-size: clamp(50px, 20vw, 88px); } }
 
-        /* ─────────────────────────────────────
-           WORK
-        ───────────────────────────────────── */
         .work {
           padding: 100px 32px 80px;
           max-width: 1500px;
@@ -495,9 +744,6 @@ export default function Ads() {
           margin-bottom: 44px;
         }
 
-        /* ─────────────────────────────────────
-           BENTO GRID
-        ───────────────────────────────────── */
         .bento {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -515,6 +761,9 @@ export default function Ads() {
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1),
                       box-shadow 0.45s ease,
                       border-color 0.3s ease;
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
         }
         .video-card:hover {
           transform: translateY(-8px) scale(1.01);
@@ -566,6 +815,8 @@ export default function Ads() {
           padding: 5px 12px;
           border-radius: 100px;
           border: 1px solid rgba(255,255,255,0.1);
+          z-index: 5;
+          pointer-events: none;
         }
         .sound-btn {
           position: absolute;
@@ -579,8 +830,10 @@ export default function Ads() {
           transition: all 0.2s ease;
           backdrop-filter: blur(10px);
           z-index: 10;
+          padding: 0;
         }
         .sound-btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.1); }
+        .sound-btn:active { transform: scale(0.95); }
         .sound-btn svg  { width: 17px; height: 17px; stroke: #fff; fill: none; }
 
         @media (max-width: 1024px) {
@@ -616,9 +869,55 @@ export default function Ads() {
           .video-card.vertical .vimeo-wrap iframe { width: 130%; height: 130%; }
         }
 
-        /* ─────────────────────────────────────
-           FOOTER
-        ───────────────────────────────────── */
+        /* Mobile fullscreen optimizations */
+        @media (max-width: 768px) {
+          .fullscreen-controls {
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            justify-content: space-between;
+          }
+          .fs-info {
+            flex: 1;
+          }
+          .fs-title {
+            font-size: 16px;
+          }
+          .fs-desc {
+            font-size: 11px;
+          }
+          .fs-controls-group {
+            width: auto;
+            justify-content: flex-end;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .fullscreen-controls {
+            padding: 16px;
+          }
+          .fs-title {
+            font-size: 14px;
+            margin-bottom: 2px;
+          }
+          .fs-desc {
+            font-size: 10px;
+          }
+          .fs-controls-group {
+            gap: 12px;
+          }
+          .fs-close-btn {
+            width: 40px;
+            height: 40px;
+          }
+          .fs-close-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5;
+          }
+        }
+
         .copyright-container {
           width: 100%;
           padding: 60px 20px;
@@ -662,80 +961,40 @@ export default function Ads() {
         }
       `}</style>
 
-      {/* ────────────────────────────────────────────────────
-          OUTER WRAPPER — position: relative so the absolute
-          skeleton sits flush on top of real content below.
-          This is the exact same pattern as prints.js.
-      ──────────────────────────────────────────────────── */}
       <div style={{ position: 'relative' }}>
 
-        {/* ════════════════════════════════════════
-            SKELETON — position: absolute
-            Scrolls WITH the page (prints.js style)
-            Overlays real content, fades out on load
-        ════════════════════════════════════════ */}
         <div className={`skeleton-wrapper ${loaded ? 'hidden' : ''}`}>
-
-          {/* 1 · Hero */}
           <section className="sk-hero-section">
             <div className="sk-block sk-hero-line line1" />
             <div className="sk-block sk-hero-line line2" />
           </section>
 
-          {/* 2 · Work section */}
           <div className="sk-work-section">
             <div className="sk-work-header">
               <div className="sk-block sk-work-title" />
             </div>
             <div className="sk-work-divider" />
 
-            {/* Bento — 6 horizontal + 1 vertical, mirrors real grid */}
             <div className="sk-bento">
-              {/* Row 1 */}
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              {/* Row 2 */}
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              {/* Row 3 */}
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              <div className="sk-block sk-card sk-h">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
-              {/* Row 4 — single vertical */}
-              <div className="sk-block sk-card sk-v">
-                <div className="sk-card-badge" /><div className="sk-card-sound" />
-                <div className="sk-card-info"><div className="sk-card-tag" /><div className="sk-card-title" /><div className="sk-card-desc" /></div>
-              </div>
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className={`sk-block sk-card ${i < 6 ? 'sk-h' : 'sk-v'}`}>
+                  <div className="sk-card-badge" />
+                  <div className="sk-card-sound" />
+                  <div className="sk-card-info">
+                    <div className="sk-card-tag" />
+                    <div className="sk-card-title" />
+                    <div className="sk-card-desc" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* 3 · Footer */}
           <div className="sk-footer">
             <div className="sk-block sk-footer-line" />
           </div>
         </div>
 
-        {/* ════════════════════════════════════════
-            REAL CONTENT — opacity: 0 while loading,
-            fades in when loaded (prints.js pattern)
-        ════════════════════════════════════════ */}
         <div className={`content-wrapper ${loaded ? 'loaded' : ''}`}>
           <div className="page">
 
@@ -747,7 +1006,6 @@ export default function Ads() {
                   Stories
                 </h1>
               </div>
-
             </section>
 
             <section className="work">
@@ -771,6 +1029,8 @@ export default function Ads() {
                       className={`video-card ${video.type}`}
                       ref={(el) => (containerRefs.current[i] = el)}
                       data-idx={i}
+                      onDoubleClick={() => handleDoubleClick(i)}
+                      onTouchEnd={() => handleDoubleTap(i)}
                     >
                       <div className="vimeo-wrap">
                         <iframe
@@ -791,13 +1051,13 @@ export default function Ads() {
                         onClick={(e) => toggleSound(e, i)}
                       >
                         {isUnmuted ? (
-                          <svg className="icon-muted" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
                           </svg>
                         ) : (
-                          <svg className="icon-unmuted" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                             <line x1="23" y1="9" x2="17" y2="15" />
                             <line x1="17" y1="9" x2="23" y2="15" />
@@ -828,6 +1088,50 @@ export default function Ads() {
 
           </div>
         </div>
+
+        {/* FULLSCREEN PLAYER */}
+        {fullscreenIndex !== null && (
+          <div className="fullscreen-overlay" onClick={exitFullscreen}>
+            <div className="fullscreen-container" onClick={(e) => e.stopPropagation()}>
+              <div className="fullscreen-video-wrap">
+                <iframe
+                  src={
+                    (() => {
+                      const { id, hash } = getVimeoData(videos[fullscreenIndex].src)
+                      return hash
+                        ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=0&loop=0`
+                        : `https://player.vimeo.com/video/${id}?autoplay=1&muted=0&loop=0`
+                    })()
+                  }
+                  title={videos[fullscreenIndex].title}
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+
+              <div className="fullscreen-controls">
+                <div className="fs-info">
+                  <div className="fs-title">{videos[fullscreenIndex].title}</div>
+                  <div className="fs-desc">{videos[fullscreenIndex].desc}</div>
+                </div>
+
+                <div className="fs-controls-group">
+                  <button
+                    className="fs-close-btn"
+                    onClick={exitFullscreen}
+                    aria-label="Exit fullscreen"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </>
