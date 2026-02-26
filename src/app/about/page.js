@@ -60,12 +60,6 @@ export default function About() {
     },
   ]
 
-  // ─────────────────────────────────────────────────────────────
-  //  LOGO CONFIG — customise each logo's size independently
-  //  desktop: { h, w }  →  height / width on screens > 768px
-  //  mobile:  { h, w }  →  height / width on screens ≤ 768px
-  //  Use 'auto' for either h or w to preserve aspect ratio
-  // ─────────────────────────────────────────────────────────────
   const logos = [
     { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/2.png?updatedAt=1772060171475", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
     { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/42.png?updatedAt=1772060171459", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
@@ -84,7 +78,6 @@ export default function About() {
     { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/11.png?updatedAt=1772060168489", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
   ]
 
-  // Track window width for responsive logo sizing
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768)
@@ -220,9 +213,10 @@ export default function About() {
     <>
       <style jsx suppressHydrationWarning>{`
 
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        /* ── Skeleton pulse animation (no shimmer) ── */
+        @keyframes skPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.45; }
         }
 
         @keyframes fadeInUp {
@@ -235,15 +229,17 @@ export default function About() {
           50% { transform: scale(1.1); opacity: 0.8; }
         }
 
+        /* ─── SKELETON WRAPPER ─── */
         .skeleton-wrapper {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           z-index: 50;
-          transition: opacity 0.6s ease-out, visibility 0.6s;
+          transition: opacity 0.7s ease-out, visibility 0.7s;
           opacity: 1;
           visibility: visible;
+          background: #080808;
         }
         .skeleton-wrapper.hidden {
           opacity: 0;
@@ -251,166 +247,173 @@ export default function About() {
           pointer-events: none;
         }
 
-        .skeleton-block {
-          background-color: #0f0f0f;
-          position: relative;
-          overflow: hidden;
-        }
-        .skeleton-block::after {
-          content: '';
-          position: absolute;
-          top: 0; right: 0; bottom: 0; left: 0;
-          transform: translateX(-100%);
-          background-image: linear-gradient(
-            90deg,
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.08) 20%,
-            rgba(255,255,255,0.12) 60%,
-            rgba(255,255,255,0) 100%
-          );
-          animation: shimmer 2s infinite;
+        /* Base skeleton block — pure pulse, zero shimmer */
+        .sk-block {
+          animation: skPulse 1.8s ease-in-out infinite;
         }
 
-        .sk-hero-section {
-          position: relative;
+        /* Stagger delays for depth */
+        .sk-block:nth-child(2) { animation-delay: 0.15s; }
+        .sk-block:nth-child(3) { animation-delay: 0.3s; }
+        .sk-block:nth-child(4) { animation-delay: 0.45s; }
+        .sk-block:nth-child(5) { animation-delay: 0.6s; }
+        .sk-block:nth-child(6) { animation-delay: 0.75s; }
+
+        /* ── HERO skeleton ── */
+        .sk-hero {
           height: 100vh;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 20px;
+          gap: 24px;
+          padding: 40px;
         }
 
         .sk-hero-title {
-          height: clamp(60px, 10vw, 120px);
-          border-radius: 12px;
-          background: #111;
+          border-radius: 16px;
+          background: #1a1a1a;
+          height: clamp(64px, 10vw, 130px);
         }
+        .sk-hero-title.l1 { width: 52%; animation-delay: 0s; }
+        .sk-hero-title.l2 { width: 22%; height: clamp(48px, 7.5vw, 105px); animation-delay: 0.2s; }
 
-        .sk-hero-title.line1 { width: 65%; }
-        .sk-hero-title.line2 { width: 25%; height: clamp(50px, 8vw, 100px); }
-
-        .sk-team-section {
+        /* ── TEAM skeleton ── */
+        .sk-team {
           padding: 100px 40px;
-          min-height: 100vh;
-          background: transparent;
         }
 
         .sk-team-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 30px;
+          gap: 28px;
           max-width: 1400px;
           margin: 0 auto;
         }
 
-        .sk-team-card {
+        .sk-card {
           aspect-ratio: 3/4;
-          background: #0a0a0a;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.05);
+          background: #111;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.04);
           position: relative;
           overflow: hidden;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
 
-        .sk-team-card::after {
-          content: '';
+        .sk-card-bottom {
           position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
-          animation: shimmer 2.2s ease-in-out infinite;
-        }
-
-        .sk-card-overlay {
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
           padding: 24px;
-          background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4));
+          background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 10px;
         }
 
-        .sk-card-text { width: 55%; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.08); }
-        .sk-card-subtext { width: 40%; height: 14px; border-radius: 4px; background: rgba(255,255,255,0.06); }
-        .sk-card-desc { width: 100%; height: 12px; border-radius: 3px; background: rgba(255,255,255,0.05); margin-top: 8px; }
-        .sk-card-desc:last-of-type { width: 75%; }
+        .sk-line {
+          border-radius: 6px;
+          background: rgba(255,255,255,0.07);
+          animation: skPulse 1.8s ease-in-out infinite;
+        }
 
-        .sk-wisdom-section {
-          padding: 100px 40px;
+        .sk-line.name   { height: 22px; width: 50%; }
+        .sk-line.role   { height: 13px; width: 35%; animation-delay: 0.1s; }
+        .sk-line.desc1  { height: 11px; width: 100%; margin-top: 8px; animation-delay: 0.2s; }
+        .sk-line.desc2  { height: 11px; width: 78%; animation-delay: 0.3s; }
+
+        /* ── WISDOM skeleton ── */
+        .sk-wisdom {
+          padding: 80px 40px;
           display: flex;
-          align-items: center;
           justify-content: center;
         }
 
-        .sk-wisdom-box {
-          max-width: 900px;
+        .sk-wisdom-inner {
+          max-width: 860px;
           width: 100%;
+          background: rgba(255,255,255,0.02);
+          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 16px;
+          padding: 60px 48px;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
           align-items: center;
         }
 
-        .sk-wisdom-line { height: 28px; border-radius: 6px; background: #111; }
-        .sk-wisdom-line.line1 { width: 95%; }
-        .sk-wisdom-line.line2 { width: 88%; }
-        .sk-wisdom-line.line3 { width: 92%; }
-        .sk-wisdom-line.line4 { width: 50%; margin-top: 20px; }
+        .sk-w-line { border-radius: 6px; background: #191919; }
+        .sk-w-line.w1 { height: 26px; width: 95%; animation: skPulse 1.8s ease-in-out infinite; }
+        .sk-w-line.w2 { height: 26px; width: 88%; animation: skPulse 1.8s 0.1s ease-in-out infinite; }
+        .sk-w-line.w3 { height: 26px; width: 91%; animation: skPulse 1.8s 0.2s ease-in-out infinite; }
+        .sk-w-line.w4 { height: 16px; width: 38%; margin-top: 20px; animation: skPulse 1.8s 0.3s ease-in-out infinite; }
 
-        .sk-trusted-section { padding: 100px 40px; text-align: center; }
+        /* ── TRUSTED skeleton ── */
+        .sk-trusted {
+          padding: 100px 40px;
+          text-align: center;
+        }
 
-        .sk-trusted-header {
+        .sk-trusted-head {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 12px;
-          margin-bottom: 60px;
+          margin-bottom: 64px;
         }
 
-        .sk-pulse-dot { width: 12px; height: 12px; background: #1a1a1a; border-radius: 50%; }
-        .sk-trusted-title { width: 180px; height: 18px; border-radius: 4px; background: #111; }
+        .sk-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #1e1e1e;
+          animation: skPulse 1.8s ease-in-out infinite;
+        }
 
-        .sk-logo-track {
+        .sk-trusted-label {
+          height: 16px;
+          width: 140px;
+          border-radius: 4px;
+          background: #1a1a1a;
+          animation: skPulse 1.8s 0.1s ease-in-out infinite;
+        }
+
+        .sk-logo-row {
           display: flex;
-          gap: 40px;
+          gap: 20px;
           justify-content: center;
           align-items: center;
-          overflow: hidden;
+          flex-wrap: wrap;
         }
 
-        /* ── SKELETON LOGO: matches real logo size ── */
-        .sk-logo {
-          width: 140px;
-          height: 40px;
-          background: #0d0d0d;
+        .sk-logo-item {
+          height: 42px;
+          width: 130px;
           border-radius: 8px;
-          border: 1px solid rgba(255,255,255,0.05);
-          flex-shrink: 0;
-          position: relative;
-          overflow: hidden;
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.04);
+          animation: skPulse 1.8s ease-in-out infinite;
         }
 
-        .sk-logo::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
-          animation: shimmer 2.2s ease-in-out infinite;
-        }
+        .sk-logo-item:nth-child(1) { animation-delay: 0s; }
+        .sk-logo-item:nth-child(2) { animation-delay: 0.12s; }
+        .sk-logo-item:nth-child(3) { animation-delay: 0.24s; }
+        .sk-logo-item:nth-child(4) { animation-delay: 0.36s; }
+        .sk-logo-item:nth-child(5) { animation-delay: 0.48s; }
+        .sk-logo-item:nth-child(6) { animation-delay: 0.6s; }
 
-        .sk-scroll-section {
+        /* ── SCROLL TEXT skeleton ── */
+        .sk-scroll {
           padding: 100px 40px;
           display: flex;
           align-items: center;
           justify-content: center;
+          min-height: 50vh;
         }
 
-        .sk-scroll-text {
-          max-width: 1000px;
+        .sk-scroll-inner {
+          max-width: 1100px;
           width: 100%;
           display: flex;
           flex-direction: column;
@@ -418,19 +421,19 @@ export default function About() {
           align-items: center;
         }
 
-        .sk-text-line { height: 26px; border-radius: 5px; background: #111; }
-        .sk-text-line.line1 { width: 100%; }
-        .sk-text-line.line2 { width: 96%; }
-        .sk-text-line.line3 { width: 98%; }
-        .sk-text-line.line4 { width: 94%; }
-        .sk-text-line.line5 { width: 72%; }
+        .sk-t-line { border-radius: 6px; background: #161616; }
+        .sk-t-line.t1 { height: 28px; width: 100%; animation: skPulse 1.8s ease-in-out infinite; }
+        .sk-t-line.t2 { height: 28px; width: 97%; animation: skPulse 1.8s 0.1s ease-in-out infinite; }
+        .sk-t-line.t3 { height: 28px; width: 99%; animation: skPulse 1.8s 0.2s ease-in-out infinite; }
+        .sk-t-line.t4 { height: 28px; width: 95%; animation: skPulse 1.8s 0.3s ease-in-out infinite; }
+        .sk-t-line.t5 { height: 28px; width: 68%; animation: skPulse 1.8s 0.4s ease-in-out infinite; }
 
-        .sk-stats-section {
+        /* ── STATS skeleton ── */
+        .sk-stats {
           padding: 100px 40px;
-          min-height: 80vh;
+          min-height: 60vh;
           display: flex;
           align-items: center;
-          justify-content: center;
         }
 
         .sk-stats-grid {
@@ -439,91 +442,83 @@ export default function About() {
           gap: 40px;
           max-width: 1400px;
           width: 100%;
+          margin: 0 auto;
         }
 
         .sk-stat-card {
           background: rgba(255,255,255,0.02);
-          padding: 60px 40px;
-          border-radius: 12px;
           border: 1px solid rgba(255,255,255,0.05);
-          position: relative;
-          overflow: hidden;
+          border-radius: 14px;
+          padding: 56px 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
         }
 
-        .sk-stat-card::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
-          animation: shimmer 2.2s ease-in-out infinite;
+        .sk-stat-num {
+          height: 64px;
+          width: 150px;
+          border-radius: 10px;
+          background: #1a1a1a;
+          margin-bottom: 8px;
+          animation: skPulse 1.8s ease-in-out infinite;
         }
 
-        .sk-stat-num { width: 140px; height: 60px; border-radius: 8px; background: #1a1a1a; margin-bottom: 30px; }
-        .sk-stat-text { width: 100%; height: 14px; border-radius: 4px; background: #1a1a1a; margin-bottom: 10px; }
-        .sk-stat-text:last-child { width: 85%; }
+        .sk-stat-text {
+          height: 14px;
+          border-radius: 4px;
+          background: #161616;
+          animation: skPulse 1.8s ease-in-out infinite;
+        }
 
+        .sk-stat-text.st1 { width: 100%; animation-delay: 0s; }
+        .sk-stat-text.st2 { width: 88%; animation-delay: 0.1s; }
+        .sk-stat-text.st3 { width: 72%; animation-delay: 0.2s; }
+
+        /* ── FOOTER skeleton ── */
         .sk-footer {
           padding: 60px 20px;
           display: flex;
           justify-content: center;
-          border-top: 1px solid rgba(255,255,255,0.05);
+          border-top: 1px solid rgba(255,255,255,0.04);
         }
 
-        .sk-footer-text { width: 250px; height: 14px; border-radius: 4px; background: #111; }
+        .sk-footer-text {
+          height: 14px;
+          width: 220px;
+          border-radius: 4px;
+          background: #141414;
+          animation: skPulse 1.8s ease-in-out infinite;
+        }
 
         /* ── Skeleton responsive ── */
-        @media (max-width: 1200px) {
-          .sk-team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-          .sk-team-section { padding: 80px 32px; }
-        }
-
         @media (max-width: 1024px) {
-          .sk-team-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-          .sk-team-section { padding: 80px 24px; }
-          .sk-wisdom-section { padding: 80px 24px; }
-          .sk-scroll-section { padding: 80px 24px; }
-          .sk-stats-section { padding: 80px 24px; }
-          .sk-trusted-section { padding: 80px 24px; }
+          .sk-team-grid { grid-template-columns: repeat(2, 1fr); }
+          .sk-team, .sk-trusted, .sk-scroll, .sk-stats, .sk-wisdom { padding: 80px 24px; }
         }
 
         @media (max-width: 768px) {
-          .sk-hero-section { padding: 40px 20px; }
-          .sk-hero-title.line1 { width: 85%; }
-          .sk-hero-title.line2 { width: 60%; }
-          .sk-team-section { padding: 60px 20px; }
+          .sk-team { padding: 60px 20px; }
           .sk-team-grid { grid-template-columns: 1fr; gap: 16px; }
-          .sk-team-card { aspect-ratio: 9/12; }
-          .sk-wisdom-section { padding: 60px 20px; }
-          .sk-wisdom-line.line1 { width: 100%; }
-          .sk-wisdom-line.line2 { width: 95%; }
-          .sk-wisdom-line.line4 { width: 70%; }
-          .sk-trusted-section { padding: 60px 20px; }
-          .sk-logo-track { gap: 24px; }
-          .sk-logo { width: 100px; height: 30px; }
-          .sk-scroll-section { padding: 60px 20px; }
-          .sk-text-line { height: 22px; }
-          .sk-text-line.line5 { width: 85%; }
-          .sk-stats-section { padding: 60px 20px; }
-          .sk-stats-grid { grid-template-columns: 1fr; gap: 24px; }
+          .sk-card { aspect-ratio: 9/12; }
+          .sk-wisdom { padding: 60px 20px; }
+          .sk-wisdom-inner { padding: 40px 24px; }
+          .sk-trusted { padding: 60px 20px; }
+          .sk-logo-row { gap: 14px; }
+          .sk-logo-item { width: 100px; height: 32px; }
+          .sk-scroll { padding: 60px 20px; }
+          .sk-stats { padding: 60px 20px; }
+          .sk-stats-grid { grid-template-columns: 1fr; gap: 20px; }
           .sk-footer { padding: 40px 20px; }
+          .sk-hero-title.l1 { width: 75%; }
+          .sk-hero-title.l2 { width: 50%; }
         }
 
         @media (max-width: 480px) {
-          .sk-hero-title.line1 { width: 90%; height: 70px; }
-          .sk-hero-title.line2 { width: 65%; height: 55px; }
-          .sk-team-section { padding: 50px 16px; }
-          .sk-team-card { aspect-ratio: 9/13; }
-          .sk-wisdom-section { padding: 50px 16px; }
-          .sk-wisdom-box { gap: 12px; }
-          .sk-wisdom-line { height: 24px; }
-          .sk-trusted-section { padding: 50px 16px; }
-          .sk-logo { width: 80px; height: 25px; }
-          .sk-scroll-section { padding: 50px 16px; }
-          .sk-text-line { height: 20px; }
-          .sk-stats-section { padding: 50px 16px; }
-          .sk-stat-card { padding: 40px 24px; }
-          .sk-footer { padding: 30px 16px; }
+          .sk-team-grid { gap: 12px; }
+          .sk-logo-item { width: 80px; height: 26px; }
+          .sk-wisdom-inner { padding: 32px 20px; }
+          .sk-stat-card { padding: 36px 24px; }
         }
 
         /* ── Content ── */
@@ -671,6 +666,7 @@ export default function About() {
           color: #fff;
         }
 
+        /* ── Logo carousel: no separator, tighter gap ── */
         .carousel-container {
           overflow: hidden;
           position: relative;
@@ -696,7 +692,7 @@ export default function About() {
           100% { transform: translateX(-50%); }
         }
 
-        /* Each logo item: image + separator bar */
+        /* Each logo item — no separator, reduced padding for closeness */
         .logo-item {
           display: flex;
           align-items: center;
@@ -708,26 +704,20 @@ export default function About() {
           width: auto;
           opacity: 0.45;
           filter: grayscale(1) brightness(0.95);
-          transition: all 0.4s ease;
+          transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
           flex-shrink: 0;
           display: block;
-          padding: 0 32px;
+          /* Tighter horizontal padding — no bars between items */
+          padding: 0 18px;
         }
 
         .logo-item:hover img {
           opacity: 1;
           filter: grayscale(0) brightness(1);
-          transform: scale(1.12);
+          transform: scale(1.1);
         }
 
-        /* Vertical separator bar */
-        .logo-separator {
-          width: 1px;
-          height: 56px;
-          background: rgba(255, 255, 255, 0.08);
-          flex-shrink: 0;
-          border-radius: 1px;
-        }
+        /* Separator REMOVED — no .logo-separator element rendered */
 
         .scroll-text-section {
           padding: 100px 40px;
@@ -859,8 +849,7 @@ export default function About() {
           .wisdom-section p:first-child { font-size: clamp(1.1rem, 2.2vw, 1.6rem); }
           .trusted-section { padding: 60px 20px; }
           .trusted-header { margin-bottom: 50px; }
-          .logo-item img { padding: 0 20px; }
-          .logo-separator { height: 26px; }
+          .logo-item img { padding: 0 12px; }
           .scroll-text-section { padding: 60px 20px; }
           .scroll-text { font-size: clamp(22px, 3.5vw, 36px); }
           .stats-section { padding: 60px 20px; }
@@ -877,8 +866,7 @@ export default function About() {
           .wisdom-section { margin: 50px 0; padding: 50px 20px; border-radius: 12px; }
           .wisdom-section p:first-child { font-size: clamp(1rem, 2vw, 1.4rem); }
           .trusted-section { padding: 50px 16px; }
-          .logo-item img { padding: 0 14px; }
-          .logo-separator { height: 20px; }
+          .logo-item img { padding: 0 8px; }
           .scroll-text-section { padding: 50px 16px; }
           .scroll-text { font-size: clamp(18px, 3vw, 28px); line-height: 1.5; }
           .stats-section { padding: 50px 16px; }
@@ -891,77 +879,88 @@ export default function About() {
       `}</style>
 
       <div style={{ position: 'relative' }}>
+
+        {/* ═══════════════ SKELETON ═══════════════ */}
         <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
 
-          <section className="sk-hero-section">
-            <div className="skeleton-block sk-hero-title line1" />
-            <div className="skeleton-block sk-hero-title line2" />
+          {/* Hero */}
+          <section className="sk-hero">
+            <div className="sk-block sk-hero-title l1" />
+            <div className="sk-block sk-hero-title l2" />
           </section>
 
-          <section className="sk-team-section">
+          {/* Team */}
+          <section className="sk-team">
             <div className="sk-team-grid">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="skeleton-block sk-team-card">
-                  <div className="sk-card-overlay">
-                    <div className="skeleton-block sk-card-text" />
-                    <div className="skeleton-block sk-card-subtext" />
-                    <div className="skeleton-block sk-card-desc" />
-                    <div className="skeleton-block sk-card-desc" style={{ width: '75%' }} />
+                <div key={i} className="sk-card" style={{ animationDelay: `${i * 0.08}s` }}>
+                  <div className="sk-card-bottom">
+                    <div className="sk-line name" style={{ animationDelay: `${i * 0.08}s` }} />
+                    <div className="sk-line role" style={{ animationDelay: `${i * 0.08 + 0.1}s` }} />
+                    <div className="sk-line desc1" style={{ animationDelay: `${i * 0.08 + 0.2}s` }} />
+                    <div className="sk-line desc2" style={{ animationDelay: `${i * 0.08 + 0.3}s` }} />
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="sk-wisdom-section">
-            <div className="sk-wisdom-box">
-              <div className="skeleton-block sk-wisdom-line line1" />
-              <div className="skeleton-block sk-wisdom-line line2" />
-              <div className="skeleton-block sk-wisdom-line line3" />
-              <div className="skeleton-block sk-wisdom-line line4" />
+          {/* Wisdom */}
+          <section className="sk-wisdom">
+            <div className="sk-wisdom-inner">
+              <div className="sk-w-line w1" />
+              <div className="sk-w-line w2" />
+              <div className="sk-w-line w3" />
+              <div className="sk-w-line w4" />
             </div>
           </section>
 
-          <section className="sk-trusted-section">
-            <div className="sk-trusted-header">
-              <div className="sk-pulse-dot" />
-              <div className="skeleton-block sk-trusted-title" />
+          {/* Trusted */}
+          <section className="sk-trusted">
+            <div className="sk-trusted-head">
+              <div className="sk-dot" />
+              <div className="sk-trusted-label" />
             </div>
-            <div className="sk-logo-track">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="skeleton-block sk-logo" />
+            <div className="sk-logo-row">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="sk-logo-item" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </section>
 
-          <section className="sk-scroll-section">
-            <div className="sk-scroll-text">
-              <div className="skeleton-block sk-text-line line1" />
-              <div className="skeleton-block sk-text-line line2" />
-              <div className="skeleton-block sk-text-line line3" />
-              <div className="skeleton-block sk-text-line line4" />
-              <div className="skeleton-block sk-text-line line5" />
+          {/* Scroll text */}
+          <section className="sk-scroll">
+            <div className="sk-scroll-inner">
+              <div className="sk-t-line t1" />
+              <div className="sk-t-line t2" />
+              <div className="sk-t-line t3" />
+              <div className="sk-t-line t4" />
+              <div className="sk-t-line t5" />
             </div>
           </section>
 
-          <section className="sk-stats-section">
+          {/* Stats */}
+          <section className="sk-stats">
             <div className="sk-stats-grid">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="skeleton-block sk-stat-card">
-                  <div className="skeleton-block sk-stat-num" />
-                  <div className="skeleton-block sk-stat-text" />
-                  <div className="skeleton-block sk-stat-text" />
+                <div key={i} className="sk-stat-card" style={{ animationDelay: `${i * 0.12}s` }}>
+                  <div className="sk-stat-num" style={{ animationDelay: `${i * 0.12}s` }} />
+                  <div className="sk-stat-text st1" style={{ animationDelay: `${i * 0.12 + 0.1}s` }} />
+                  <div className="sk-stat-text st2" style={{ animationDelay: `${i * 0.12 + 0.2}s` }} />
+                  <div className="sk-stat-text st3" style={{ animationDelay: `${i * 0.12 + 0.3}s` }} />
                 </div>
               ))}
             </div>
           </section>
 
+          {/* Footer */}
           <div className="sk-footer">
-            <div className="skeleton-block sk-footer-text" />
+            <div className="sk-footer-text" />
           </div>
 
         </div>
 
+        {/* ═══════════════ CONTENT ═══════════════ */}
         <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
 
           <section className="hero-section">
@@ -1022,10 +1021,7 @@ export default function About() {
                 {[...logos, ...logos].map((logo, i) => {
                   const size = isMobile ? logo.mobile : logo.desktop
                   return (
-                    <div
-                      key={i}
-                      className="logo-item"
-                    >
+                    <div key={i} className="logo-item">
                       <Image
                         src={logo.src}
                         alt={`Client ${(i % logos.length) + 1}`}
@@ -1038,7 +1034,7 @@ export default function About() {
                           objectFit: 'contain',
                         }}
                       />
-                      <span className="logo-separator" aria-hidden="true" />
+                      {/* Separator intentionally removed */}
                     </div>
                   )
                 })}
