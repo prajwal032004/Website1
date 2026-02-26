@@ -68,11 +68,13 @@ export default function Ads() {
   const [loaded, setLoaded] = useState(false)
   const [unmutedIndex, setUnmutedIndex] = useState(null)
   const [fullscreenIndex, setFullscreenIndex] = useState(null)
-  const [volumes, setVolumes] = useState({})
   const [lastTapTime, setLastTapTime] = useState({})
   const containerRefs = useRef([])
   const iframeRefs = useRef([])
   const heroRef = useRef(null)
+  const prevUnmutedRef = useRef(null)
+  // Track whether homepage bg audio was live before fullscreen opened
+  const bgWasUnmutedRef = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 2200)
@@ -82,7 +84,6 @@ export default function Ads() {
   // Background video blur on scroll
   useEffect(() => {
     if (!loaded) return
-
     const updateBlur = () => {
       const heroSection = heroRef.current
       if (!heroSection) return
@@ -93,21 +94,15 @@ export default function Ads() {
         document.body.classList.remove('blur-active')
       }
     }
-
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateBlur()
-          ticking = false
-        })
+        window.requestAnimationFrame(() => { updateBlur(); ticking = false })
         ticking = true
       }
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     updateBlur()
-
     return () => {
       window.removeEventListener('scroll', handleScroll)
       document.body.classList.remove('blur-active')
@@ -124,8 +119,7 @@ export default function Ads() {
           const iframe = iframeRefs.current[idx]
           if (!iframe) return
           iframe.contentWindow?.postMessage(
-            { method: e.isIntersecting ? 'play' : 'pause' },
-            '*'
+            { method: e.isIntersecting ? 'play' : 'pause' }, '*'
           )
         })
       },
@@ -135,83 +129,111 @@ export default function Ads() {
     return () => obs.disconnect()
   }, [loaded])
 
-  // Handle double tap for fullscreen - FIXED
-  const handleDoubleTap = (idx) => {
-    const now = Date.now()
-    const lastTap = lastTapTime[idx] || 0
-
-    if (now - lastTap < 300) {
-      // Double tap detected - open fullscreen
-      setFullscreenIndex(idx)
-      document.body.style.overflow = 'hidden'
-      setLastTapTime({})
-    } else {
-      setLastTapTime({ ...lastTapTime, [idx]: now })
-    }
+  // ── Mute ALL card iframes ──────────────────────────────────────────────────
+  const muteAllCards = () => {
+    iframeRefs.current.forEach((iframe) => {
+      iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
+    })
   }
 
-  // Handle double click on desktop
-  const handleDoubleClick = (idx) => {
-    setFullscreenIndex(idx)
-    document.body.style.overflow = 'hidden'
-  }
-
+  // ── Sound toggle on cards ──────────────────────────────────────────────────
   const toggleSound = (e, idx) => {
     e.stopPropagation()
     const isUnmuted = unmutedIndex === idx
 
-    iframeRefs.current.forEach((iframe) => {
-      iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
-    })
+    muteAllCards()
 
     if (!isUnmuted) {
       setUnmutedIndex(idx)
       iframeRefs.current[idx]?.contentWindow?.postMessage(
-        { method: 'setVolume', value: 1 },
-        '*'
+        { method: 'setVolume', value: 1 }, '*'
       )
-      const bgVideo = document.querySelector('.background-video')
-      if (bgVideo) bgVideo.muted = true
+      // Mute homepage background Vimeo via SDK
+      if (window.__vimeoPlayer) {
+        window.__vimeoPlayer.setMuted(true).catch(() => { })
+      }
       window.dispatchEvent(new CustomEvent('ads-video-unmuted'))
     } else {
       setUnmutedIndex(null)
     }
   }
 
-  const handleVolumeChange = (idx, value) => {
-    const volumeValue = parseFloat(value) / 100
-    setVolumes({ ...volumes, [idx]: parseFloat(value) })
-    iframeRefs.current[idx]?.contentWindow?.postMessage(
-      { method: 'setVolume', value: volumeValue },
-      '*'
-    )
-    if (volumeValue > 0 && unmutedIndex !== idx) {
-      setUnmutedIndex(idx)
-    } else if (volumeValue === 0) {
-      setUnmutedIndex(null)
-    }
-  }
+  // ── Open fullscreen ────────────────────────────────────────────────────────
+  const openFullscreen = async (idx) => {
+    // Save which card was unmuted
+    prevUnmutedRef.current = unmutedIndex
 
-  const exitFullscreen = () => {
-    setFullscreenIndex(null)
-    document.body.style.overflow = ''
-  }
+    // Mute ALL card iframes immediately (including the double-tapped one)
+    muteAllCards()
+    setUnmutedIndex(null)
 
-  // Handle escape key to exit fullscreen
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && fullscreenIndex !== null) {
-        exitFullscreen()
+    // Check if homepage bg Vimeo is currently live, then mute it
+    if (window.__vimeoPlayer) {
+      try {
+        const muted = await window.__vimeoPlayer.getMuted()
+        bgWasUnmutedRef.current = !muted   // remember if it was playing with sound
+        if (!muted) {
+          // It was live — mute it so fullscreen is the only audio source
+          await window.__vimeoPlayer.setMuted(true)
+        }
+      } catch (_) {
+        bgWasUnmutedRef.current = false
       }
     }
 
-    if (fullscreenIndex !== null) {
-      document.addEventListener('keydown', handleKeyDown)
-    }
+    setFullscreenIndex(idx)
+    document.body.style.overflow = 'hidden'
+  }
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
+  // ── Exit fullscreen ────────────────────────────────────────────────────────
+  const exitFullscreen = () => {
+    setFullscreenIndex(null)
+    document.body.style.overflow = ''
+
+    // Restore card audio that was playing before fullscreen (if any)
+    const prev = prevUnmutedRef.current
+    if (prev !== null) {
+      setUnmutedIndex(prev)
+      setTimeout(() => {
+        iframeRefs.current[prev]?.contentWindow?.postMessage(
+          { method: 'setVolume', value: 1 }, '*'
+        )
+      }, 100)
     }
+    prevUnmutedRef.current = null
+
+    // Restore homepage bg Vimeo audio if it was live before fullscreen
+    if (bgWasUnmutedRef.current && window.__vimeoPlayer) {
+      window.__vimeoPlayer.setMuted(false).catch(() => { })
+      window.__vimeoPlayer.setVolume(1).catch(() => { })
+    }
+    bgWasUnmutedRef.current = false
+  }
+
+  // ── Double tap (mobile) ────────────────────────────────────────────────────
+  const handleDoubleTap = (idx) => {
+    const now = Date.now()
+    const lastTap = lastTapTime[idx] || 0
+    if (now - lastTap < 300) {
+      openFullscreen(idx)
+      setLastTapTime({})
+    } else {
+      setLastTapTime({ ...lastTapTime, [idx]: now })
+    }
+  }
+
+  // ── Double click (desktop) ─────────────────────────────────────────────────
+  const handleDoubleClick = (idx) => {
+    openFullscreen(idx)
+  }
+
+  // ── Escape key ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && fullscreenIndex !== null) exitFullscreen()
+    }
+    if (fullscreenIndex !== null) document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [fullscreenIndex])
 
   return (
@@ -219,92 +241,12 @@ export default function Ads() {
       <style jsx suppressHydrationWarning>{`
 
         /* ─────────────────────────────────────
-           VOLUME SLIDER STYLES
-        ───────────────────────────────────── */
-        .slider {
-          --slider-width: 120px;
-          --slider-height: 4px;
-          --slider-bg: rgba(255, 255, 255, 0.2);
-          --slider-border-radius: 4px;
-          --level-color: #fff;
-          --level-transition-duration: 0.1s;
-          --icon-margin: 8px;
-          --icon-color: #fff;
-          --icon-size: 16px;
-
-          position: relative;
-          cursor: pointer;
-          display: inline-flex;
-          flex-direction: row-reverse;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .slider .volume {
-          display: inline-block;
-          vertical-align: top;
-          color: var(--icon-color);
-          width: var(--icon-size);
-          height: auto;
-          flex-shrink: 0;
-          pointer-events: none;
-        }
-
-        .slider .level {
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-          width: var(--slider-width);
-          height: var(--slider-height);
-          background: var(--slider-bg);
-          border-radius: var(--slider-border-radius);
-          cursor: inherit;
-          outline: none;
-          padding: 0;
-          border: none;
-        }
-
-        .slider .level::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: var(--level-color);
-          cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .slider .level::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: var(--level-color);
-          cursor: pointer;
-          border: none;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .slider .level::-moz-range-track {
-          background: transparent;
-          border: none;
-        }
-
-        .slider .level::-moz-range-progress {
-          background: var(--level-color);
-          height: var(--slider-height);
-          border-radius: var(--slider-border-radius);
-        }
-
-        /* ─────────────────────────────────────
            FULLSCREEN VIDEO PLAYER
         ───────────────────────────────────── */
         .fullscreen-overlay {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
           background: #000;
           z-index: 9999;
           display: flex;
@@ -313,41 +255,33 @@ export default function Ads() {
           justify-content: center;
           animation: fadeIn 0.3s ease-in;
         }
-
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-
         .fullscreen-container {
           position: relative;
-          width: 100%;
-          height: 100%;
+          width: 100%; height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-direction: column;
         }
-
         .fullscreen-video-wrap {
           position: relative;
-          width: 100%;
-          flex: 1;
+          width: 100%; flex: 1;
           background: #000;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-
         .fullscreen-video-wrap iframe {
-          width: 100%;
-          height: 100%;
+          width: 100%; height: 100%;
           border: none;
           max-width: 100vw;
           max-height: calc(100vh - 100px);
         }
-
         .fullscreen-controls {
           position: relative;
           width: 100%;
@@ -361,76 +295,39 @@ export default function Ads() {
           animation: slideUp 0.3s ease-in;
           flex-wrap: wrap;
         }
-
         @keyframes slideUp {
           from { transform: translateY(100px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
-
-        .fs-info {
-          flex: 1;
-          min-width: 250px;
-        }
-
-        .fs-title {
-          font-size: 18px;
-          font-weight: 700;
-          color: #fff;
-          margin-bottom: 4px;
-          line-height: 1.2;
-        }
-
-        .fs-desc {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.7);
-          line-height: 1.4;
-        }
-
-        .fs-controls-group {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-shrink: 0;
-        }
-
-        /* Perfect Close Button Styles */
+        .fs-info { flex: 1; min-width: 250px; }
+        .fs-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+        .fs-desc  { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+        .fs-controls-group { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .fs-close-btn {
-          width: 44px;
-          height: 44px;
+          width: 44px; height: 44px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1.5px solid rgba(255, 255, 255, 0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          background: rgba(255,255,255,0.08);
+          border: 1.5px solid rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
           cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
           backdrop-filter: blur(12px);
           padding: 0;
-          position: relative;
           flex-shrink: 0;
           -webkit-tap-highlight-color: transparent;
         }
-
         .fs-close-btn:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.35);
+          background: rgba(255,255,255,0.15);
+          border-color: rgba(255,255,255,0.35);
           transform: scale(1.08) rotate(90deg);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
-
-        .fs-close-btn:active {
-          transform: scale(0.95);
-        }
-
+        .fs-close-btn:active { transform: scale(0.95); }
         .fs-close-btn svg {
-          width: 22px;
-          height: 22px;
-          stroke: #fff;
-          stroke-width: 2.5;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+          width: 22px; height: 22px;
+          stroke: #fff; stroke-width: 2.5;
+          stroke-linecap: round; stroke-linejoin: round;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         }
 
         /* ─────────────────────────────────────
@@ -442,107 +339,43 @@ export default function Ads() {
         }
 
         /* ─────────────────────────────────────
-           SKELETON STYLES
+           SKELETON
         ───────────────────────────────────── */
         .skeleton-wrapper {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          z-index: 50;
+          position: absolute; top: 0; left: 0;
+          width: 100%; z-index: 50;
           transition: opacity 0.6s ease-out, visibility 0.6s;
-          opacity: 1;
-          visibility: visible;
-          pointer-events: auto;
+          opacity: 1; visibility: visible; pointer-events: auto;
         }
-        .skeleton-wrapper.hidden {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
-
-        .sk-block {
-          background-color: #0f0f0f;
-          position: relative;
-          overflow: hidden;
-        }
+        .skeleton-wrapper.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .sk-block { background-color: #0f0f0f; position: relative; overflow: hidden; }
         .sk-block::after {
-          content: '';
-          position: absolute;
-          top: 0; right: 0; bottom: 0; left: 0;
+          content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
           transform: translateX(-100%);
-          background-image: linear-gradient(
-            90deg,
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.05) 20%,
-            rgba(255,255,255,0.09) 60%,
-            rgba(255,255,255,0) 100%
-          );
+          background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0.09) 60%, rgba(255,255,255,0) 100%);
           animation: shimmer 2s infinite;
         }
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
         .sk-hero-section {
-          position: relative;
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 20px;
+          position: relative; height: 100vh;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
         }
-        .sk-hero-line {
-          border-radius: 12px;
-          background: #111;
-          height: clamp(60px, 10vw, 140px);
-        }
+        .sk-hero-line { border-radius: 12px; background: #111; height: clamp(60px, 10vw, 140px); }
         .sk-hero-line.line1 { width: 40%; }
         .sk-hero-line.line2 { width: 37%; }
-
-        .sk-work-section {
-          padding: 100px 32px 80px;
-          max-width: 1500px;
-          margin: 0 auto;
-          width: 100%;
-        }
-        .sk-work-header {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 52px;
-        }
-        .sk-work-title {
-          width: 220px;
-          height: clamp(40px, 5vw, 68px);
-          border-radius: 8px;
-          background: #111;
-        }
-        .sk-work-divider {
-          width: 40px;
-          height: 1px;
-          background: rgba(255,255,255,0.08);
-          margin-bottom: 44px;
-        }
-
-        .sk-bento {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-          grid-auto-flow: dense;
-          align-items: start;
-        }
+        .sk-work-section { padding: 100px 32px 80px; max-width: 1500px; margin: 0 auto; width: 100%; }
+        .sk-work-header { display: flex; align-items: center; justify-content: center; margin-bottom: 52px; }
+        .sk-work-title { width: 220px; height: clamp(40px, 5vw, 68px); border-radius: 8px; background: #111; }
+        .sk-work-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 44px; }
+        .sk-bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; grid-auto-flow: dense; align-items: start; }
         .sk-card {
-          border-radius: 14px;
-          background: #111;
+          border-radius: 14px; background: #111;
           border: 1px solid rgba(255,255,255,0.05);
-          position: relative;
-          overflow: hidden;
+          position: relative; overflow: hidden;
         }
         .sk-card::after {
-          content: '';
-          position: absolute; inset: 0;
+          content: ''; position: absolute; inset: 0;
           transform: translateX(-100%);
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
           animation: skSweep 2.2s ease-in-out infinite;
@@ -554,50 +387,17 @@ export default function Ads() {
         .sk-card:nth-child(5)::after { animation-delay: 0.4s; }
         .sk-card:nth-child(6)::after { animation-delay: 0.5s; }
         .sk-card:nth-child(7)::after { animation-delay: 0.6s; }
-        @keyframes skSweep {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
+        @keyframes skSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .sk-card.sk-h { grid-column: span 2; height: 420px; }
         .sk-card.sk-v { grid-column: span 1; height: 550px; }
-
-        .sk-card-badge {
-          position: absolute;
-          top: 16px; left: 16px;
-          width: 72px; height: 24px;
-          border-radius: 100px;
-          background: rgba(255,255,255,0.06);
-        }
-        .sk-card-sound {
-          position: absolute;
-          top: 16px; right: 16px;
-          width: 42px; height: 42px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.08);
-        }
-        .sk-card-info {
-          position: absolute;
-          bottom: 28px; left: 28px; right: 28px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .sk-card-tag  { width: 50px;  height: 10px; border-radius: 2px; background: rgba(255,255,255,0.06); }
+        .sk-card-badge { position: absolute; top: 16px; left: 16px; width: 72px; height: 24px; border-radius: 100px; background: rgba(255,255,255,0.06); }
+        .sk-card-sound { position: absolute; top: 16px; right: 16px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+        .sk-card-info { position: absolute; bottom: 28px; left: 28px; right: 28px; display: flex; flex-direction: column; gap: 10px; }
+        .sk-card-tag   { width: 50px; height: 10px; border-radius: 2px; background: rgba(255,255,255,0.06); }
         .sk-card-title { width: 55%; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.08); }
-        .sk-card-desc { width: 75%; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.05); }
-
-        .sk-footer {
-          padding: 60px 20px;
-          display: flex;
-          justify-content: center;
-          border-top: 1px solid rgba(255,255,255,0.07);
-        }
-        .sk-footer-line {
-          width: 200px; height: 14px;
-          border-radius: 4px;
-          background: #111;
-        }
+        .sk-card-desc  { width: 75%; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.05); }
+        .sk-footer { padding: 60px 20px; display: flex; justify-content: center; border-top: 1px solid rgba(255,255,255,0.07); }
+        .sk-footer-line { width: 200px; height: 14px; border-radius: 4px; background: #111; }
 
         @media (max-width: 1024px) {
           .sk-bento { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -619,87 +419,45 @@ export default function Ads() {
           .sk-card.sk-v { grid-column: 1; height: auto; aspect-ratio: 9 / 16; }
         }
 
-        .content-wrapper {
-          opacity: 0;
-          transition: opacity 0.8s ease-in;
-        }
-        .content-wrapper.loaded {
-          opacity: 1;
-        }
-
-        .page {
-          min-height: 100vh;
-          background: transparent;
-          display: flex;
-          flex-direction: column;
-        }
+        /* ─────────────────────────────────────
+           PAGE
+        ───────────────────────────────────── */
+        .content-wrapper { opacity: 0; transition: opacity 0.8s ease-in; }
+        .content-wrapper.loaded { opacity: 1; }
+        .page { min-height: 100vh; background: transparent; display: flex; flex-direction: column; }
 
         .hero {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          padding: 0 24px;
+          height: 100vh; display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          position: relative; padding: 0 24px;
         }
         .hero-eyebrow {
-          font-size: 11px;
-          letter-spacing: 0.3em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.35);
-          margin-bottom: 28px;
-          opacity: 0;
-          animation: heroFade 1s ease 0.4s forwards;
+          font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(255,255,255,0.35); margin-bottom: 28px;
+          opacity: 0; animation: heroFade 1s ease 0.4s forwards;
         }
-        .hero-content {
-          position: relative;
-          z-index: 2;
-          text-align: center;
-          mix-blend-mode: difference;
-        }
+        .hero-content { position: relative; z-index: 2; text-align: center; mix-blend-mode: difference; }
         .hero-title {
-          font-size: clamp(72px, 13vw, 180px);
-          font-weight: 800;
-          line-height: 0.9;
-          letter-spacing: -0.04em;
-          text-transform: uppercase;
-          color: #fff;
-          text-align: center;
-          opacity: 0;
-          animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+          font-size: clamp(72px, 13vw, 180px); font-weight: 800;
+          line-height: 0.9; letter-spacing: -0.04em; text-transform: uppercase;
+          color: #fff; text-align: center;
+          opacity: 0; animation: fadeInUp 1.2s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
         }
         .hero-scroll {
-          position: absolute;
-          bottom: 40px; left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          opacity: 0;
-          animation: heroFade 1s ease 1.3s forwards;
+          position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+          display: flex; flex-direction: column; align-items: center; gap: 8px;
+          opacity: 0; animation: heroFade 1s ease 1.3s forwards;
         }
-        .hero-scroll-label {
-          font-size: 9px;
-          letter-spacing: 0.3em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.28);
-        }
+        .hero-scroll-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
         .hero-scroll-line {
           width: 1px; height: 44px;
           background: linear-gradient(to bottom, rgba(255,255,255,0.28), transparent);
           animation: scrollPulse 1.6s ease-in-out infinite;
         }
         @keyframes scrollPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes heroFade {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes heroFade { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
         @media (max-width: 768px) {
           .hero-title { font-size: clamp(58px, 18vw, 110px); }
           .hero-eyebrow { font-size: 10px; }
@@ -707,134 +465,56 @@ export default function Ads() {
         }
         @media (max-width: 480px) { .hero-title { font-size: clamp(50px, 20vw, 88px); } }
 
-        .work {
-          padding: 100px 32px 80px;
-          max-width: 1500px;
-          margin: 0 auto;
-          width: 100%;
-        }
-        .work-header {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 52px;
-        }
-        .work-title {
-          font-size: clamp(40px, 6vw, 72px);
-          font-weight: 800;
-          letter-spacing: -0.04em;
-          text-transform: uppercase;
-          line-height: 1;
-          color: #fff;
-          text-align: center;
-        }
-        .work-count {
-          position: absolute;
-          right: 0; bottom: 6px;
-          font-size: 10px;
-          letter-spacing: 0.2em;
-          color: rgba(255,255,255,0.28);
-          text-transform: uppercase;
-          white-space: nowrap;
-        }
-        .work-divider {
-          width: 40px; height: 1px;
-          background: rgba(255,255,255,0.1);
-          margin-bottom: 44px;
-        }
+        .work { padding: 100px 32px 80px; max-width: 1500px; margin: 0 auto; width: 100%; }
+        .work-header { position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 52px; }
+        .work-title { font-size: clamp(40px,6vw,72px); font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; line-height: 1; color: #fff; text-align: center; }
+        .work-count { position: absolute; right: 0; bottom: 6px; font-size: 10px; letter-spacing: 0.2em; color: rgba(255,255,255,0.28); text-transform: uppercase; white-space: nowrap; }
+        .work-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 44px; }
 
-        .bento {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-          grid-auto-flow: dense;
-          align-items: start;
-        }
+        .bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; grid-auto-flow: dense; align-items: start; }
         .video-card {
-          position: relative;
-          border-radius: 14px;
-          overflow: hidden;
-          background: #080808;
-          border: 1px solid rgba(255,255,255,0.07);
+          position: relative; border-radius: 14px; overflow: hidden;
+          background: #080808; border: 1px solid rgba(255,255,255,0.07);
           cursor: pointer;
-          transition: transform 0.45s cubic-bezier(0.16,1,0.3,1),
-                      box-shadow 0.45s ease,
-                      border-color 0.3s ease;
-          -webkit-user-select: none;
-          user-select: none;
-          -webkit-touch-callout: none;
+          transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s ease, border-color 0.3s ease;
+          -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
         }
-        .video-card:hover {
-          transform: translateY(-8px) scale(1.01);
-          box-shadow: 0 28px 70px rgba(0,0,0,0.65);
-          border-color: rgba(255,255,255,0.14);
-        }
+        .video-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: 0 28px 70px rgba(0,0,0,0.65); border-color: rgba(255,255,255,0.14); }
         .video-card.horizontal { grid-column: span 2; height: 420px; }
         .video-card.vertical   { grid-column: span 1; height: 550px; }
 
-        .vimeo-wrap {
-          position: absolute; inset: 0;
-          background: #000;
-          overflow: hidden;
-        }
-        .vimeo-wrap iframe {
-          position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 170%; height: 170%;
-          border: none;
-          pointer-events: none;
-        }
+        .vimeo-wrap { position: absolute; inset: 0; background: #000; overflow: hidden; }
+        .vimeo-wrap iframe { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 170%; height: 170%; border: none; pointer-events: none; }
         .video-card.vertical .vimeo-wrap iframe { width: 130%; height: 130%; }
 
         .card-info {
           position: absolute; inset: 0;
           background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.35) 50%, transparent 100%);
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 28px;
-          opacity: 0;
-          transition: opacity 0.35s ease;
+          display: flex; flex-direction: column; justify-content: flex-end; padding: 28px;
+          opacity: 0; transition: opacity 0.35s ease;
         }
         .video-card:hover .card-info { opacity: 1; }
-        .card-tag  { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+        .card-tag   { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
         .card-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #fff; line-height: 1.1; margin-bottom: 8px; }
         .card-desc  { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.5; }
 
         .card-badge {
-          position: absolute;
-          top: 16px; left: 16px;
-          font-size: 9px;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.55);
-          background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(10px);
-          padding: 5px 12px;
-          border-radius: 100px;
-          border: 1px solid rgba(255,255,255,0.1);
-          z-index: 5;
-          pointer-events: none;
+          position: absolute; top: 16px; left: 16px;
+          font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+          color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(10px); padding: 5px 12px; border-radius: 100px;
+          border: 1px solid rgba(255,255,255,0.1); z-index: 5; pointer-events: none;
         }
         .sound-btn {
-          position: absolute;
-          top: 16px; right: 16px;
-          width: 42px; height: 42px;
-          border-radius: 50%;
-          background: rgba(0,0,0,0.6);
-          border: 1px solid rgba(255,255,255,0.15);
+          position: absolute; top: 16px; right: 16px;
+          width: 42px; height: 42px; border-radius: 50%;
+          background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15);
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          backdrop-filter: blur(10px);
-          z-index: 10;
-          padding: 0;
+          cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px); z-index: 10; padding: 0;
         }
         .sound-btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.1); }
         .sound-btn:active { transform: scale(0.95); }
-        .sound-btn svg  { width: 17px; height: 17px; stroke: #fff; fill: none; }
+        .sound-btn svg { width: 17px; height: 17px; stroke: #fff; fill: none; }
 
         @media (max-width: 1024px) {
           .bento { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -869,112 +549,47 @@ export default function Ads() {
           .video-card.vertical .vimeo-wrap iframe { width: 130%; height: 130%; }
         }
 
-        /* Mobile fullscreen optimizations */
         @media (max-width: 768px) {
-          .fullscreen-controls {
-            flex-direction: row;
-            align-items: center;
-            gap: 16px;
-            padding: 20px;
-            justify-content: space-between;
-          }
-          .fs-info {
-            flex: 1;
-          }
-          .fs-title {
-            font-size: 16px;
-          }
-          .fs-desc {
-            font-size: 11px;
-          }
-          .fs-controls-group {
-            width: auto;
-            justify-content: flex-end;
-          }
+          .fullscreen-controls { flex-direction: row; align-items: center; gap: 16px; padding: 20px; justify-content: space-between; }
+          .fs-info { flex: 1; }
+          .fs-title { font-size: 16px; }
+          .fs-desc  { font-size: 11px; }
+          .fs-controls-group { width: auto; justify-content: flex-end; }
         }
-
         @media (max-width: 480px) {
-          .fullscreen-controls {
-            padding: 16px;
-          }
-          .fs-title {
-            font-size: 14px;
-            margin-bottom: 2px;
-          }
-          .fs-desc {
-            font-size: 10px;
-          }
-          .fs-controls-group {
-            gap: 12px;
-          }
-          .fs-close-btn {
-            width: 40px;
-            height: 40px;
-          }
-          .fs-close-btn svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2.5;
-          }
+          .fullscreen-controls { padding: 16px; }
+          .fs-title { font-size: 14px; margin-bottom: 2px; }
+          .fs-desc  { font-size: 10px; }
+          .fs-controls-group { gap: 12px; }
+          .fs-close-btn { width: 40px; height: 40px; }
+          .fs-close-btn svg { width: 20px; height: 20px; stroke-width: 2.5; }
         }
 
         .copyright-container {
-          width: 100%;
-          padding: 60px 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          position: relative;
-          z-index: 100;
+          width: 100%; padding: 60px 20px;
+          display: flex; justify-content: center; align-items: center;
+          position: relative; z-index: 100;
           border-top: 1px solid rgba(255,255,255,0.07);
         }
-        .copyright {
-          font-size: 14px;
-          color: rgba(255,255,255,0.9);
-          font-weight: 400;
-          letter-spacing: 0.5px;
-          margin: 0;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .copyright-link, .copyright-link:visited, .copyright-link:active {
-          color: #ffffff;
-          font-weight: 700;
-          text-decoration: none;
-          position: relative;
-          display: inline-block;
-          margin: 0 4px;
-          cursor: pointer;
-        }
-        .copyright-link::after {
-          content: '';
-          position: absolute;
-          width: 0; height: 1px;
-          bottom: -2px; left: 0;
-          background-color: #ffffff;
-          transition: width 0.3s ease;
-        }
+        .copyright { font-size: 14px; color: rgba(255,255,255,0.9); font-weight: 400; letter-spacing: 0.5px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .copyright-link, .copyright-link:visited, .copyright-link:active { color: #fff; font-weight: 700; text-decoration: none; position: relative; display: inline-block; margin: 0 4px; cursor: pointer; }
+        .copyright-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -2px; left: 0; background-color: #fff; transition: width 0.3s ease; }
         .copyright-link:hover::after { width: 100%; }
         .copyright-link:hover { opacity: 0.8; transform: translateY(-1px); }
-        @media (max-width: 768px) {
-          .copyright-container { padding: 40px 20px; }
-          .copyright { font-size: 12px; text-align: center; }
-        }
+        @media (max-width: 768px) { .copyright-container { padding: 40px 20px; } .copyright { font-size: 12px; text-align: center; } }
       `}</style>
 
       <div style={{ position: 'relative' }}>
 
+        {/* ── SKELETON ── */}
         <div className={`skeleton-wrapper ${loaded ? 'hidden' : ''}`}>
           <section className="sk-hero-section">
             <div className="sk-block sk-hero-line line1" />
             <div className="sk-block sk-hero-line line2" />
           </section>
-
           <div className="sk-work-section">
-            <div className="sk-work-header">
-              <div className="sk-block sk-work-title" />
-            </div>
+            <div className="sk-work-header"><div className="sk-block sk-work-title" /></div>
             <div className="sk-work-divider" />
-
             <div className="sk-bento">
               {[...Array(7)].map((_, i) => (
                 <div key={i} className={`sk-block sk-card ${i < 6 ? 'sk-h' : 'sk-v'}`}>
@@ -989,22 +604,17 @@ export default function Ads() {
               ))}
             </div>
           </div>
-
-          <div className="sk-footer">
-            <div className="sk-block sk-footer-line" />
-          </div>
+          <div className="sk-footer"><div className="sk-block sk-footer-line" /></div>
         </div>
 
+        {/* ── CONTENT ── */}
         <div className={`content-wrapper ${loaded ? 'loaded' : ''}`}>
           <div className="page">
 
             <section className="hero" ref={heroRef}>
               <p className="hero-eyebrow">5feet4 Studio — Mumbai</p>
               <div className="hero-content">
-                <h1 className="hero-title">
-                  Creative <br />
-                  Stories
-                </h1>
+                <h1 className="hero-title">Creative <br />Stories</h1>
               </div>
             </section>
 
@@ -1079,30 +689,25 @@ export default function Ads() {
             <div className="copyright-container">
               <p className="copyright">
                 © 2026{' '}
-                <Link href="/" className="copyright-link">
-                  5feet4
-                </Link>
+                <Link href="/" className="copyright-link">5feet4</Link>
                 . All Rights Reserved.
               </p>
             </div>
-
           </div>
         </div>
 
-        {/* FULLSCREEN PLAYER */}
+        {/* ── FULLSCREEN PLAYER ── */}
         {fullscreenIndex !== null && (
           <div className="fullscreen-overlay" onClick={exitFullscreen}>
             <div className="fullscreen-container" onClick={(e) => e.stopPropagation()}>
               <div className="fullscreen-video-wrap">
                 <iframe
-                  src={
-                    (() => {
-                      const { id, hash } = getVimeoData(videos[fullscreenIndex].src)
-                      return hash
-                        ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=0&loop=0`
-                        : `https://player.vimeo.com/video/${id}?autoplay=1&muted=0&loop=0`
-                    })()
-                  }
+                  src={(() => {
+                    const { id, hash } = getVimeoData(videos[fullscreenIndex].src)
+                    return hash
+                      ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=0&loop=0`
+                      : `https://player.vimeo.com/video/${id}?autoplay=1&muted=0&loop=0`
+                  })()}
                   title={videos[fullscreenIndex].title}
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture"
@@ -1115,13 +720,8 @@ export default function Ads() {
                   <div className="fs-title">{videos[fullscreenIndex].title}</div>
                   <div className="fs-desc">{videos[fullscreenIndex].desc}</div>
                 </div>
-
                 <div className="fs-controls-group">
-                  <button
-                    className="fs-close-btn"
-                    onClick={exitFullscreen}
-                    aria-label="Exit fullscreen"
-                  >
+                  <button className="fs-close-btn" onClick={exitFullscreen} aria-label="Exit fullscreen">
                     <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />

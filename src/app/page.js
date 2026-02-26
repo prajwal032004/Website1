@@ -8,14 +8,25 @@ export default function Home() {
   const heroRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [showContent, setShowContent] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)   // bg video starts muted
+  const [isMuted, setIsMuted] = useState(true)
 
-  // Toggle background video sound
-  const toggleBgSound = () => {
-    const video = document.querySelector('.background-video')
-    if (!video) return
-    video.muted = !video.muted
-    setIsMuted(video.muted)
+  // ── Toggle Vimeo background sound via SDK ──────────────────────────────────
+  const toggleBgSound = async () => {
+    const player = window.__vimeoPlayer
+    if (!player) return
+    try {
+      const muted = await player.getMuted()
+      if (muted) {
+        await player.setMuted(false)
+        await player.setVolume(1)
+        setIsMuted(false)
+      } else {
+        await player.setMuted(true)
+        setIsMuted(true)
+      }
+    } catch (err) {
+      console.error('Vimeo sound toggle error:', err)
+    }
   }
 
   useEffect(() => {
@@ -77,12 +88,13 @@ export default function Home() {
     updateBlur()
 
     // Listen for ads-page video unmute — mute bg video in response
-    const handleAdsMuted = () => {
-      const video = document.querySelector('.background-video')
-      if (video && !video.muted) {
-        video.muted = true
+    const handleAdsMuted = async () => {
+      const player = window.__vimeoPlayer
+      if (!player) return
+      try {
+        await player.setMuted(true)
         setIsMuted(true)
-      }
+      } catch (_) { }
     }
     window.addEventListener('ads-video-unmuted', handleAdsMuted)
 
@@ -126,6 +138,8 @@ export default function Home() {
           font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           -webkit-font-smoothing: antialiased;
         }
+
+        /* Blur the Vimeo wrapper div on scroll */
         :global(body.blur-active .background-video) {
           filter: blur(15px) brightness(0.5);
           transition: filter 0.8s ease;
@@ -286,7 +300,7 @@ export default function Home() {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ---- SCROLL HINT (bottom-left) ---- */
+        /* ---- SCROLL HINT ---- */
         .scroll-hint {
           position: absolute;
           bottom: 36px;
@@ -320,8 +334,7 @@ export default function Home() {
         }
 
         /* ==============================
-           SOUND TOGGLE — bottom-right of hero,
-           same vertical level as scroll hint
+           SOUND TOGGLE
            ============================== */
         .sound-toggle {
           position: absolute;
@@ -335,7 +348,6 @@ export default function Home() {
           opacity: 0;
           animation: fadeInUp 1s ease-out 1.6s forwards;
         }
-
         .sound-btn {
           width: 44px;
           height: 44px;
@@ -367,8 +379,6 @@ export default function Home() {
           transition: stroke 0.2s ease;
         }
         .sound-btn:hover svg { stroke: #fff; }
-
-        /* Label under button */
         .sound-label {
           font-size: 9px;
           letter-spacing: 2.5px;
@@ -379,8 +389,6 @@ export default function Home() {
           transition: color 0.2s ease;
         }
         .sound-toggle:hover .sound-label { color: rgba(255,255,255,0.55); }
-
-        /* Unmuted state — subtle glow ring */
         .sound-btn.unmuted {
           background: rgba(255,255,255,0.1);
           border-color: rgba(255,255,255,0.4);
@@ -399,7 +407,6 @@ export default function Home() {
           padding: 120px 24px 100px;
           overflow: hidden;
         }
-
         .floating-container {
           position: absolute;
           width: 100%;
@@ -427,7 +434,6 @@ export default function Home() {
           z-index: 10;
           box-shadow: 0 30px 80px rgba(255,255,255,0.28);
         }
-
         @keyframes floatIn {
           0%   { opacity: 0; transform: scale(0.3) translateY(-80px) rotate(-8deg); }
           60%  { opacity: 1; transform: scale(1.06) translateY(8px) rotate(1.5deg); }
@@ -437,7 +443,6 @@ export default function Home() {
           0%, 100% { transform: translateY(0px); }
           50%       { transform: translateY(-18px); }
         }
-
         .float-img:nth-child(1) { width: 119px; height: 119px; left: 43.6%; top: 24%;   animation: floatIn 0.9s ease-out 0.1s forwards, float 4.0s ease-in-out 1.0s infinite; }
         .float-img:nth-child(2) { width: 137px; height: 137px; left: 69.2%; top: 27.8%; animation: floatIn 0.9s ease-out 0.2s forwards, float 4.3s ease-in-out 1.1s infinite; }
         .float-img:nth-child(3) { width: 156px; height: 156px; left: 14.2%; top: 29.4%; animation: floatIn 0.9s ease-out 0.3s forwards, float 4.6s ease-in-out 1.2s infinite; }
@@ -452,18 +457,6 @@ export default function Home() {
           padding: 0 24px;
           max-width: 1200px;
           width: 100%;
-        }
-        .contact-dot {
-          width: 8px;
-          height: 8px;
-          background: #4eff91;
-          border-radius: 50%;
-          animation: blink 2s ease-in-out infinite;
-          flex-shrink: 0;
-        }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.3; }
         }
         .contact-subtitle {
           font-size: clamp(22px, 3.8vw, 46px);
@@ -500,16 +493,11 @@ export default function Home() {
           border-radius: 2px;
         }
         .contact-email:hover::after { width: 100%; }
-
         .divider-line {
           width: 1px; height: 60px;
           background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
           margin: 40px auto;
         }
-
-        /* ============================================
-           COPYRIGHT CONTAINER WITH INSTAGRAM BUTTON
-           ============================================ */
         .copyright-container {
           width: 100%;
           padding: 0;
@@ -521,11 +509,6 @@ export default function Home() {
           position: relative;
           z-index: 100;
         }
-
-        /* ============================================
-           INSTAGRAM BUTTON — Uiverse style
-           Black and grey gradient with expansion animation
-           ============================================ */
         .instagram-link {
           border: none;
           border-radius: 50%;
@@ -542,13 +525,11 @@ export default function Home() {
           text-decoration: none;
           color: #fff;
         }
-
         .instagram-icon {
           width: 24px;
           height: 24px;
           transition: opacity 0.3s ease;
         }
-
         .instagram-text {
           position: absolute;
           inset: 0;
@@ -561,23 +542,14 @@ export default function Home() {
           opacity: 0;
           transition: opacity 0.4s ease;
         }
-
-        /* Hover state */
         .instagram-link:hover {
           width: 110px;
           border-radius: 30px;
           background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 50%, #1a1a1a 100%);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
-
-        .instagram-link:hover .instagram-text {
-          opacity: 1;
-        }
-
-        .instagram-link:hover .instagram-icon {
-          opacity: 0;
-        }
-
+        .instagram-link:hover .instagram-text { opacity: 1; }
+        .instagram-link:hover .instagram-icon { opacity: 0; }
         .copyright {
           font-size: 13px;
           color: rgba(255,255,255,0.3);
@@ -593,28 +565,20 @@ export default function Home() {
            ============================== */
         @media (max-width: 768px) {
           .hero-title { font-size: clamp(58px, 18vw, 100px); letter-spacing: -3px; }
-          .scroll-hint { display:none; }
-
-          .sound-toggle {
-            bottom: 28px;
-            right: 20px;
-            gap: 8px;
-          }
+          .scroll-hint { display: none; }
+          .sound-toggle { bottom: 28px; right: 20px; gap: 8px; }
           .sound-btn { width: 38px; height: 38px; }
           .sound-btn svg { width: 16px; height: 16px; }
           .sound-label { font-size: 8px; letter-spacing: 2px; }
-
           .contact-section { padding: 100px 20px 80px; min-height: 100svh; }
           .floating-container { height: 360px; top: 28%; pointer-events: none; }
           .float-img { border-radius: 12px; transform: none !important; }
-
           .float-img:nth-child(1) { left: 44% !important; top: -5% !important; width: 88px !important; height: 88px !important; }
           .float-img:nth-child(2) { left: auto !important; right: 4% !important; top: 8% !important; width: 82px !important; height: 110px !important; }
           .float-img:nth-child(3) { left: 4% !important; top: 10% !important; width: 96px !important; height: 120px !important; }
           .float-img:nth-child(4) { left: 44% !important; top: 54% !important; width: 80px !important; height: 80px !important; }
           .float-img:nth-child(5) { left: auto !important; right: 4% !important; top: 56% !important; width: 108px !important; height: 130px !important; }
           .float-img:nth-child(6) { left: 4% !important; top: 58% !important; width: 90px !important; height: 118px !important; }
-
           .contact-content { margin-top: 260px; }
           .contact-subtitle { font-size: clamp(18px, 5.5vw, 28px); margin-bottom: 14px; }
           .contact-email { font-size: clamp(22px, 7vw, 38px); word-break: break-word; }
@@ -622,7 +586,6 @@ export default function Home() {
           .copyright-container { gap: 20px; padding: 0; }
           .copyright { font-size: 11px; text-align: center; }
         }
-
         @media (max-width: 480px) {
           .hero-title { font-size: clamp(52px, 20vw, 80px); letter-spacing: -2px; }
           .floating-container { height: 320px; top: 22%; }
@@ -630,7 +593,6 @@ export default function Home() {
           .scroll-hint { left: 44%; }
           .contact-email { font-size: clamp(20px, 8vw, 32px); }
           .contact-subtitle { font-size: clamp(16px, 5vw, 22px); }
-
           .float-img:nth-child(1) { left: 41% !important; top: 21% !important; width: 110px !important; height: 145px !important; }
           .float-img:nth-child(2) { left: auto !important; right: 6% !important; top: 11% !important; width: 70px !important; height: 96px !important; }
           .float-img:nth-child(3) { left: 6% !important; top: 11% !important; width: 84px !important; height: 105px !important; }
@@ -638,7 +600,6 @@ export default function Home() {
           .float-img:nth-child(5) { left: auto !important; right: 6% !important; top: 84% !important; width: 94px !important; height: 121px !important; }
           .float-img:nth-child(6) { left: 6% !important; top: 83% !important; width: 102px !important; height: 115px !important; }
         }
-
         @media (hover: none) {
           .float-img { box-shadow: 0 12px 40px rgba(255,255,255,0.12); }
           .contact-email:hover { color: #fff; transform: none; text-shadow: none; }
@@ -649,9 +610,7 @@ export default function Home() {
 
       <LoadingScreen />
 
-      {/* ========================
-          SKELETON LOADER
-          ======================== */}
+      {/* ======================== SKELETON ======================== */}
       <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
         <div className="sk-floats" style={{ position: 'absolute', top: '10%', bottom: '40%' }}>
           {[1, 2, 3, 4, 5, 6].map(i => (
@@ -670,26 +629,21 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ========================
-          REAL CONTENT
-          ======================== */}
+      {/* ======================== REAL CONTENT ======================== */}
       <div className={`main-container${showContent ? ' visible' : ''}`}>
 
         {/* HERO */}
         <section className="hero-section" ref={heroRef}>
           <div className="hero-content">
-            <h1 className="hero-title">
-              <br />
-            </h1>
+            <h1 className="hero-title"><br /></h1>
           </div>
 
-          {/* Scroll hint — centred */}
           <div className="scroll-hint">
             <span>Scroll</span>
             <div className="scroll-arrow" />
           </div>
 
-          {/* ── SOUND TOGGLE — bottom-right ── */}
+          {/* SOUND TOGGLE */}
           <div className="sound-toggle">
             <button
               className={`sound-btn${isMuted ? '' : ' unmuted'}`}
@@ -697,14 +651,12 @@ export default function Home() {
               aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
             >
               {isMuted ? (
-                /* Muted speaker */
                 <svg className="icon-muted" viewBox="0 0 24 24">
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                   <line x1="23" y1="9" x2="17" y2="15" />
                   <line x1="17" y1="9" x2="23" y2="15" />
                 </svg>
               ) : (
-                /* Speaker with waves */
                 <svg className="icon-unmuted" viewBox="0 0 24 24">
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                   <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />

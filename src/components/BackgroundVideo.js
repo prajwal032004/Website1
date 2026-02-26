@@ -3,69 +3,53 @@
 import { useEffect, useRef } from 'react'
 
 export default function BackgroundVideo() {
-    const videoRef = useRef(null)
+    const containerRef = useRef(null)
+    const playerRef = useRef(null)
 
     useEffect(() => {
-        const video = videoRef.current
-        if (!video) return
+        // Avoid loading twice (React strict mode / hot reload)
+        if (window.__vimeoPlayer) return
 
-        const handleLoadedData = () => {
-            video.classList.add('loaded')
-        }
+        const script = document.createElement('script')
+        script.src = 'https://player.vimeo.com/api/player.js'
+        script.async = true
 
-        const playVideo = () => {
-            video.play().catch((err) => {
-                console.log('Video autoplay prevented, waiting for user interaction')
+        script.onload = () => {
+            if (!containerRef.current || !window.Vimeo) return
 
-                const playOnce = () => {
-                    video.play()
-                    document.removeEventListener('click', playOnce)
-                    document.removeEventListener('touchstart', playOnce)
-                    document.removeEventListener('scroll', playOnce)
-                }
-
-                document.addEventListener('click', playOnce, { once: true })
-                document.addEventListener('touchstart', playOnce, { once: true })
-                document.addEventListener('scroll', playOnce, { once: true })
+            const player = new window.Vimeo.Player(containerRef.current, {
+                id: 1167696119,
+                background: true,   // kills ALL UI: controls, bar, title, logo
+                autopause: false,
+                muted: true,
+                loop: true,
+                autoplay: true,
+                transparent: false,
             })
+
+            playerRef.current = player
+            window.__vimeoPlayer = player
+
+            player.ready().then(() => {
+                // Fade in once ready
+                if (containerRef.current) {
+                    containerRef.current.classList.add('loaded')
+                }
+            }).catch(() => { })
         }
 
-        video.addEventListener('loadeddata', handleLoadedData)
-
-        if (video.readyState >= 3) {
-            video.classList.add('loaded')
-        }
-
-        playVideo()
-
-        const handleVisibilityChange = () => {
-            if (!document.hidden && video.paused) {
-                playVideo()
-            }
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityChange)
+        document.head.appendChild(script)
 
         return () => {
-            video.removeEventListener('loadeddata', handleLoadedData)
-            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            if (playerRef.current) {
+                try { playerRef.current.destroy() } catch (_) { }
+                playerRef.current = null
+                window.__vimeoPlayer = null
+            }
         }
     }, [])
 
     return (
-        <video
-            ref={videoRef}
-            className="background-video"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-        >
-            <source
-                src="/bg.mp4"
-                type="video/mp4"
-            />
-        </video>
+        <div ref={containerRef} className="background-video" />
     )
 }

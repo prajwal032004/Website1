@@ -60,22 +60,46 @@ export default function About() {
     },
   ]
 
+  // ─────────────────────────────────────────────────────────────
+  //  LOGO CONFIG — customise each logo's size independently
+  //  desktop: { h, w }  →  height / width on screens > 768px
+  //  mobile:  { h, w }  →  height / width on screens ≤ 768px
+  //  Use 'auto' for either h or w to preserve aspect ratio
+  // ─────────────────────────────────────────────────────────────
   const logos = [
-    'https://framerusercontent.com/images/k1pA1LiCJg6nUlCNRlaxu8SZDog.png',
-    'https://brandlogos.net/wp-content/uploads/2011/06/swarovski-crystal-logo-vector.png',
-    'https://framerusercontent.com/images/evN3P0cbS9xsJjpDA9L5ibL4.png',
-    'https://framerusercontent.com/images/k4O62oeDUdl4WVuArbshE8e40o.png',
-    'https://framerusercontent.com/images/q3wQHUngCJoGMPGvAkCaZAVtPk.png',
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/2.png?updatedAt=1772060171475", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/42.png?updatedAt=1772060171459", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/38.png?updatedAt=1772060171476", desktop: { h: '250px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/1.png?updatedAt=1772060171468", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/17.png?updatedAt=1772060170074", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/37.png?updatedAt=1772060168651", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/3.png?updatedAt=1772060169776", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/26.png?updatedAt=1772060169225", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/7.png?updatedAt=1772060169364", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/33.png?updatedAt=1772060169498", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/16.png?updatedAt=1772060168724", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/45.png?updatedAt=1772060169206", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/44.png?updatedAt=1772060169198", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/29.png?updatedAt=1772060168281", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/11.png?updatedAt=1772060168489", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
   ]
+
+  // Track window width for responsive logo sizing
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   // Optimized image preloading
   useEffect(() => {
     const startTime = Date.now()
     const MIN_LOADING_TIME = 2300
 
-    // Preload unique team images
     const uniqueTeamImages = [...new Set(teamMembers.map((m) => m.img))]
-    const allImageUrls = [...uniqueTeamImages, ...logos]
+    const allImageUrls = [...uniqueTeamImages, ...logos.map((l) => l.src)]
 
     const imagePromises = allImageUrls.map((src) => {
       return new Promise((resolve) => {
@@ -129,7 +153,7 @@ export default function About() {
     }
   }, [isLoaded])
 
-  // Progressive scroll text animation with optimization
+  // Progressive scroll text animation
   useEffect(() => {
     if (!isLoaded) return
 
@@ -141,7 +165,6 @@ export default function About() {
     const fullText = scrollText.textContent.trim()
     const words = fullText.split(/\s+/).filter((w) => w.length > 0)
 
-    // Create word spans
     scrollText.innerHTML = words.map((w) => `<span class="word">${w}</span>`).join(' ')
     const wordEls = scrollText.querySelectorAll('.word')
 
@@ -197,9 +220,6 @@ export default function About() {
     <>
       <style jsx suppressHydrationWarning>{`
 
-        /* ============================================
-           SHIMMER KEYFRAMES
-           ============================================ */
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
@@ -215,9 +235,6 @@ export default function About() {
           50% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        /* ============================================
-           SKELETON WRAPPER
-           ============================================ */
         .skeleton-wrapper {
           position: absolute;
           top: 0;
@@ -254,9 +271,6 @@ export default function About() {
           animation: shimmer 2s infinite;
         }
 
-        /* ============================================
-           HERO SKELETON
-           ============================================ */
         .sk-hero-section {
           position: relative;
           height: 100vh;
@@ -273,18 +287,9 @@ export default function About() {
           background: #111;
         }
 
-        .sk-hero-title.line1 {
-          width: 65%;
-        }
+        .sk-hero-title.line1 { width: 65%; }
+        .sk-hero-title.line2 { width: 25%; height: clamp(50px, 8vw, 100px); }
 
-        .sk-hero-title.line2 {
-          width: 25%;
-          height: clamp(50px, 8vw, 100px);
-        }
-
-        /* ============================================
-           TEAM SECTION SKELETON
-           ============================================ */
         .sk-team-section {
           padding: 100px 40px;
           min-height: 100vh;
@@ -328,35 +333,11 @@ export default function About() {
           gap: 12px;
         }
 
-        .sk-card-text {
-          width: 55%;
-          height: 22px;
-          border-radius: 4px;
-          background: rgba(255,255,255,0.08);
-        }
+        .sk-card-text { width: 55%; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.08); }
+        .sk-card-subtext { width: 40%; height: 14px; border-radius: 4px; background: rgba(255,255,255,0.06); }
+        .sk-card-desc { width: 100%; height: 12px; border-radius: 3px; background: rgba(255,255,255,0.05); margin-top: 8px; }
+        .sk-card-desc:last-of-type { width: 75%; }
 
-        .sk-card-subtext {
-          width: 40%;
-          height: 14px;
-          border-radius: 4px;
-          background: rgba(255,255,255,0.06);
-        }
-
-        .sk-card-desc {
-          width: 100%;
-          height: 12px;
-          border-radius: 3px;
-          background: rgba(255,255,255,0.05);
-          margin-top: 8px;
-        }
-
-        .sk-card-desc:last-of-type {
-          width: 75%;
-        }
-
-        /* ============================================
-           WISDOM SECTION SKELETON
-           ============================================ */
         .sk-wisdom-section {
           padding: 100px 40px;
           display: flex;
@@ -373,24 +354,13 @@ export default function About() {
           align-items: center;
         }
 
-        .sk-wisdom-line {
-          height: 28px;
-          border-radius: 6px;
-          background: #111;
-        }
-
+        .sk-wisdom-line { height: 28px; border-radius: 6px; background: #111; }
         .sk-wisdom-line.line1 { width: 95%; }
         .sk-wisdom-line.line2 { width: 88%; }
         .sk-wisdom-line.line3 { width: 92%; }
         .sk-wisdom-line.line4 { width: 50%; margin-top: 20px; }
 
-        /* ============================================
-           TRUSTED SECTION SKELETON
-           ============================================ */
-        .sk-trusted-section {
-          padding: 100px 40px;
-          text-align: center;
-        }
+        .sk-trusted-section { padding: 100px 40px; text-align: center; }
 
         .sk-trusted-header {
           display: flex;
@@ -400,28 +370,18 @@ export default function About() {
           margin-bottom: 60px;
         }
 
-        .sk-pulse-dot {
-          width: 12px;
-          height: 12px;
-          background: #1a1a1a;
-          border-radius: 50%;
-        }
-
-        .sk-trusted-title {
-          width: 180px;
-          height: 18px;
-          border-radius: 4px;
-          background: #111;
-        }
+        .sk-pulse-dot { width: 12px; height: 12px; background: #1a1a1a; border-radius: 50%; }
+        .sk-trusted-title { width: 180px; height: 18px; border-radius: 4px; background: #111; }
 
         .sk-logo-track {
           display: flex;
-          gap: 80px;
+          gap: 40px;
           justify-content: center;
           align-items: center;
           overflow: hidden;
         }
 
+        /* ── SKELETON LOGO: matches real logo size ── */
         .sk-logo {
           width: 140px;
           height: 40px;
@@ -429,6 +389,8 @@ export default function About() {
           border-radius: 8px;
           border: 1px solid rgba(255,255,255,0.05);
           flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
         }
 
         .sk-logo::after {
@@ -440,9 +402,6 @@ export default function About() {
           animation: shimmer 2.2s ease-in-out infinite;
         }
 
-        /* ============================================
-           SCROLL TEXT SKELETON
-           ============================================ */
         .sk-scroll-section {
           padding: 100px 40px;
           display: flex;
@@ -459,21 +418,13 @@ export default function About() {
           align-items: center;
         }
 
-        .sk-text-line {
-          height: 26px;
-          border-radius: 5px;
-          background: #111;
-        }
-
+        .sk-text-line { height: 26px; border-radius: 5px; background: #111; }
         .sk-text-line.line1 { width: 100%; }
         .sk-text-line.line2 { width: 96%; }
         .sk-text-line.line3 { width: 98%; }
         .sk-text-line.line4 { width: 94%; }
         .sk-text-line.line5 { width: 72%; }
 
-        /* ============================================
-           STATS SKELETON
-           ============================================ */
         .sk-stats-section {
           padding: 100px 40px;
           min-height: 80vh;
@@ -508,29 +459,10 @@ export default function About() {
           animation: shimmer 2.2s ease-in-out infinite;
         }
 
-        .sk-stat-num {
-          width: 140px;
-          height: 60px;
-          border-radius: 8px;
-          background: #1a1a1a;
-          margin-bottom: 30px;
-        }
+        .sk-stat-num { width: 140px; height: 60px; border-radius: 8px; background: #1a1a1a; margin-bottom: 30px; }
+        .sk-stat-text { width: 100%; height: 14px; border-radius: 4px; background: #1a1a1a; margin-bottom: 10px; }
+        .sk-stat-text:last-child { width: 85%; }
 
-        .sk-stat-text {
-          width: 100%;
-          height: 14px;
-          border-radius: 4px;
-          background: #1a1a1a;
-          margin-bottom: 10px;
-        }
-
-        .sk-stat-text:last-child {
-          width: 85%;
-        }
-
-        /* ============================================
-           FOOTER SKELETON
-           ============================================ */
         .sk-footer {
           padding: 60px 20px;
           display: flex;
@@ -538,16 +470,9 @@ export default function About() {
           border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        .sk-footer-text {
-          width: 250px;
-          height: 14px;
-          border-radius: 4px;
-          background: #111;
-        }
+        .sk-footer-text { width: 250px; height: 14px; border-radius: 4px; background: #111; }
 
-        /* ============================================
-           RESPONSIVE SKELETON
-           ============================================ */
+        /* ── Skeleton responsive ── */
         @media (max-width: 1200px) {
           .sk-team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
           .sk-team-section { padding: 80px 32px; }
@@ -566,56 +491,42 @@ export default function About() {
           .sk-hero-section { padding: 40px 20px; }
           .sk-hero-title.line1 { width: 85%; }
           .sk-hero-title.line2 { width: 60%; }
-
           .sk-team-section { padding: 60px 20px; }
           .sk-team-grid { grid-template-columns: 1fr; gap: 16px; }
           .sk-team-card { aspect-ratio: 9/12; }
-
           .sk-wisdom-section { padding: 60px 20px; }
           .sk-wisdom-line.line1 { width: 100%; }
           .sk-wisdom-line.line2 { width: 95%; }
           .sk-wisdom-line.line4 { width: 70%; }
-
           .sk-trusted-section { padding: 60px 20px; }
-          .sk-logo-track { gap: 40px; }
+          .sk-logo-track { gap: 24px; }
           .sk-logo { width: 100px; height: 30px; }
-
           .sk-scroll-section { padding: 60px 20px; }
           .sk-text-line { height: 22px; }
           .sk-text-line.line5 { width: 85%; }
-
           .sk-stats-section { padding: 60px 20px; }
           .sk-stats-grid { grid-template-columns: 1fr; gap: 24px; }
-
           .sk-footer { padding: 40px 20px; }
         }
 
         @media (max-width: 480px) {
           .sk-hero-title.line1 { width: 90%; height: 70px; }
           .sk-hero-title.line2 { width: 65%; height: 55px; }
-
           .sk-team-section { padding: 50px 16px; }
           .sk-team-card { aspect-ratio: 9/13; }
-
           .sk-wisdom-section { padding: 50px 16px; }
           .sk-wisdom-box { gap: 12px; }
           .sk-wisdom-line { height: 24px; }
-
           .sk-trusted-section { padding: 50px 16px; }
-          .sk-logo { width: 85px; height: 25px; }
-
+          .sk-logo { width: 80px; height: 25px; }
           .sk-scroll-section { padding: 50px 16px; }
           .sk-text-line { height: 20px; }
-
           .sk-stats-section { padding: 50px 16px; }
           .sk-stat-card { padding: 40px 24px; }
-
           .sk-footer { padding: 30px 16px; }
         }
 
-        /* ============================================
-           CONTENT WRAPPER
-           ============================================ */
+        /* ── Content ── */
         .content-wrapper {
           opacity: 0;
           transition: opacity 0.8s ease-in;
@@ -624,9 +535,6 @@ export default function About() {
           opacity: 1;
         }
 
-        /* ============================================
-           MAIN STYLES
-           ============================================ */
         :global(body.blur-active .background-video) {
           filter: blur(12px) brightness(0.6);
           transition: filter 0.8s ease;
@@ -657,9 +565,6 @@ export default function About() {
           animation: fadeInUp 1s ease-out;
         }
 
-        /* ============================================
-           TEAM SECTION
-           ============================================ */
         #team-section {
           min-height: 100vh;
           padding: 100px 40px;
@@ -699,9 +604,7 @@ export default function About() {
           transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .team-card:hover img {
-          transform: scale(1.08);
-        }
+        .team-card:hover img { transform: scale(1.08); }
 
         .team-overlay {
           position: absolute;
@@ -713,30 +616,10 @@ export default function About() {
           transition: all 0.3s ease;
         }
 
-        .team-info h3 {
-          font-size: 28px;
-          font-weight: 700;
-          margin-bottom: 5px;
-          color: #fff;
-        }
+        .team-info h3 { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #fff; }
+        .team-info p { font-size: 14px; opacity: 0.7; margin-bottom: 15px; color: #fff; }
+        .team-description { font-size: 13px; line-height: 1.6; opacity: 0.9; color: #fff; }
 
-        .team-info p {
-          font-size: 14px;
-          opacity: 0.7;
-          margin-bottom: 15px;
-          color: #fff;
-        }
-
-        .team-description {
-          font-size: 13px;
-          line-height: 1.6;
-          opacity: 0.9;
-          color: #fff;
-        }
-
-        /* ============================================
-           WISDOM SECTION
-           ============================================ */
         .wisdom-section {
           margin: 80px auto;
           padding: 80px 40px;
@@ -756,15 +639,8 @@ export default function About() {
           color: #fff;
         }
 
-        .wisdom-section p:last-child {
-          font-size: 0.95rem;
-          opacity: 0.65;
-          color: #fff;
-        }
+        .wisdom-section p:last-child { font-size: 0.95rem; opacity: 0.65; color: #fff; }
 
-        /* ============================================
-           TRUSTED SECTION
-           ============================================ */
         .trusted-section {
           padding: 100px 40px;
           text-align: center;
@@ -805,10 +681,14 @@ export default function About() {
 
         .logo-track {
           display: flex;
-          gap: 80px;
+          gap: 0;
           align-items: center;
           width: fit-content;
-          animation: scroll 30s linear infinite;
+          animation: scroll 35s linear infinite;
+        }
+
+        .carousel-container:hover .logo-track {
+          animation-play-state: paused;
         }
 
         @keyframes scroll {
@@ -816,23 +696,39 @@ export default function About() {
           100% { transform: translateX(-50%); }
         }
 
-        .logo-track img {
-          height: 40px;
-          opacity: 0.6;
-          filter: grayscale(1) brightness(1.2);
+        /* Each logo item: image + separator bar */
+        .logo-item {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+          text-decoration: none;
+        }
+
+        .logo-item img {
+          width: auto;
+          opacity: 0.45;
+          filter: grayscale(1) brightness(0.95);
           transition: all 0.4s ease;
           flex-shrink: 0;
+          display: block;
+          padding: 0 32px;
         }
 
-        .logo-track img:hover {
+        .logo-item:hover img {
           opacity: 1;
           filter: grayscale(0) brightness(1);
-          transform: scale(1.15);
+          transform: scale(1.12);
         }
 
-        /* ============================================
-           SCROLL TEXT SECTION
-           ============================================ */
+        /* Vertical separator bar */
+        .logo-separator {
+          width: 1px;
+          height: 56px;
+          background: rgba(255, 255, 255, 0.08);
+          flex-shrink: 0;
+          border-radius: 1px;
+        }
+
         .scroll-text-section {
           padding: 100px 40px;
           min-height: 60vh;
@@ -841,11 +737,7 @@ export default function About() {
           justify-content: center;
         }
 
-        .text-container {
-          max-width: 1200px;
-          width: 100%;
-          text-align: center;
-        }
+        .text-container { max-width: 1200px; width: 100%; text-align: center; }
 
         .scroll-text {
           font-size: clamp(28px, 4vw, 48px);
@@ -854,18 +746,9 @@ export default function About() {
           color: #fff;
         }
 
-        :global(.scroll-text .word) {
-          opacity: 0.2;
-          transition: opacity 0.3s ease;
-        }
+        :global(.scroll-text .word) { opacity: 0.2; transition: opacity 0.3s ease; }
+        :global(.scroll-text .word.active) { opacity: 1; }
 
-        :global(.scroll-text .word.active) {
-          opacity: 1;
-        }
-
-        /* ============================================
-           STATS SECTION
-           ============================================ */
         .stats-section {
           padding: 100px 40px;
           min-height: 80vh;
@@ -906,16 +789,8 @@ export default function About() {
           background-clip: text;
         }
 
-        .stat-card p {
-          font-size: 15px;
-          line-height: 1.6;
-          opacity: 0.75;
-          color: #fff;
-        }
+        .stat-card p { font-size: 15px; line-height: 1.6; opacity: 0.75; color: #fff; }
 
-        /* ============================================
-           FOOTER
-           ============================================ */
         .copyright-container {
           width: 100%;
           padding: 60px 20px;
@@ -960,9 +835,7 @@ export default function About() {
         .copyright-link:hover::after { width: 100%; }
         .copyright-link:hover { opacity: 0.8; transform: translateY(-1px); }
 
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
+        /* ── Main responsive ── */
         @media (max-width: 1200px) {
           .team-grid { gap: 24px; }
           #team-section { padding: 80px 32px; }
@@ -979,70 +852,52 @@ export default function About() {
 
         @media (max-width: 768px) {
           .hero-title { font-size: clamp(50px, 12vw, 100px); }
-
           #team-section { padding: 60px 20px; }
           .team-grid { grid-template-columns: 1fr; gap: 16px; }
           .team-card { aspect-ratio: 9/12; }
-
           .wisdom-section { margin: 60px auto; padding: 60px 24px; }
           .wisdom-section p:first-child { font-size: clamp(1.1rem, 2.2vw, 1.6rem); }
-
           .trusted-section { padding: 60px 20px; }
           .trusted-header { margin-bottom: 50px; }
-          .logo-track { gap: 50px; }
-          .logo-track img { height: 30px; }
-
+          .logo-item img { padding: 0 20px; }
+          .logo-separator { height: 26px; }
           .scroll-text-section { padding: 60px 20px; }
           .scroll-text { font-size: clamp(22px, 3.5vw, 36px); }
-
           .stats-section { padding: 60px 20px; }
           .stats-grid { grid-template-columns: 1fr; gap: 24px; }
           .stat-card { padding: 40px 24px; }
-
           .copyright-container { padding: 40px 20px; }
           .copyright { font-size: 12px; text-align: center; }
         }
 
         @media (max-width: 480px) {
           .hero-title { font-size: clamp(42px, 14vw, 80px); }
-
           #team-section { padding: 50px 16px; }
           .team-grid { gap: 12px; }
-
           .wisdom-section { margin: 50px 0; padding: 50px 20px; border-radius: 12px; }
           .wisdom-section p:first-child { font-size: clamp(1rem, 2vw, 1.4rem); }
-
           .trusted-section { padding: 50px 16px; }
-          .logo-track { gap: 40px; }
-          .logo-track img { height: 25px; }
-
+          .logo-item img { padding: 0 14px; }
+          .logo-separator { height: 20px; }
           .scroll-text-section { padding: 50px 16px; }
           .scroll-text { font-size: clamp(18px, 3vw, 28px); line-height: 1.5; }
-
           .stats-section { padding: 50px 16px; }
           .stat-card { padding: 30px 20px; }
           .stat-card h3 { font-size: clamp(36px, 5vw, 52px); }
           .stat-card p { font-size: 13px; }
-
           .copyright-container { padding: 30px 16px; }
           .copyright { font-size: 11px; }
         }
       `}</style>
 
-      {/* ════════════════════════════════════════
-          SKELETON LOADER — position absolute
-          Scrolls with page, fades out on load
-      ════════════════════════════════════════ */}
       <div style={{ position: 'relative' }}>
         <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
 
-          {/* HERO SKELETON */}
           <section className="sk-hero-section">
             <div className="skeleton-block sk-hero-title line1" />
             <div className="skeleton-block sk-hero-title line2" />
           </section>
 
-          {/* TEAM SKELETON */}
           <section className="sk-team-section">
             <div className="sk-team-grid">
               {[...Array(6)].map((_, i) => (
@@ -1058,7 +913,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* WISDOM SKELETON */}
           <section className="sk-wisdom-section">
             <div className="sk-wisdom-box">
               <div className="skeleton-block sk-wisdom-line line1" />
@@ -1068,7 +922,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* TRUSTED SKELETON */}
           <section className="sk-trusted-section">
             <div className="sk-trusted-header">
               <div className="sk-pulse-dot" />
@@ -1081,7 +934,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* SCROLL TEXT SKELETON */}
           <section className="sk-scroll-section">
             <div className="sk-scroll-text">
               <div className="skeleton-block sk-text-line line1" />
@@ -1092,7 +944,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* STATS SKELETON */}
           <section className="sk-stats-section">
             <div className="sk-stats-grid">
               {[...Array(3)].map((_, i) => (
@@ -1105,16 +956,12 @@ export default function About() {
             </div>
           </section>
 
-          {/* FOOTER SKELETON */}
           <div className="sk-footer">
             <div className="skeleton-block sk-footer-text" />
           </div>
 
         </div>
 
-        {/* ════════════════════════════════════════
-            REAL CONTENT — fades in on load
-        ════════════════════════════════════════ */}
         <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
 
           <section className="hero-section">
@@ -1172,21 +1019,29 @@ export default function About() {
 
             <div className="carousel-container">
               <div className="logo-track">
-                {[...logos, ...logos].map((logo, i) => (
-                  <Image
-                    key={i}
-                    src={logo}
-                    alt={`Client ${(i % logos.length) + 1}`}
-                    width={140}
-                    height={40}
-                    quality={80}
-                    style={{
-                      width: 'auto',
-                      height: '40px',
-                      objectFit: 'contain'
-                    }}
-                  />
-                ))}
+                {[...logos, ...logos].map((logo, i) => {
+                  const size = isMobile ? logo.mobile : logo.desktop
+                  return (
+                    <div
+                      key={i}
+                      className="logo-item"
+                    >
+                      <Image
+                        src={logo.src}
+                        alt={`Client ${(i % logos.length) + 1}`}
+                        width={280}
+                        height={140}
+                        quality={80}
+                        style={{
+                          height: size.h,
+                          width: size.w,
+                          objectFit: 'contain',
+                        }}
+                      />
+                      <span className="logo-separator" aria-hidden="true" />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </section>

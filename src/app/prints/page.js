@@ -73,24 +73,24 @@ export default function Gallery() {
   const images = [
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/28.png?updatedAt=1771934151062",
-      title: 'APPLE HELLO',
-      desc: 'Iconic innovation. Seamless experiences.',
+      title: 'ON',
+      desc: 'Where every stride meets Swiss precision engineering.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/29.png?updatedAt=1771934151067",
-      title: 'APPLE MUSIC',
-      desc: 'Sound elevated. Emotion amplified.',
+      title: 'ON',
+      desc: 'Lightweight design built for runners who demand more.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(6).png?updatedAt=1771934151129",
-      title: 'DAILY OBJECTS',
-      desc: 'Minimal essentials for modern living.',
+      title: 'ON',
+      desc: 'CloudTec cushioning — feel nothing, perform everything.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -98,7 +98,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/41.png?updatedAt=1771934151065",
       title: 'SWAROVSKI',
-      desc: 'Timeless crystal elegance redefined.',
+      desc: 'Every facet tells a story of light and luxury.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -106,7 +106,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/40.png?updatedAt=1771934151054",
       title: 'SWAROVSKI',
-      desc: 'Luxury crafted with radiant precision.',
+      desc: 'Crystal-cut brilliance crafted for the extraordinary.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -114,7 +114,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/39.png?updatedAt=1771934150990",
       title: 'SWAROVSKI',
-      desc: 'Sparkle that defines sophistication.',
+      desc: 'Where heritage meets modern glamour, beautifully.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -122,7 +122,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/34.png?updatedAt=1771934151044",
       title: 'MASSIMO DUTTI',
-      desc: 'Timeless fashion. Understated elegance.',
+      desc: 'Sartorial excellence for the discerning modern wardrobe.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -130,7 +130,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/35.png?updatedAt=1771934151087",
       title: 'MASSIMO DUTTI',
-      desc: 'Refined tailoring for modern sophistication.',
+      desc: 'Clean lines and premium fabrics — sophistication redefined.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -138,7 +138,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(8).png?updatedAt=1771934151124",
       title: 'MASSIMO DUTTI',
-      desc: 'Timeless fashion. Understated elegance.',
+      desc: 'Effortless style rooted in timeless Mediterranean craftsmanship.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -146,7 +146,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/31.jpg?updatedAt=1771934151003",
       title: 'PUMA',
-      desc: 'Sport meets culture. Performance redefined.',
+      desc: 'Fuelling athletes with raw speed and bold identity.',
       type: 'horizontal',
       width: 1080,
       height: 1920,
@@ -154,7 +154,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/32.png?updatedAt=1771934151041",
       title: 'PUMA',
-      desc: 'Bold energy. Street-inspired attitude.',
+      desc: 'Street-ready silhouettes engineered for relentless movement.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -162,7 +162,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(7).png?updatedAt=1771934151138",
       title: 'PUMA',
-      desc: 'Sport meets culture. Performance redefined.',
+      desc: 'Culture-driven performance that lives beyond the field.',
       type: 'center',
       width: 1080,
       height: 1920,
@@ -170,15 +170,15 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/11.png?updatedAt=1771934151106",
       title: 'DYSON',
-      desc: 'Powerful performance. Precision engineered.',
+      desc: 'Reinventing the everyday with intelligent airflow science.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
     {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/10.png?updatedAt=1771934150979",
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/10.png?updatedAt=1771934150980",
       title: 'DYSON',
-      desc: 'Technology crafted for tomorrow.',
+      desc: 'Precision-engineered machines that set the gold standard.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -186,7 +186,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(1).png?updatedAt=1771934151081",
       title: 'DYSON',
-      desc: 'Engineering brilliance meets sleek design.',
+      desc: 'Form meets function — where design is the innovation.',
       type: 'center',
       width: 1516,
       height: 975,
@@ -194,7 +194,7 @@ export default function Gallery() {
     {
       src: '/7.avif',
       title: 'OAKLEY | META',
-      desc: 'Performance eyewear meets smart innovation.',
+      desc: 'Smart glasses built for athletes who live at the edge.',
       type: 'horizontal',
       width: 1920,
       height: 1080,
@@ -202,7 +202,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/8.png?updatedAt=1771934151092",
       title: 'OAKLEY | META',
-      desc: 'Future-ready vision. Intelligent design.',
+      desc: 'Blending augmented reality with world-class optics.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -210,7 +210,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup.png?updatedAt=1771934151049",
       title: 'OAKLEY | META',
-      desc: 'Cravings satisfied at lightning speed.',
+      desc: 'See the world differently — connected, clear, and bold.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -218,7 +218,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/23.png?updatedAt=1771934151127",
       title: 'PS5',
-      desc: 'Next-level gaming. Immersive power.',
+      desc: 'The future of play, rendered in breathtaking detail.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -226,15 +226,15 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/22.jpg?updatedAt=1771934150974",
       title: 'PS5',
-      desc: 'Next-level gaming. Immersive power.',
+      desc: 'Lightning-fast loading — zero waiting, pure immersion.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
     },
     {
-      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(3).png?updatedAt=1771934151077",
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup.png",
       title: 'PS5',
-      desc: 'Next-level gaming. Immersive power.',
+      desc: 'Feel every moment. Next-gen haptics, limitless worlds.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -242,7 +242,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/13.png?updatedAt=1771934151017",
       title: 'APPLE',
-      desc: 'Design-forward accessories with purpose.',
+      desc: 'Thoughtfully designed accessories for a seamless ecosystem.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -250,7 +250,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/14.png?updatedAt=1771934151031",
       title: 'APPLE',
-      desc: 'Electric future. Boldly reimagined.',
+      desc: 'Silicon power that redefines what a chip can do.',
       type: 'horizontal',
       width: 1516,
       height: 975,
@@ -258,7 +258,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(11).png?updatedAt=1771934151084",
       title: 'APPLE',
-      desc: 'Performance meets sustainable innovation.',
+      desc: 'Beautiful hardware, unmatched software — perfectly united.',
       type: 'center',
       width: 1080,
       height: 1920,
@@ -266,7 +266,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/44.png?updatedAt=1771934151122",
       title: 'SWIGGY',
-      desc: 'Fast delivery. Flavor delivered fresh.',
+      desc: 'Your favourite restaurant, delivered to your door fast.',
       type: 'horizontal',
       width: 1920,
       height: 1080,
@@ -274,7 +274,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/43.jpg?updatedAt=1771934151023",
       title: 'SWIGGY',
-      desc: 'Cravings satisfied at lightning speed.',
+      desc: 'Fresh, hot, and on time — every single order, every time.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -282,7 +282,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/25.jpg?updatedAt=1771934150955",
       title: 'RAYMOND',
-      desc: 'Redefining mobility with intelligence.',
+      desc: 'Suits that speak confidence before you say a word.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -290,7 +290,15 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(4).png?updatedAt=1771934151051",
       title: 'RAYMOND',
-      desc: 'Driven by innovation and power.',
+      desc: 'A legacy of fine fabrics woven into every stitch.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(1).png",
+      title: 'RAYMOND',
+      desc: 'Crafted for the man who commands every room he walks into.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -298,7 +306,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/5'4%202026%20Lineup%20(10).png?updatedAt=1771934151145",
       title: 'RAYMOND',
-      desc: 'Next-gen SUV. Electrified presence.',
+      desc: 'Timeless tailoring reimagined for the modern gentleman.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -306,7 +314,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/18.png?updatedAt=1771934151112",
       title: 'MAHINDRA BE6',
-      desc: 'Redefining mobility with intelligence.',
+      desc: 'An electric SUV engineered to dominate every terrain.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -314,7 +322,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/17.png?updatedAt=1771934151007",
       title: 'MAHINDRA BE6',
-      desc: 'Driven by innovation and power.',
+      desc: 'Zero emissions, maximum presence — the future is bold.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -322,7 +330,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/19.png?updatedAt=1771934151074",
       title: 'MAHINDRA BE6',
-      desc: 'Next-gen SUV. Electrified presence.',
+      desc: 'Cutting-edge EV tech wrapped in a fearless design language.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -330,7 +338,7 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/20.png?updatedAt=1771934151037",
       title: 'MAHINDRA BE6',
-      desc: 'Driven by innovation and power.',
+      desc: 'Intelligent performance, redefining the Indian electric road.',
       type: 'horizontal',
       width: 1440,
       height: 1800,
@@ -338,7 +346,215 @@ export default function Gallery() {
     {
       src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/16.png?updatedAt=1771934151046",
       title: 'MAHINDRA BE6',
-      desc: 'Next-gen SUV. Electrified presence.',
+      desc: 'Power, range, and style — the complete electric package.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Gully%20Labs%20Pitch%20.jpg?updatedAt=1772060200553",
+      title: 'GULLY LABS',
+      desc: 'Where street culture collides with startup innovation.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Gully%20Labs%20Pitch%20.png?updatedAt=1772060255201",
+      title: 'GULLY LABS',
+      desc: 'Homegrown ideas built to disrupt and inspire.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Gully%20Labs%20Pitch%20%20(1).png?updatedAt=1772060254850",
+      title: 'GULLY LABS',
+      desc: 'Hustlers, dreamers, creators — building from the ground up.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Monkey%20Shoulder%20.jpg?updatedAt=1772060205372",
+      title: 'MONKEY SHOULDER',
+      desc: 'Triple malt magic — smooth, rich, and unapologetically bold.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Monkey%20Shoulder%20.png?updatedAt=1772060254462",
+      title: 'MONKEY SHOULDER',
+      desc: 'Blended Scotch crafted for the adventurous palate.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Monkey%20Shoulder%20%20(1).png?updatedAt=1772060256371",
+      title: 'MONKEY SHOULDER',
+      desc: 'Handcrafted in Speyside, savoured everywhere worth being.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Monkey%20Shoulder%20%20(2).png?updatedAt=1772060256175",
+      title: 'MONKEY SHOULDER',
+      desc: 'Three malts, one spirit — endlessly smooth, endlessly drinkable.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/PARAS%20DAIRY%20.jpg?updatedAt=1772060226572",
+      title: 'PARAS DAIRY',
+      desc: 'Farm-fresh goodness delivered straight to your table.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/PARAS%20DAIRY%20%20(1).png?updatedAt=1772060254591",
+      title: 'PARAS DAIRY',
+      desc: 'Nourishing India with pure, trusted dairy since decades.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/PARAS%20DAIRY%20.png?updatedAt=1772060254031",
+      title: 'PARAS DAIRY',
+      desc: 'Quality you can taste — wholesome, natural, and real.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/TCS.jpg?updatedAt=1772060227867",
+      title: 'TCS',
+      desc: "Building tomorrow's technology with the world's best minds.",
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/TCS.png?updatedAt=1772060247846",
+      title: 'TCS',
+      desc: 'Transforming industries through intelligent digital solutions.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/TCS%20(1).png?updatedAt=1772060255497",
+      title: 'TCS',
+      desc: 'Innovation at scale — powering progress for a billion futures.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Philips%20India.jpg?updatedAt=1772060217807",
+      title: 'PHILIPS INDIA',
+      desc: 'Lighting up lives with meaningful health and home innovations.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Philips%20India.png?updatedAt=1772060250785",
+      title: 'PHILIPS INDIA',
+      desc: 'Trusted technology that brings comfort to every corner of home.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Nandos%20(1).png?updatedAt=1772060248851",
+      title: "NANDU'S",
+      desc: 'PERi-PERi perfection — bold flavours that ignite the senses.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Nandos.png?updatedAt=1772060253570",
+      title: "NANDU'S",
+      desc: 'Flame-grilled chicken with a fiery soul and a global heart.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Nandos%20(2).png?updatedAt=1772060254715",
+      title: "NANDU'S",
+      desc: "Heat levels you choose — a dining experience that's always personal.",
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Glenmark.png?updatedAt=1772060252947",
+      title: "GLENMARK",
+      desc: 'Science-backed healthcare making life better, one patient at a time.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Glenmark%20(1).png?updatedAt=1772060253248",
+      title: "GLENMARK",
+      desc: 'Pioneering specialty pharma solutions across global markets.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Glenmark%20(2).png?updatedAt=1772060253684",
+      title: "GLENMARK",
+      desc: 'Committed to research that transforms patient lives worldwide.',
+      type: 'center',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Bakingo.png",
+      title: "BAKINGO",
+      desc: 'Celebration cakes crafted with love, delivered with joy.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/Bakingo%20(1).png",
+      title: "BAKINGO",
+      desc: 'Every bite a memory — baked fresh, delivered straight to you.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/13.jpg?updatedAt=1772060221358",
+      title: "Flame Infused Paneer",
+      desc: 'A bold fusion of fire, spice, and cinematic motion — crafted to ignite appetite instantly.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/14.jpg?updatedAt=1772060221738",
+      title: "Smoked Perfection",
+      desc: 'Char-grilled layers bursting with flavor, captured in a high-impact visual explosion of taste.',
+      type: 'horizontal',
+      width: 1440,
+      height: 1800,
+    },
+    {
+      src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/12.jpg?updatedAt=1772060224404",
+      title: "Sizzle in Motion",
+      desc: 'Dynamic food storytelling that blends heat, texture, and movement into a mouthwatering masterpiece.',
       type: 'center',
       width: 1440,
       height: 1800,
@@ -358,14 +574,25 @@ export default function Gallery() {
         }
 
         /* ============================================
-           SKELETON WRAPPER — position absolute pattern
+           PAGE ROOT — prevents skeleton from adding height
+           ============================================ */
+        .page-root {
+          position: relative;
+          overflow-x: hidden;
+        }
+
+        /* ============================================
+           SKELETON WRAPPER — overlay, never adds height
            ============================================ */
         .skeleton-wrapper {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           width: 100%;
-          z-index: 50;
+          height: 100%;
+          overflow-y: auto;
+          z-index: 9999;
+          background: #000;
           transition: opacity 0.6s ease-out, visibility 0.6s;
           opacity: 1;
           visibility: visible;
@@ -623,7 +850,6 @@ export default function Gallery() {
         .content-wrapper {
           opacity: 0;
           transition: opacity 0.8s ease-in;
-          position: relative;
         }
         .content-wrapper.loaded {
           opacity: 1;
@@ -827,6 +1053,7 @@ export default function Gallery() {
           gap: 28px;
           position: relative;
           z-index: 100;
+          border-top: 1px solid rgba(255,255,255,0.08);
         }
 
         .copyright {
@@ -979,14 +1206,10 @@ export default function Gallery() {
         }
       `}</style>
 
-      {/* ════════════════════════════════════════
-          SKELETON LOADER — absolute positioning
-          Scrolls with page, fades out on load
-          Pattern from ads.jsx
-      ════════════════════════════════════════ */}
-      <div style={{ position: 'relative' }}>
-        <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
+      <div className="page-root">
 
+        {/* SKELETON — fixed overlay, scrollable internally, never affects document height */}
+        <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
           {/* HERO SKELETON */}
           <section className="sk-hero-section">
             <div className="sk-block sk-hero-line line1" />
@@ -1026,12 +1249,9 @@ export default function Gallery() {
           <div className="sk-footer">
             <div className="sk-block sk-footer-line" />
           </div>
-
         </div>
 
-        {/* ════════════════════════════════════════
-            REAL CONTENT — fades in on load
-        ════════════════════════════════════════ */}
+        {/* REAL CONTENT — always in document flow, drives true page height */}
         <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
 
           <section className="hero-section">
