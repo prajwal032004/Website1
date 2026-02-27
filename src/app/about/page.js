@@ -1,121 +1,126 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function About() {
   const scrollSectionRef = useRef(null)
   const scrollTextRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [activeCard, setActiveCard] = useState(null)
+
+  const stripRef = useRef(null)
+  const setARef = useRef(null)
+  const setBRef = useRef(null)
+  const cardRefs = useRef([])
 
   const teamMembers = [
     {
-      img: 'https://framerusercontent.com/images/kzXamvuqsPYwBBGCcSPysFAeNg.png',
-      name: 'John',
+      img: '/profile/1.jpeg',
+      name: 'KARAN CHANDA',
       role: 'Content Strategist',
-      desc: 'Driving creative direction for high-performing social media content. Focused on crafting scroll-stopping visuals.',
+      desc: 'Driving creative direction for high-performing social media content. Focused on crafting scroll-stopping visuals and messaging that convert attention into real engagement and growth for clients.',
+      instagram: 'https://www.instagram.com/karan.chanda.17/',
+      objPos: '48.8% 24.8%',
     },
     {
-      img: 'https://framerusercontent.com/images/nWuBJonrjn7pFV4h3SBbU7ozog.png',
-      name: 'Darshan',
+      img: '/profile/2.jpeg',
+      name: 'AIMAN KALIA',
       role: 'Producer',
-      desc: 'Overseeing seamless execution from concept to final cut. Focused on coordinating teams and resources.',
+      desc: 'Overseeing seamless execution from concept to final cut. Coordinating teams, timelines, and resources to deliver polished content and sustainable growth for every client.',
+      instagram: 'https://www.instagram.com/aimankalia/',
+      objPos: '50% 16.4%',
     },
     {
-      img: 'https://framerusercontent.com/images/NjG12P0Ks1gMTdEsYOHezB84vtU.png',
-      name: 'Roman',
+      img: '/profile/3.jpeg',
+      name: 'KANNAN VERMA',
       role: 'Production Lead',
-      desc: 'Leading teams, elevating visual storytelling, and delivering cinematic content that drives results.',
+      desc: 'Leading teams and elevating visual storytelling. Delivering cinematic content that resonates deeply and consistently drives measurable results for every client.',
+      instagram: 'https://www.instagram.com/_verma.kannan/',
+      objPos: '52.3% 12.8%',
     },
     {
-      img: 'https://framerusercontent.com/images/NjG12P0Ks1gMTdEsYOHezB84vtU.png',
-      name: 'Roman',
-      role: 'Production Lead',
-      desc: 'Leading teams, elevating visual storytelling, and delivering cinematic content that drives results.',
+      img: '/profile/4.jpeg',
+      name: 'Alex',
+      role: 'Creative Director',
+      desc: 'Shaping the visual identity behind every campaign. Blending art direction with strategic insight to ensure every frame tells a story worth remembering and sharing.',
+      instagram: 'https://www.instagram.com/jexstro/',
+      objPos: 'center top',
     },
     {
-      img: 'https://framerusercontent.com/images/NjG12P0Ks1gMTdEsYOHezB84vtU.png',
-      name: 'Roman',
-      role: 'Production Lead',
-      desc: 'Leading teams, elevating visual storytelling, and delivering cinematic content that drives results.',
+      img: '/profile/5.jpeg',
+      name: 'Marcus',
+      role: 'Video Editor',
+      desc: 'Crafting high-impact cuts that hold attention and drive retention. Specialised in short-form content that feels native, engaging, and always on-brand.',
+      instagram: 'https://instagram.com/thegakhal/',
+      objPos: '55% 18%',
     },
     {
-      img: 'https://framerusercontent.com/images/kzXamvuqsPYwBBGCcSPysFAeNg.png',
-      name: 'John',
-      role: 'Content Strategist',
-      desc: 'Driving creative direction for high-performing social media content. Focused on crafting scroll-stopping visuals.',
+      img: '/profile/6.jpeg',
+      name: 'MEHUL SINGHVI',
+      role: 'Brand Strategist',
+      desc: 'Building brand identities that resonate and last. Translating business goals into clear creative frameworks that connect authentically with audiences.',
+      instagram: 'https://www.instagram.com/mehulsinghviii/',
+      objPos: '42% 20%',
     },
     {
-      img: 'https://framerusercontent.com/images/NjG12P0Ks1gMTdEsYOHezB84vtU.png',
-      name: 'Roman',
-      role: 'Production Lead',
-      desc: 'Leading teams, elevating visual storytelling, and delivering cinematic content that drives results.',
+      img: '/profile/5.jpeg',
+      name: 'DHEERAJ',
+      role: 'Campaign Manager',
+      desc: 'Orchestrating multi-platform campaigns from brief to launch. Ensuring every creative asset lands at the right moment, to the right audience, with the right impact.',
+      instagram: 'https://instagram.com',
+      objPos: '50% 10%',
     },
     {
-      img: 'https://framerusercontent.com/images/nWuBJonrjn7pFV4h3SBbU7ozog.png',
-      name: 'Darshan',
-      role: 'Producer',
-      desc: 'Overseeing seamless execution from concept to final cut. Focused on coordinating teams and resources.',
+      img: '/profile/7.jpeg',
+      name: 'PRAJWAL',
+      role: 'Motion Designer',
+      desc: 'Bringing ideas to life through kinetic design and animation. Transforming static concepts into dynamic visuals that captivate and communicate with precision.',
+      instagram: 'https://www.instagram.com/_prajwal__2004/?hl=en',
+      objPos: 'center 15%',
     },
+
   ]
 
-  const logos = [
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/2.png?updatedAt=1772060171475", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/42.png?updatedAt=1772060171459", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/38.png?updatedAt=1772060171476", desktop: { h: '250px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/1.png?updatedAt=1772060171468", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/17.png?updatedAt=1772060170074", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/37.png?updatedAt=1772060168651", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/3.png?updatedAt=1772060169776", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/26.png?updatedAt=1772060169225", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/7.png?updatedAt=1772060169364", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/33.png?updatedAt=1772060169498", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/16.png?updatedAt=1772060168724", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/45.png?updatedAt=1772060169206", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/44.png?updatedAt=1772060169198", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/29.png?updatedAt=1772060168281", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
-    { src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/11.png?updatedAt=1772060168489", desktop: { h: '200px', w: 'auto' }, mobile: { h: '40px', w: 'auto' } },
+  const logoSrcs = [
+    "/4.png",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/33.png?updatedAt=1772060169498",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/16.png?updatedAt=1772060168724",
+    "/15.webp", "/17.webp", "/6.webp", "/13.webp", "/5.webp",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/38.png?updatedAt=1772060171476",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/11.png?updatedAt=1772060168489",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/42.png?updatedAt=1772060171459",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/17.png?updatedAt=1772060170074",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/3.png?updatedAt=1772060169776",
+    "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Images/5'4%202026%20Lineup%20(2).png",
+    "/8.webp", "/3.png",
   ]
 
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  // Optimized image preloading
+  // Image preloading
   useEffect(() => {
     const startTime = Date.now()
-    const MIN_LOADING_TIME = 2300
-
+    const MIN_LOADING_TIME = 2000
     const uniqueTeamImages = [...new Set(teamMembers.map((m) => m.img))]
-    const allImageUrls = [...uniqueTeamImages, ...logos.map((l) => l.src)]
-
-    const imagePromises = allImageUrls.map((src) => {
-      return new Promise((resolve) => {
+    const allImageUrls = [...uniqueTeamImages, ...logoSrcs]
+    const imagePromises = allImageUrls.map((src) =>
+      new Promise((resolve) => {
         const img = document.createElement('img')
         img.onload = () => resolve(true)
         img.onerror = () => resolve(true)
         img.src = src
       })
-    })
-
+    )
     Promise.all(imagePromises).then(() => {
-      const elapsedTime = Date.now() - startTime
-      const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime)
-      setTimeout(() => setIsLoaded(true), remainingTime)
+      const elapsed = Date.now() - startTime
+      const remaining = Math.max(0, MIN_LOADING_TIME - elapsed)
+      setTimeout(() => setIsLoaded(true), remaining)
     })
   }, [])
 
-  // Blur effect on scroll
+  // Blur on scroll
   useEffect(() => {
     if (!isLoaded) return
-
     const heroSection = document.querySelector('.hero-section')
-
     const updateBlur = () => {
       if (!heroSection) return
       const rect = heroSection.getBoundingClientRect()
@@ -125,958 +130,786 @@ export default function About() {
         document.body.classList.remove('blur-active')
       }
     }
-
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateBlur()
-          ticking = false
-        })
+        window.requestAnimationFrame(() => { updateBlur(); ticking = false })
         ticking = true
       }
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     updateBlur()
-
     return () => {
       window.removeEventListener('scroll', handleScroll)
       document.body.classList.remove('blur-active')
     }
   }, [isLoaded])
 
-  // Progressive scroll text animation
+  // Scroll text word-reveal
   useEffect(() => {
     if (!isLoaded) return
-
     const scrollText = scrollTextRef.current
     const scrollSection = scrollSectionRef.current
-
     if (!scrollText || !scrollSection) return
-
-    const fullText = scrollText.textContent.trim()
-    const words = fullText.split(/\s+/).filter((w) => w.length > 0)
-
+    const words = scrollText.textContent.trim().split(/\s+/).filter(Boolean)
     scrollText.innerHTML = words.map((w) => `<span class="word">${w}</span>`).join(' ')
     const wordEls = scrollText.querySelectorAll('.word')
-
-    function updateTextOnScroll() {
+    function update() {
       const rect = scrollSection.getBoundingClientRect()
-      const windowHeight = window.innerHeight
-      const sectionTop = rect.top
-      const sectionHeight = rect.height
-
-      const scrollStart = windowHeight * 0.75
-      const scrollEnd = -sectionHeight * 0.25
-      const scrollRange = scrollStart - scrollEnd
-      const current = scrollStart - sectionTop
-
-      let progress = current / scrollRange
+      const wh = window.innerHeight
+      const scrollStart = wh * 0.75
+      const scrollEnd = -rect.height * 0.25
+      let progress = (scrollStart - rect.top) / (scrollStart - scrollEnd)
       progress = Math.max(0, Math.min(1, progress))
-
-      const eased =
-        progress < 0.5
-          ? 2 * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2
-
-      const total = wordEls.length
-      const activeCount = Math.floor(eased * total)
-
-      wordEls.forEach((el, i) => {
-        el.classList.toggle('active', i < activeCount)
-      })
+      const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2
+      const active = Math.floor(eased * wordEls.length)
+      wordEls.forEach((el, i) => el.classList.toggle('active', i < active))
     }
-
-    let textTicking = false
-    function onScroll() {
-      if (!textTicking) {
-        textTicking = true
-        requestAnimationFrame(() => {
-          updateTextOnScroll()
-          textTicking = false
-        })
-      }
+    let ticking = false
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(() => { update(); ticking = false }) }
     }
-
-    updateTextOnScroll()
+    update()
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', updateTextOnScroll)
-
+    window.addEventListener('resize', update)
     return () => {
       window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', updateTextOnScroll)
+      window.removeEventListener('resize', update)
     }
   }, [isLoaded])
+
+  // RAF marquee
+  useEffect(() => {
+    if (!isLoaded) return
+    const strip = stripRef.current
+    const setA = setARef.current
+    const setB = setBRef.current
+    if (!strip || !setA || !setB) return
+    setB.innerHTML = ''
+    setA.querySelectorAll('img').forEach((img) => {
+      const c = img.cloneNode(true)
+      c.removeAttribute('alt')
+      setB.appendChild(c)
+    })
+    let rafId = null
+    let pos = 0
+    let lastTs = null
+    let paused = false
+    const SPEED = 30
+    const onEnter = () => { paused = true }
+    const onLeave = () => { paused = false }
+    strip.addEventListener('mouseenter', onEnter)
+    strip.addEventListener('mouseleave', onLeave)
+    function tick(ts) {
+      if (!lastTs) lastTs = ts
+      const dt = ts - lastTs
+      lastTs = ts
+      if (!paused) {
+        const hw = setA.offsetWidth
+        if (hw > 0) {
+          pos += (hw / (SPEED * 1000)) * dt
+          if (pos >= hw) pos -= hw
+          strip.style.transform = `translate3d(-${pos}px, 0, 0)`
+        }
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+    const startTimer = setTimeout(() => {
+      pos = 0; lastTs = null; rafId = requestAnimationFrame(tick)
+    }, 120)
+    return () => {
+      clearTimeout(startTimer)
+      cancelAnimationFrame(rafId)
+      strip.removeEventListener('mouseenter', onEnter)
+      strip.removeEventListener('mouseleave', onLeave)
+    }
+  }, [isLoaded])
+
+  // Mobile IntersectionObserver — fires when card crosses center threshold
+  useEffect(() => {
+    if (!isLoaded) return
+    if (window.innerWidth > 768) return
+    const cards = cardRefs.current.filter(Boolean)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // find the entry with highest intersectionRatio
+        let best = null
+        let bestRatio = 0
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio
+            best = entry
+          }
+        })
+        if (best && best.isIntersecting) {
+          setActiveCard(parseInt(best.target.dataset.index))
+        }
+      },
+      {
+        threshold: [0.4, 0.5, 0.6, 0.7, 0.8],
+        rootMargin: '-5% 0px -5% 0px',
+      }
+    )
+    cards.forEach((card) => observer.observe(card))
+    return () => observer.disconnect()
+  }, [isLoaded])
+
+  const rows = [teamMembers.slice(0, 4), teamMembers.slice(4, 8)]
+
+  const IgSvg = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+    </svg>
+  )
 
   return (
     <>
       <style jsx suppressHydrationWarning>{`
 
-        /* ── Skeleton pulse animation (no shimmer) ── */
         @keyframes skPulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.45; }
+          0%, 100% { opacity: 1; } 50% { opacity: 0.35; }
         }
-
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes pulse-dot {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.8; }
+          0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255,30,30,0.55); }
+          50%       { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 7px rgba(255,30,30,0); }
+        }
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ─── SKELETON WRAPPER ─── */
+        /* ═══ SKELETON ═══ */
         .skeleton-wrapper {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          z-index: 50;
-          transition: opacity 0.7s ease-out, visibility 0.7s;
-          opacity: 1;
-          visibility: visible;
-          background: #080808;
+          position: fixed; inset: 0; z-index: 9999;
+          background: #080808; overflow-y: auto;
+          transition: opacity 0.65s ease-out, visibility 0.65s;
+          opacity: 1; visibility: visible;
         }
-        .skeleton-wrapper.hidden {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
-
-        /* Base skeleton block — pure pulse, zero shimmer */
-        .sk-block {
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        /* Stagger delays for depth */
-        .sk-block:nth-child(2) { animation-delay: 0.15s; }
-        .sk-block:nth-child(3) { animation-delay: 0.3s; }
-        .sk-block:nth-child(4) { animation-delay: 0.45s; }
-        .sk-block:nth-child(5) { animation-delay: 0.6s; }
-        .sk-block:nth-child(6) { animation-delay: 0.75s; }
-
-        /* ── HERO skeleton ── */
+        .skeleton-wrapper.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .sk-inner { min-height: 100%; display: flex; flex-direction: column; }
         .sk-hero {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 24px;
-          padding: 40px;
+          height: 100vh; display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 20px; padding: 40px 24px; flex-shrink: 0;
         }
-
-        .sk-hero-title {
-          border-radius: 16px;
-          background: #1a1a1a;
-          height: clamp(64px, 10vw, 130px);
-        }
-        .sk-hero-title.l1 { width: 52%; animation-delay: 0s; }
-        .sk-hero-title.l2 { width: 22%; height: clamp(48px, 7.5vw, 105px); animation-delay: 0.2s; }
-
-        /* ── TEAM skeleton ── */
-        .sk-team {
-          padding: 100px 40px;
-        }
-
-        .sk-team-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 28px;
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-
+        .sk-hero-title { border-radius: 14px; background: #1c1c1c; animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-hero-title.l1 { width: min(55%, 600px); height: clamp(60px, 10vw, 130px); }
+        .sk-hero-title.l2 { width: min(25%, 260px); height: clamp(44px, 7.5vw, 105px); animation-delay: 0.18s; }
+        .sk-team { padding: 80px 40px; flex-shrink: 0; }
+        .sk-team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 1320px; margin: 0 auto; }
         .sk-card {
-          aspect-ratio: 3/4;
-          background: #111;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.04);
-          position: relative;
-          overflow: hidden;
+          height: 460px; background: #111; border-radius: 13px;
+          border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;
+          animation: skPulse 1.9s ease-in-out infinite;
         }
-
         .sk-card-bottom {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 24px;
-          background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
+          position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;
+          background: linear-gradient(to top, rgba(0,0,0,0.9) 60%, transparent);
+          display: flex; flex-direction: column; gap: 10px;
         }
-
-        .sk-line {
-          border-radius: 6px;
-          background: rgba(255,255,255,0.07);
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        .sk-line.name   { height: 22px; width: 50%; }
-        .sk-line.role   { height: 13px; width: 35%; animation-delay: 0.1s; }
-        .sk-line.desc1  { height: 11px; width: 100%; margin-top: 8px; animation-delay: 0.2s; }
-        .sk-line.desc2  { height: 11px; width: 78%; animation-delay: 0.3s; }
-
-        /* ── WISDOM skeleton ── */
-        .sk-wisdom {
-          padding: 80px 40px;
-          display: flex;
-          justify-content: center;
-        }
-
+        .sk-line { border-radius: 6px; background: rgba(255,255,255,0.09); animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-line.name { height: 20px; width: 52%; }
+        .sk-line.role { height: 12px; width: 36%; animation-delay: 0.1s; }
+        .sk-scroll { padding: 80px 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; min-height: 40vh; }
+        .sk-scroll-inner { max-width: 1100px; width: 100%; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+        .sk-t-line { border-radius: 6px; background: #181818; }
+        .sk-t-line.t1 { height: 26px; width: 100%; animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-t-line.t2 { height: 26px; width: 97%; animation: skPulse 1.9s 0.1s ease-in-out infinite; }
+        .sk-t-line.t3 { height: 26px; width: 99%; animation: skPulse 1.9s 0.2s ease-in-out infinite; }
+        .sk-t-line.t4 { height: 26px; width: 95%; animation: skPulse 1.9s 0.3s ease-in-out infinite; }
+        .sk-t-line.t5 { height: 26px; width: 65%; animation: skPulse 1.9s 0.4s ease-in-out infinite; }
+        .sk-trusted { padding: 80px 40px; flex-shrink: 0; text-align: center; }
+        .sk-trusted-head { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 60px; }
+        .sk-dot { width: 12px; height: 12px; border-radius: 50%; background: #2a2a2a; animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-trusted-label { height: 16px; width: 140px; border-radius: 4px; background: #252525; animation: skPulse 1.9s 0.1s ease-in-out infinite; }
+        .sk-logo-row { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .sk-logo-item { height: 48px; width: 120px; border-radius: 8px; background: #141414; border: 1px solid rgba(255,255,255,0.04); animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-wisdom { padding: 60px 40px; flex-shrink: 0; display: flex; justify-content: center; }
         .sk-wisdom-inner {
-          max-width: 860px;
-          width: 100%;
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 16px;
-          padding: 60px 48px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          align-items: center;
+          max-width: 860px; width: 100%; background: rgba(255,255,255,0.02);
+          border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 60px 48px;
+          display: flex; flex-direction: column; gap: 14px; align-items: center;
         }
-
         .sk-w-line { border-radius: 6px; background: #191919; }
-        .sk-w-line.w1 { height: 26px; width: 95%; animation: skPulse 1.8s ease-in-out infinite; }
-        .sk-w-line.w2 { height: 26px; width: 88%; animation: skPulse 1.8s 0.1s ease-in-out infinite; }
-        .sk-w-line.w3 { height: 26px; width: 91%; animation: skPulse 1.8s 0.2s ease-in-out infinite; }
-        .sk-w-line.w4 { height: 16px; width: 38%; margin-top: 20px; animation: skPulse 1.8s 0.3s ease-in-out infinite; }
+        .sk-w-line.w1 { height: 24px; width: 95%; animation: skPulse 1.9s ease-in-out infinite; }
+        .sk-w-line.w2 { height: 24px; width: 88%; animation: skPulse 1.9s 0.1s ease-in-out infinite; }
+        .sk-w-line.w3 { height: 24px; width: 91%; animation: skPulse 1.9s 0.2s ease-in-out infinite; }
+        .sk-w-line.w4 { height: 14px; width: 36%; margin-top: 18px; animation: skPulse 1.9s 0.3s ease-in-out infinite; }
+        .sk-footer { padding: 50px 20px; flex-shrink: 0; display: flex; justify-content: center; border-top: 1px solid rgba(255,255,255,0.04); margin-top: auto; }
+        .sk-footer-text { height: 14px; width: 220px; border-radius: 4px; background: #141414; animation: skPulse 1.9s ease-in-out infinite; }
 
-        /* ── TRUSTED skeleton ── */
-        .sk-trusted {
-          padding: 100px 40px;
-          text-align: center;
-        }
-
-        .sk-trusted-head {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          margin-bottom: 64px;
-        }
-
-        .sk-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #1e1e1e;
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        .sk-trusted-label {
-          height: 16px;
-          width: 140px;
-          border-radius: 4px;
-          background: #1a1a1a;
-          animation: skPulse 1.8s 0.1s ease-in-out infinite;
-        }
-
-        .sk-logo-row {
-          display: flex;
-          gap: 20px;
-          justify-content: center;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        .sk-logo-item {
-          height: 42px;
-          width: 130px;
-          border-radius: 8px;
-          background: #141414;
-          border: 1px solid rgba(255,255,255,0.04);
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        .sk-logo-item:nth-child(1) { animation-delay: 0s; }
-        .sk-logo-item:nth-child(2) { animation-delay: 0.12s; }
-        .sk-logo-item:nth-child(3) { animation-delay: 0.24s; }
-        .sk-logo-item:nth-child(4) { animation-delay: 0.36s; }
-        .sk-logo-item:nth-child(5) { animation-delay: 0.48s; }
-        .sk-logo-item:nth-child(6) { animation-delay: 0.6s; }
-
-        /* ── SCROLL TEXT skeleton ── */
-        .sk-scroll {
-          padding: 100px 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 50vh;
-        }
-
-        .sk-scroll-inner {
-          max-width: 1100px;
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          align-items: center;
-        }
-
-        .sk-t-line { border-radius: 6px; background: #161616; }
-        .sk-t-line.t1 { height: 28px; width: 100%; animation: skPulse 1.8s ease-in-out infinite; }
-        .sk-t-line.t2 { height: 28px; width: 97%; animation: skPulse 1.8s 0.1s ease-in-out infinite; }
-        .sk-t-line.t3 { height: 28px; width: 99%; animation: skPulse 1.8s 0.2s ease-in-out infinite; }
-        .sk-t-line.t4 { height: 28px; width: 95%; animation: skPulse 1.8s 0.3s ease-in-out infinite; }
-        .sk-t-line.t5 { height: 28px; width: 68%; animation: skPulse 1.8s 0.4s ease-in-out infinite; }
-
-        /* ── STATS skeleton ── */
-        .sk-stats {
-          padding: 100px 40px;
-          min-height: 60vh;
-          display: flex;
-          align-items: center;
-        }
-
-        .sk-stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 40px;
-          max-width: 1400px;
-          width: 100%;
-          margin: 0 auto;
-        }
-
-        .sk-stat-card {
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 14px;
-          padding: 56px 40px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .sk-stat-num {
-          height: 64px;
-          width: 150px;
-          border-radius: 10px;
-          background: #1a1a1a;
-          margin-bottom: 8px;
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        .sk-stat-text {
-          height: 14px;
-          border-radius: 4px;
-          background: #161616;
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        .sk-stat-text.st1 { width: 100%; animation-delay: 0s; }
-        .sk-stat-text.st2 { width: 88%; animation-delay: 0.1s; }
-        .sk-stat-text.st3 { width: 72%; animation-delay: 0.2s; }
-
-        /* ── FOOTER skeleton ── */
-        .sk-footer {
-          padding: 60px 20px;
-          display: flex;
-          justify-content: center;
-          border-top: 1px solid rgba(255,255,255,0.04);
-        }
-
-        .sk-footer-text {
-          height: 14px;
-          width: 220px;
-          border-radius: 4px;
-          background: #141414;
-          animation: skPulse 1.8s ease-in-out infinite;
-        }
-
-        /* ── Skeleton responsive ── */
-        @media (max-width: 1024px) {
-          .sk-team-grid { grid-template-columns: repeat(2, 1fr); }
-          .sk-team, .sk-trusted, .sk-scroll, .sk-stats, .sk-wisdom { padding: 80px 24px; }
-        }
-
-        @media (max-width: 768px) {
-          .sk-team { padding: 60px 20px; }
-          .sk-team-grid { grid-template-columns: 1fr; gap: 16px; }
-          .sk-card { aspect-ratio: 9/12; }
-          .sk-wisdom { padding: 60px 20px; }
-          .sk-wisdom-inner { padding: 40px 24px; }
-          .sk-trusted { padding: 60px 20px; }
-          .sk-logo-row { gap: 14px; }
-          .sk-logo-item { width: 100px; height: 32px; }
-          .sk-scroll { padding: 60px 20px; }
-          .sk-stats { padding: 60px 20px; }
-          .sk-stats-grid { grid-template-columns: 1fr; gap: 20px; }
-          .sk-footer { padding: 40px 20px; }
-          .sk-hero-title.l1 { width: 75%; }
-          .sk-hero-title.l2 { width: 50%; }
-        }
-
-        @media (max-width: 480px) {
-          .sk-team-grid { gap: 12px; }
-          .sk-logo-item { width: 80px; height: 26px; }
-          .sk-wisdom-inner { padding: 32px 20px; }
-          .sk-stat-card { padding: 36px 24px; }
-        }
-
-        /* ── Content ── */
-        .content-wrapper {
-          opacity: 0;
-          transition: opacity 0.8s ease-in;
-        }
-        .content-wrapper.loaded {
-          opacity: 1;
-        }
+        /* ═══ CONTENT ═══ */
+        .content-wrapper { opacity: 0; transition: opacity 0.9s ease-in; }
+        .content-wrapper.loaded { opacity: 1; }
 
         :global(body.blur-active .background-video) {
-          filter: blur(12px) brightness(0.6);
+          filter: blur(14px) brightness(0.55);
           transition: filter 0.8s ease;
         }
 
+        /* ═══ HERO ═══ */
         .hero-section {
-          position: relative;
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
+          position: relative; height: 100vh;
+          display: flex; align-items: center; justify-content: center; flex-direction: column;
+          overflow: hidden;
         }
-
         .hero-content {
-          position: relative;
-          z-index: 2;
-          text-align: center;
-          mix-blend-mode: difference;
+          position: relative; z-index: 2; text-align: center;
+          mix-blend-mode: difference; animation: fadeInUp 1s ease-out both;
         }
-
         .hero-title {
-          font-size: clamp(60px, 10vw, 140px);
-          font-weight: 700;
-          line-height: 1.1;
-          letter-spacing: -2px;
-          color: #fff;
-          animation: fadeInUp 1s ease-out;
+          font-size: clamp(64px, 11vw, 148px);
+          font-weight: 800; line-height: 1.05; letter-spacing: -3px; color: #fff;
         }
 
-        #team-section {
-          min-height: 100vh;
-          padding: 100px 40px;
-          position: relative;
+        /* ═══ TEAM — DESKTOP ═══ */
+        #team-section { padding: 100px 40px; position: relative; z-index: 1; }
+
+        .team-wrapper {
+          display: flex; flex-direction: column;
+          gap: 10px; width: 100%; max-width: 1320px; margin: 0 auto;
+        }
+        .team-row { display: flex; gap: 10px; height: 460px; }
+
+        .team-card-wrap {
+          position: relative; border-radius: 13px; overflow: hidden;
+          cursor: pointer; background: #0e0e0e;
+          flex: 1 1 0; min-width: 0;
+          opacity: 0;
+          animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          transition: flex 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .team-row:nth-child(1) .team-card-wrap:nth-child(1) { animation-delay: 0.04s; }
+        .team-row:nth-child(1) .team-card-wrap:nth-child(2) { animation-delay: 0.10s; }
+        .team-row:nth-child(1) .team-card-wrap:nth-child(3) { animation-delay: 0.16s; }
+        .team-row:nth-child(1) .team-card-wrap:nth-child(4) { animation-delay: 0.22s; }
+        .team-row:nth-child(2) .team-card-wrap:nth-child(1) { animation-delay: 0.28s; }
+        .team-row:nth-child(2) .team-card-wrap:nth-child(2) { animation-delay: 0.34s; }
+        .team-row:nth-child(2) .team-card-wrap:nth-child(3) { animation-delay: 0.40s; }
+        .team-row:nth-child(2) .team-card-wrap:nth-child(4) { animation-delay: 0.46s; }
+
+        .team-row:has(.team-card-wrap:hover) .team-card-wrap:hover { flex: 2 1 0; }
+        .team-row:has(.team-card-wrap:hover) .team-card-wrap:not(:hover) { flex: 0.67 1 0; }
+
+        .card-photo {
+          position: absolute; inset: 0; width: 100%; height: 100%;
+          object-fit: cover;
+          transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .team-card-wrap:hover .card-photo { transform: scale(1.05); }
+
+        .card-gradient {
+          position: absolute; inset: 0;
+          background: linear-gradient(160deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.5) 62%, rgba(0,0,0,0.97) 100%);
           z-index: 1;
         }
 
-        .team-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 30px;
-          max-width: 1400px;
-          margin: 0 auto;
-          position: relative;
+        /* Desktop card content */
+        .card-content {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          padding: 24px 20px 26px; z-index: 5;
         }
 
-        .team-card {
-          position: relative;
-          aspect-ratio: 3/4;
-          overflow: hidden;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-          background: #0a0a0a;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        /* Name + IG on same line — tight gap */
+        .card-name-row {
+          display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
+        }
+        .card-name {
+          font-size: 17px; font-weight: 700; letter-spacing: 0.06em;
+          text-transform: uppercase; line-height: 1;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          flex-shrink: 1; min-width: 0;
         }
 
-        .team-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-        }
-
-        .team-card img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .team-card:hover img { transform: scale(1.08); }
-
-        .team-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4) 60%, transparent);
-          padding: 30px;
-          transition: all 0.3s ease;
-        }
-
-        .team-info h3 { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #fff; }
-        .team-info p { font-size: 14px; opacity: 0.7; margin-bottom: 15px; color: #fff; }
-        .team-description { font-size: 13px; line-height: 1.6; opacity: 0.9; color: #fff; }
-
-        .wisdom-section {
-          margin: 80px auto;
-          padding: 80px 40px;
-          background: rgba(0,0,0,0.4);
-          border-radius: 16px;
-          backdrop-filter: blur(5px);
-          max-width: 1200px;
-          text-align: center;
-          border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .wisdom-section p:first-child {
-          font-size: clamp(1.3rem, 2.5vw, 2rem);
-          line-height: 1.7;
-          font-style: italic;
-          margin-bottom: 24px;
-          color: #fff;
-        }
-
-        .wisdom-section p:last-child { font-size: 0.95rem; opacity: 0.65; color: #fff; }
-
-        .trusted-section {
-          padding: 100px 40px;
-          text-align: center;
-          overflow: hidden;
-        }
-
-        .trusted-header {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          margin-bottom: 80px;
-        }
-
-        .pulse-dot {
-          width: 12px;
-          height: 12px;
-          background: #ff0000;
-          border-radius: 50%;
-          animation: pulse-dot 2s infinite;
-        }
-
-        .trusted-header h2 {
-          font-size: 1.1rem;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          font-weight: 600;
-          color: #fff;
-        }
-
-        /* ── Logo carousel: no separator, tighter gap ── */
-        .carousel-container {
-          overflow: hidden;
-          position: relative;
-          width: 100%;
-          mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-          -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-        }
-
-        .logo-track {
-          display: flex;
-          gap: 0;
-          align-items: center;
-          width: fit-content;
-          animation: scroll 35s linear infinite;
-        }
-
-        .carousel-container:hover .logo-track {
-          animation-play-state: paused;
-        }
-
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-
-        /* Each logo item — no separator, reduced padding for closeness */
-        .logo-item {
-          display: flex;
-          align-items: center;
+        /* Desktop IG: hidden, appears on hover */
+        .card-ig-link {
+          display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
+          width: 22px; height: 22px; border-radius: 50%;
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.18);
+          color: rgba(255,255,255,0.6);
           text-decoration: none;
+          opacity: 0;
+          transform: scale(0.6);
+          transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1),
+                      background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+          /* large invisible tap area */
+          position: relative;
         }
-
-        .logo-item img {
-          width: auto;
-          opacity: 0.45;
-          filter: grayscale(1) brightness(0.95);
-          transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
-          flex-shrink: 0;
-          display: block;
-          /* Tighter horizontal padding — no bars between items */
-          padding: 0 18px;
+        .card-ig-link::before {
+          content: ''; position: absolute; inset: -6px; border-radius: 50%;
         }
-
-        .logo-item:hover img {
-          opacity: 1;
-          filter: grayscale(0) brightness(1);
-          transform: scale(1.1);
+        .team-card-wrap:hover .card-ig-link {
+          opacity: 1; transform: scale(1);
         }
-
-        /* Separator REMOVED — no .logo-separator element rendered */
-
-        .scroll-text-section {
-          padding: 100px 40px;
-          min-height: 60vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .card-ig-link:hover {
+          background: rgba(255,255,255,0.22) !important;
+          border-color: rgba(255,255,255,0.5) !important;
+          color: #fff !important;
+          transform: scale(1.18) !important;
         }
+        .card-ig-icon { width: 11px; height: 11px; display: block; pointer-events: none; }
 
+        .card-role {
+          font-size: 12px; color: rgba(255,255,255,0.52);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          transition: color 0.4s ease;
+        }
+        .team-card-wrap:hover .card-role { color: rgba(255,255,255,0.82); }
+
+        .card-divider {
+          height: 1px; background: rgba(255,255,255,0.14); width: 0; margin: 0;
+          transition: width 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s,
+                      margin 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s;
+        }
+        .team-card-wrap:hover .card-divider { width: 100%; margin: 13px 0; }
+
+        .card-bio-wrap {
+          display: grid; grid-template-rows: 0fr; opacity: 0;
+          transition: grid-template-rows 0.55s cubic-bezier(0.22,1,0.36,1) 0.1s,
+                      opacity 0.4s ease 0.2s;
+        }
+        .team-card-wrap:hover .card-bio-wrap { grid-template-rows: 1fr; opacity: 1; }
+        .card-bio-inner { overflow: hidden; }
+        .card-bio { font-size: 12.5px; line-height: 1.72; color: rgba(255,255,255,0.68); }
+
+        /* ═══ SCROLL TEXT ═══ */
+        .scroll-text-section { padding: 120px 40px; min-height: 60vh; display: flex; align-items: center; justify-content: center; }
         .text-container { max-width: 1200px; width: 100%; text-align: center; }
-
-        .scroll-text {
-          font-size: clamp(28px, 4vw, 48px);
-          line-height: 1.7;
-          font-weight: 400;
-          color: #fff;
-        }
-
-        :global(.scroll-text .word) { opacity: 0.2; transition: opacity 0.3s ease; }
+        .scroll-text { font-size: clamp(26px, 3.8vw, 50px); line-height: 1.75; font-weight: 400; color: #fff; }
+        :global(.scroll-text .word) { opacity: 0.18; transition: opacity 0.25s ease; display: inline-block; }
         :global(.scroll-text .word.active) { opacity: 1; }
 
-        .stats-section {
-          padding: 100px 40px;
-          min-height: 80vh;
-          display: flex;
-          align-items: center;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 40px;
-          max-width: 1400px;
-          margin: 0 auto;
-          width: 100%;
-        }
-
-        .stat-card {
-          background: rgba(255,255,255,0.03);
-          padding: 60px 40px;
-          border-radius: 12px;
+        /* ═══ TRUSTED BY ═══ */
+        .trusted-section { padding: 80px 20px; display: flex; justify-content: center; }
+        .trusted-box {
+          width: 100%; max-width: 1400px; padding: 50px 0;
+          border-radius: 20px; background: rgba(0,0,0,0.4);
           border: 1px solid rgba(255,255,255,0.08);
-          transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+          backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+          text-align: center; overflow: hidden;
         }
-
-        .stat-card:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(255,255,255,0.15);
-          transform: translateY(-8px);
+        .trusted-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 48px; padding: 0 40px; }
+        .pulse-dot { width: 11px; height: 11px; background: #ff2020; border-radius: 50%; flex-shrink: 0; animation: pulse-dot 2s infinite; }
+        .trusted-header h2 { font-size: 0.85rem; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.9); }
+        .marquee-outer {
+          width: 100%; overflow: hidden; height: 130px; display: flex; align-items: center;
+          -webkit-mask-image: linear-gradient(to right, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
         }
-
-        .stat-card h3 {
-          font-size: clamp(48px, 6vw, 72px);
-          font-weight: 700;
-          margin-bottom: 20px;
-          background: linear-gradient(135deg, #fff, #999);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .marquee-strip {
+          display: flex; align-items: center; height: 110px;
+          width: max-content; will-change: transform; transform: translate3d(0,0,0);
         }
-
-        .stat-card p { font-size: 15px; line-height: 1.6; opacity: 0.75; color: #fff; }
-
-        .copyright-container {
-          width: 100%;
-          padding: 60px 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          position: relative;
-          z-index: 100;
-          border-top: 1px solid rgba(255,255,255,0.05);
+        .marquee-set { display: flex; align-items: center; gap: 3px; height: 100%; flex-shrink: 0; }
+        .marquee-logo {
+          display: block; height: 110px; flex-shrink: 0;
+          object-fit: contain; object-position: center;
+          box-sizing: border-box; padding: 10px 18px;
+          filter: brightness(0) invert(1) opacity(0.72);
+          transition: filter 0.38s ease, transform 0.38s ease; cursor: pointer;
         }
+        .marquee-logo:hover { filter: none; transform: scale(1.1) translateY(-4px); }
 
-        .copyright {
-          font-size: 14px;
-          color: rgba(255,255,255,0.9);
-          font-weight: 400;
-          letter-spacing: 0.5px;
-          margin: 0;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        /* ═══ WISDOM ═══ */
+        .wisdom-section {
+          margin: 60px auto; padding: 72px 52px;
+          background: rgba(255,255,255,0.025); border-radius: 20px;
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          max-width: 1100px; text-align: center;
+          border: 1px solid rgba(255,255,255,0.08); position: relative;
         }
-
-        .copyright-link, .copyright-link:visited, .copyright-link:active {
-          color: #ffffff;
-          font-weight: 700;
-          text-decoration: none;
-          position: relative;
-          display: inline-block;
-          margin: 0 4px;
-          cursor: pointer;
+        .wisdom-section::before {
+          content: '"'; position: absolute; top: -20px; left: 40px;
+          font-size: 140px; color: rgba(255,255,255,0.06);
+          font-family: Georgia, serif; line-height: 1; pointer-events: none;
         }
+        .wisdom-section p:first-child { font-size: clamp(1.25rem, 2.3vw, 1.9rem); line-height: 1.75; font-style: italic; margin-bottom: 24px; color: #fff; }
+        .wisdom-section p:last-child { font-size: 0.9rem; opacity: 0.5; color: #fff; letter-spacing: 1px; }
 
-        .copyright-link::after {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 1px;
-          bottom: -2px;
-          left: 0;
-          background-color: #ffffff;
-          transition: width 0.3s ease;
-        }
-
+        /* ═══ FOOTER ═══ */
+        .copyright-container { width: 100%; padding: 56px 20px; display: flex; justify-content: center; align-items: center; position: relative; z-index: 100; border-top: 1px solid rgba(255,255,255,0.06); }
+        .copyright { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 400; letter-spacing: 0.5px; margin: 0; }
+        .copyright-link, .copyright-link:visited, .copyright-link:active { color: #fff; font-weight: 700; text-decoration: none; position: relative; display: inline-block; margin: 0 4px; }
+        .copyright-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -2px; left: 0; background-color: #fff; transition: width 0.3s ease; }
         .copyright-link:hover::after { width: 100%; }
-        .copyright-link:hover { opacity: 0.8; transform: translateY(-1px); }
+        .copyright-link:hover { opacity: 0.75; }
 
-        /* ── Main responsive ── */
-        @media (max-width: 1200px) {
-          .team-grid { gap: 24px; }
-          #team-section { padding: 80px 32px; }
-        }
-
-        @media (max-width: 1024px) {
-          .team-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-          #team-section { padding: 80px 24px; }
-          .wisdom-section { padding: 60px 32px; }
-          .scroll-text-section { padding: 80px 24px; }
-          .stats-section { padding: 80px 24px; }
-          .trusted-section { padding: 80px 24px; }
-        }
+        /* ═══════════════════════════
+           MOBILE
+        ═══════════════════════════ */
+        .team-mobile { display: none; }
 
         @media (max-width: 768px) {
-          .hero-title { font-size: clamp(50px, 12vw, 100px); }
-          #team-section { padding: 60px 20px; }
-          .team-grid { grid-template-columns: 1fr; gap: 16px; }
-          .team-card { aspect-ratio: 9/12; }
-          .wisdom-section { margin: 60px auto; padding: 60px 24px; }
-          .wisdom-section p:first-child { font-size: clamp(1.1rem, 2.2vw, 1.6rem); }
-          .trusted-section { padding: 60px 20px; }
-          .trusted-header { margin-bottom: 50px; }
-          .logo-item img { padding: 0 12px; }
-          .scroll-text-section { padding: 60px 20px; }
-          .scroll-text { font-size: clamp(22px, 3.5vw, 36px); }
-          .stats-section { padding: 60px 20px; }
-          .stats-grid { grid-template-columns: 1fr; gap: 24px; }
-          .stat-card { padding: 40px 24px; }
-          .copyright-container { padding: 40px 20px; }
+          #team-section { padding: 60px 16px; }
+          .team-wrapper { display: none !important; }
+
+          .team-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 480px;
+            margin: 0 auto;
+          }
+
+          /* Card: auto height so desc never gets cut off */
+          .mobile-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #0e0e0e;
+            flex-shrink: 0;
+            transition: transform 0.45s cubic-bezier(0.22,1,0.36,1),
+                        box-shadow 0.45s ease;
+          }
+          .mobile-card.in-view {
+            transform: scale(1.015);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+          }
+
+          /* Photo: fixed height, not tied to card height */
+          .mobile-photo-wrap {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            overflow: hidden;
+            flex-shrink: 0;
+          }
+          .mobile-card .card-photo {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+          }
+          .mobile-card.in-view .card-photo { transform: scale(1.04); }
+
+          /* Gradient on photo bottom */
+          .mobile-photo-gradient {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 60%;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
+            z-index: 1;
+          }
+
+          /* Name + IG sits at bottom of photo, overlapping */
+          .mobile-photo-identity {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 16px 18px 14px;
+            z-index: 2;
+          }
+
+          /* Name + IG icon RIGHT next to each other — tight */
+          .mobile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 3px;
+          }
+          .mobile-name {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #fff;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+            min-width: 0;
+          }
+
+          /* IG icon — always visible, right next to name */
+          .mobile-ig-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            /* Extra tap area */
+            position: relative;
+            transition: background 0.2s ease, transform 0.2s ease;
+          }
+          .mobile-ig-link::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+          }
+          .mobile-ig-link:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.93);
+          }
+          .mobile-ig-icon { width: 13px; height: 13px; display: block; pointer-events: none; }
+
+          .mobile-role {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.03em;
+          }
+
+          /* Description block below the photo — ALWAYS renders, animates in when in-view */
+          .mobile-desc-block {
+            padding: 0 18px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.55s cubic-bezier(0.22,1,0.36,1),
+                        opacity 0.4s ease,
+                        padding 0.4s ease;
+          }
+          .mobile-card.in-view .mobile-desc-block {
+            max-height: 200px; /* generous max for any desc length */
+            opacity: 1;
+            padding: 14px 18px 18px;
+          }
+
+          .mobile-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+            margin-bottom: 12px;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s cubic-bezier(0.22,1,0.36,1) 0.05s;
+          }
+          .mobile-card.in-view .mobile-divider { transform: scaleX(1); }
+
+          .mobile-desc {
+            font-size: 13.5px;
+            line-height: 1.72;
+            color: rgba(255,255,255,0.72);
+          }
+
+          /* Skeleton */
+          .sk-team-grid { grid-template-columns: 1fr; }
+          .sk-card { height: 380px; }
+
+          /* Other sections */
+          .scroll-text-section { padding: 80px 20px; }
+          .scroll-text { font-size: clamp(20px, 4vw, 34px); }
+          .trusted-section { padding: 50px 14px; }
+          .trusted-header { margin-bottom: 36px; padding: 0 20px; }
+          .marquee-outer {
+            height: 76px;
+            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
+          }
+          .marquee-strip { height: 64px; }
+          .marquee-logo { height: 64px; width: 108px; padding: 6px 12px; filter: none; opacity: 0.88; }
+          .marquee-logo:hover { filter: none; opacity: 1; transform: scale(1.08) translateY(-2px); }
+          .wisdom-section { margin: 40px auto; padding: 48px 24px; }
+          .wisdom-section::before { font-size: 100px; }
+          .wisdom-section p:first-child { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
+          .copyright-container { padding: 36px 20px; }
           .copyright { font-size: 12px; text-align: center; }
         }
 
         @media (max-width: 480px) {
-          .hero-title { font-size: clamp(42px, 14vw, 80px); }
-          #team-section { padding: 50px 16px; }
-          .team-grid { gap: 12px; }
-          .wisdom-section { margin: 50px 0; padding: 50px 20px; border-radius: 12px; }
-          .wisdom-section p:first-child { font-size: clamp(1rem, 2vw, 1.4rem); }
-          .trusted-section { padding: 50px 16px; }
-          .logo-item img { padding: 0 8px; }
-          .scroll-text-section { padding: 50px 16px; }
-          .scroll-text { font-size: clamp(18px, 3vw, 28px); line-height: 1.5; }
-          .stats-section { padding: 50px 16px; }
-          .stat-card { padding: 30px 20px; }
-          .stat-card h3 { font-size: clamp(36px, 5vw, 52px); }
-          .stat-card p { font-size: 13px; }
-          .copyright-container { padding: 30px 16px; }
+          .mobile-photo-wrap { height: 300px; }
+          .mobile-name { font-size: 18px; }
+          .marquee-outer { height: 62px; }
+          .marquee-strip { height: 52px; }
+          .marquee-logo { height: 52px; width: 90px; padding: 5px 10px; }
+          .scroll-text-section { padding: 56px 16px; }
+          .scroll-text { font-size: clamp(18px, 4.5vw, 28px); line-height: 1.55; }
+          .wisdom-section { padding: 40px 20px; border-radius: 14px; }
+          .wisdom-section::before { display: none; }
+          .copyright-container { padding: 28px 14px; }
           .copyright { font-size: 11px; }
         }
       `}</style>
 
       <div style={{ position: 'relative' }}>
 
-        {/* ═══════════════ SKELETON ═══════════════ */}
+        {/* ═══ SKELETON ═══ */}
         <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
-
-          {/* Hero */}
-          <section className="sk-hero">
-            <div className="sk-block sk-hero-title l1" />
-            <div className="sk-block sk-hero-title l2" />
-          </section>
-
-          {/* Team */}
-          <section className="sk-team">
-            <div className="sk-team-grid">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="sk-card" style={{ animationDelay: `${i * 0.08}s` }}>
-                  <div className="sk-card-bottom">
-                    <div className="sk-line name" style={{ animationDelay: `${i * 0.08}s` }} />
-                    <div className="sk-line role" style={{ animationDelay: `${i * 0.08 + 0.1}s` }} />
-                    <div className="sk-line desc1" style={{ animationDelay: `${i * 0.08 + 0.2}s` }} />
-                    <div className="sk-line desc2" style={{ animationDelay: `${i * 0.08 + 0.3}s` }} />
+          <div className="sk-inner">
+            <section className="sk-hero">
+              <div className="sk-hero-title l1" />
+              <div className="sk-hero-title l2" />
+            </section>
+            <section className="sk-team">
+              <div className="sk-team-grid">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="sk-card" style={{ animationDelay: `${i * 0.07}s` }}>
+                    <div className="sk-card-bottom">
+                      <div className="sk-line name" />
+                      <div className="sk-line role" />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Wisdom */}
-          <section className="sk-wisdom">
-            <div className="sk-wisdom-inner">
-              <div className="sk-w-line w1" />
-              <div className="sk-w-line w2" />
-              <div className="sk-w-line w3" />
-              <div className="sk-w-line w4" />
-            </div>
-          </section>
-
-          {/* Trusted */}
-          <section className="sk-trusted">
-            <div className="sk-trusted-head">
-              <div className="sk-dot" />
-              <div className="sk-trusted-label" />
-            </div>
-            <div className="sk-logo-row">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="sk-logo-item" style={{ animationDelay: `${i * 0.1}s` }} />
-              ))}
-            </div>
-          </section>
-
-          {/* Scroll text */}
-          <section className="sk-scroll">
-            <div className="sk-scroll-inner">
-              <div className="sk-t-line t1" />
-              <div className="sk-t-line t2" />
-              <div className="sk-t-line t3" />
-              <div className="sk-t-line t4" />
-              <div className="sk-t-line t5" />
-            </div>
-          </section>
-
-          {/* Stats */}
-          <section className="sk-stats">
-            <div className="sk-stats-grid">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="sk-stat-card" style={{ animationDelay: `${i * 0.12}s` }}>
-                  <div className="sk-stat-num" style={{ animationDelay: `${i * 0.12}s` }} />
-                  <div className="sk-stat-text st1" style={{ animationDelay: `${i * 0.12 + 0.1}s` }} />
-                  <div className="sk-stat-text st2" style={{ animationDelay: `${i * 0.12 + 0.2}s` }} />
-                  <div className="sk-stat-text st3" style={{ animationDelay: `${i * 0.12 + 0.3}s` }} />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Footer */}
-          <div className="sk-footer">
-            <div className="sk-footer-text" />
+                ))}
+              </div>
+            </section>
+            <section className="sk-scroll">
+              <div className="sk-scroll-inner">
+                <div className="sk-t-line t1" /><div className="sk-t-line t2" />
+                <div className="sk-t-line t3" /><div className="sk-t-line t4" /><div className="sk-t-line t5" />
+              </div>
+            </section>
+            <section className="sk-trusted">
+              <div className="sk-trusted-head"><div className="sk-dot" /><div className="sk-trusted-label" /></div>
+              <div className="sk-logo-row">
+                {[...Array(8)].map((_, i) => <div key={i} className="sk-logo-item" style={{ animationDelay: `${i * 0.08}s` }} />)}
+              </div>
+            </section>
+            <section className="sk-wisdom">
+              <div className="sk-wisdom-inner">
+                <div className="sk-w-line w1" /><div className="sk-w-line w2" />
+                <div className="sk-w-line w3" /><div className="sk-w-line w4" />
+              </div>
+            </section>
+            <div className="sk-footer"><div className="sk-footer-text" /></div>
           </div>
-
         </div>
 
-        {/* ═══════════════ CONTENT ═══════════════ */}
+        {/* ═══ CONTENT ═══ */}
         <div className={`content-wrapper ${isLoaded ? 'loaded' : ''}`}>
 
           <section className="hero-section">
             <div className="hero-content">
-              <h1 className="hero-title">
-                About
-                <br />
-                Us
-              </h1>
+              <h1 className="hero-title">About<br />Us</h1>
             </div>
           </section>
 
           <section id="team-section">
-            <div className="team-grid">
-              {teamMembers.map((member, index) => (
-                <div key={index} className="team-card">
-                  <Image
-                    src={member.img}
-                    alt={member.name}
-                    fill
-                    priority={index < 3}
-                    quality={85}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    style={{ objectFit: 'cover', objectPosition: 'center' }}
-                  />
-                  <div className="team-overlay">
-                    <div className="team-info">
-                      <h3>{member.name}</h3>
-                      <p>{member.role}</p>
+
+            {/* ── DESKTOP: flex-expand rows ── */}
+            <div className="team-wrapper">
+              {rows.map((row, rowIdx) => (
+                <div key={rowIdx} className="team-row">
+                  {row.map((member, i) => (
+                    <div key={i} className="team-card-wrap">
+                      <img
+                        className="card-photo"
+                        src={member.img}
+                        alt={member.name}
+                        style={{ objectPosition: member.objPos }}
+                      />
+                      <div className="card-gradient" />
+                      <div className="card-content">
+                        <div className="card-name-row">
+                          <span className="card-name">{member.name}</span>
+                          <a
+                            href={member.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="card-ig-link"
+                            aria-label={`${member.name} on Instagram`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="card-ig-icon"><IgSvg /></span>
+                          </a>
+                        </div>
+                        <span className="card-role">{member.role}</span>
+                        <div className="card-divider" />
+                        <div className="card-bio-wrap">
+                          <div className="card-bio-inner">
+                            <p className="card-bio">{member.desc}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <p className="team-description">{member.desc}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* ── MOBILE: separate structure — photo + below-photo desc ── */}
+            <div className="team-mobile">
+              {teamMembers.map((member, idx) => (
+                <div
+                  key={idx}
+                  ref={(el) => { cardRefs.current[idx] = el }}
+                  data-index={idx}
+                  className={`mobile-card${activeCard === idx ? ' in-view' : ''}`}
+                >
+                  {/* Photo area with identity overlay */}
+                  <div className="mobile-photo-wrap">
+                    <img
+                      className="card-photo"
+                      src={member.img}
+                      alt={member.name}
+                      style={{ objectPosition: member.objPos }}
+                    />
+                    <div className="mobile-photo-gradient" />
+                    {/* Name + IG right on photo bottom */}
+                    <div className="mobile-photo-identity">
+                      <div className="mobile-name-row">
+                        <span className="mobile-name">{member.name}</span>
+                        <a
+                          href={member.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mobile-ig-link"
+                          aria-label={`${member.name} on Instagram`}
+                        >
+                          <span className="mobile-ig-icon"><IgSvg /></span>
+                        </a>
+                      </div>
+                      <span className="mobile-role">{member.role}</span>
+                    </div>
+                  </div>
+
+                  {/* Description block — below photo, always in DOM, animates in on center */}
+                  <div className="mobile-desc-block">
+                    <div className="mobile-divider" />
+                    <p className="mobile-desc">{member.desc}</p>
                   </div>
                 </div>
               ))}
+            </div>
+
+          </section>
+
+          <section ref={scrollSectionRef} className="scroll-text-section">
+            <div className="text-container">
+              <p ref={scrollTextRef} className="scroll-text">
+                Specializing in creative direction and full-scale production,
+                5feet4 Studio guides your brand from concept to final delivery.
+                From pre-production planning to post-production polish, we lead
+                the entire process ensuring impactful content that resonates
+                across social media, commercials, and creative campaigns.
+              </p>
+            </div>
+          </section>
+
+          <section className="trusted-section">
+            <div className="trusted-box">
+              <div className="trusted-header">
+                <div className="pulse-dot" />
+                <h2>Brands we are engaging with</h2>
+              </div>
+              <div className="marquee-outer">
+                <div className="marquee-strip" ref={stripRef}>
+                  <div className="marquee-set" ref={setARef}>
+                    {logoSrcs.map((src, i) => (
+                      <img key={i} className="marquee-logo" src={src} alt={`Client logo ${i + 1}`} draggable={false} />
+                    ))}
+                  </div>
+                  <div className="marquee-set" ref={setBRef} aria-hidden="true" />
+                </div>
+              </div>
             </div>
           </section>
 
           <section className="scroll-text-section">
             <div className="text-container">
               <div className="wisdom-section">
-                <p>
-                  "We don't just capture moments—we create magic through our lens.
-                  Every frame tells a story, every shot brings dreams to life."
-                </p>
+                <p>"We don't just capture moments—we create magic through our lens. Every frame tells a story, every shot brings dreams to life."</p>
                 <p>— The 5feet4 Team</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="trusted-section">
-            <div className="trusted-header">
-              <div className="pulse-dot"></div>
-              <h2>TRUSTED BY</h2>
-            </div>
-
-            <div className="carousel-container">
-              <div className="logo-track">
-                {[...logos, ...logos].map((logo, i) => {
-                  const size = isMobile ? logo.mobile : logo.desktop
-                  return (
-                    <div key={i} className="logo-item">
-                      <Image
-                        src={logo.src}
-                        alt={`Client ${(i % logos.length) + 1}`}
-                        width={280}
-                        height={140}
-                        quality={80}
-                        style={{
-                          height: size.h,
-                          width: size.w,
-                          objectFit: 'contain',
-                        }}
-                      />
-                      {/* Separator intentionally removed */}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
-
-          <section ref={scrollSectionRef} className="scroll-text-section">
-            <div className="text-container">
-              <p ref={scrollTextRef} className="scroll-text">
-                Specializing in creative direction and full-scale production, 5feet4 Studio guides your brand from concept to final delivery. From
-                pre-production planning to post-production polish, we lead the
-                entire process ensuring impactful content that resonates across
-                social media, commercials, and creative campaigns.
-              </p>
-            </div>
-          </section>
-
-          <section className="stats-section">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <h3>10M+</h3>
-                <p>
-                  With over 10M+ views for our clients, we craft high-impact content
-                  that captivates and drives engagement.
-                </p>
-              </div>
-
-              <div className="stat-card">
-                <h3>100+</h3>
-                <p>
-                  With over 100+ clients served, we've partnered with brands of all
-                  sizes to create compelling content.
-                </p>
-              </div>
-
-              <div className="stat-card">
-                <h3>10+</h3>
-                <p>
-                  Our team of 10+ includes creative directors, editors, animators,
-                  and a skilled film crew.
-                </p>
               </div>
             </div>
           </section>
@@ -1084,9 +917,7 @@ export default function About() {
           <div className="copyright-container">
             <p className="copyright">
               © 2026{' '}
-              <Link href="/" className="copyright-link">
-                5feet4
-              </Link>
+              <Link href="/" className="copyright-link">5feet4</Link>
               . All Rights Reserved.
             </p>
           </div>
