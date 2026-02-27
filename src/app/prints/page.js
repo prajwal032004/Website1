@@ -84,7 +84,7 @@ const images = [
     height: 1800,
   },
   {
-    src: "https://ik.imagekit.io/5feet4imgassests/5'4%202026%20Digital%20Assets%20/Vertical%20images%20/Logo's%20/23.png?updatedAt=1772060171482",
+    src: "https://cdn.worldvectorlogo.com/logos/massimo-dutti-1.svg",
     'x-icon': '/logo.png',
     tag: 'MASSIMO DUTTI',
     type: 'center',
@@ -294,7 +294,7 @@ const images = [
     height: 1920,
   },
   {
-    src: '/logos/swiggy-logo.png',
+    src: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/27/Swiggy_logo_%28old%29.svg/960px-Swiggy_logo_%28old%29.svg.png',
     'x-icon': '/logo.png',
     tag: 'SWIGGY',
     type: 'center',
@@ -924,12 +924,12 @@ export default function Gallery() {
         /* ── SKELETON ── */
         .skeleton-wrapper {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-          overflow-y: auto; z-index: 9999; background: #000;
+          overflow-y: auto; z-index: 9999; background: #0000003d;
           transition: opacity 0.6s ease-out, visibility 0.6s;
           opacity: 1; visibility: visible; pointer-events: auto;
         }
         .skeleton-wrapper.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .sk-block { background: #0f0f0f; position: relative; overflow: hidden; }
+        .sk-block { background: #000000; position: relative; overflow: hidden; }
         .sk-block::after {
           content: ''; position: absolute; inset: 0; transform: translateX(-100%);
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 50%, transparent);

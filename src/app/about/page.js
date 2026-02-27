@@ -286,7 +286,7 @@ export default function About() {
         /* ═══ SKELETON ═══ */
         .skeleton-wrapper {
           position: fixed; inset: 0; z-index: 9999;
-          background: #080808; overflow-y: auto;
+          background: #08080837; overflow-y: auto;
           transition: opacity 0.65s ease-out, visibility 0.65s;
           opacity: 1; visibility: visible;
         }

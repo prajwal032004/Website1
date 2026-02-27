@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import LoadingScreen from '../components/LoadingScreen'
 
 export default function Home() {
   const heroRef = useRef(null)
@@ -10,28 +9,17 @@ export default function Home() {
   const [showContent, setShowContent] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
 
-  // ── Toggle Vimeo background sound via SDK ──────────────────────────────────
-  const toggleBgSound = async () => {
-    const player = window.__vimeoPlayer
-    if (!player) return
-    try {
-      const muted = await player.getMuted()
-      if (muted) {
-        await player.setMuted(false)
-        await player.setVolume(1)
-        setIsMuted(false)
-      } else {
-        await player.setMuted(true)
-        setIsMuted(true)
-      }
-    } catch (err) {
-      console.error('Vimeo sound toggle error:', err)
-    }
-  }
+  // ── Loading screen state ───────────────────────────────────────────────────
+  const [loadingPhase, setLoadingPhase] = useState('loading') // 'loading' | 'exit' | 'done'
 
   useEffect(() => {
-    const LOADING_SCREEN_DURATION = 3200
+    // Loading screen exit after 5s
+    const loadingTimer = setTimeout(() => {
+      setLoadingPhase('exit')
+      setTimeout(() => setLoadingPhase('done'), 900)
+    }, 5000)
 
+    // Main content reveal after 3.2s
     const showTimer = setTimeout(() => {
       setIsLoaded(true)
       setShowContent(true)
@@ -45,7 +33,7 @@ export default function Home() {
         })
         window.AOS.refresh()
       }
-    }, LOADING_SCREEN_DURATION)
+    }, 3200)
 
     // Preload images in background (non-blocking)
     const imageUrls = [
@@ -99,12 +87,32 @@ export default function Home() {
     window.addEventListener('ads-video-unmuted', handleAdsMuted)
 
     return () => {
+      clearTimeout(loadingTimer)
       clearTimeout(showTimer)
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('ads-video-unmuted', handleAdsMuted)
       document.body.classList.remove('blur-active')
     }
   }, [])
+
+  // ── Toggle Vimeo background sound via SDK ─────────────────────────────────
+  const toggleBgSound = async () => {
+    const player = window.__vimeoPlayer
+    if (!player) return
+    try {
+      const muted = await player.getMuted()
+      if (muted) {
+        await player.setMuted(false)
+        await player.setVolume(1)
+        setIsMuted(false)
+      } else {
+        await player.setMuted(true)
+        setIsMuted(true)
+      }
+    } catch (err) {
+      console.error('Vimeo sound toggle error:', err)
+    }
+  }
 
   const handleEmailClick = (e) => {
     e.preventDefault()
@@ -122,6 +130,8 @@ export default function Home() {
       )
     }
   }
+
+  const isLoadingExiting = loadingPhase === 'exit'
 
   return (
     <>
@@ -608,7 +618,43 @@ export default function Home() {
         }
       `}</style>
 
-      <LoadingScreen />
+      {/* ======================== LOADING SCREEN (inlined) ======================== */}
+      {loadingPhase !== 'done' && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            opacity: isLoadingExiting ? 0 : 1,
+            transform: isLoadingExiting ? 'translateY(-100%)' : 'translateY(0)',
+            transition: isLoadingExiting
+              ? 'opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
+              : 'none',
+            pointerEvents: isLoadingExiting ? 'none' : 'auto',
+          }}
+        >
+          <video
+            autoPlay
+            muted
+            playsInline
+            loop
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          >
+            <source src="/5'4.mp4" type="video/mp4" />
+          </video>
+        </div>
+      )}
 
       {/* ======================== SKELETON ======================== */}
       <div className={`skeleton-wrapper ${isLoaded ? 'hidden' : ''}`}>
@@ -651,13 +697,13 @@ export default function Home() {
               aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
             >
               {isMuted ? (
-                <svg className="icon-muted" viewBox="0 0 24 24">
+                <svg viewBox="0 0 24 24">
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                   <line x1="23" y1="9" x2="17" y2="15" />
                   <line x1="17" y1="9" x2="23" y2="15" />
                 </svg>
               ) : (
-                <svg className="icon-unmuted" viewBox="0 0 24 24">
+                <svg viewBox="0 0 24 24">
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                   <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
                   <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
