@@ -8,6 +8,7 @@ export default function About() {
   const scrollTextRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeCard, setActiveCard] = useState(null)
+  const [expandedCard, setExpandedCard] = useState(null)
 
   const stripRef = useRef(null)
   const setARef = useRef(null)
@@ -252,6 +253,23 @@ export default function About() {
     return () => observer.disconnect()
   }, [isLoaded])
 
+  // Close expanded card when tapping outside
+  useEffect(() => {
+    if (expandedCard === null) return
+    const handleOutside = (e) => {
+      const card = cardRefs.current[expandedCard]
+      if (card && !card.contains(e.target)) {
+        setExpandedCard(null)
+      }
+    }
+    document.addEventListener('touchstart', handleOutside, { passive: true })
+    return () => document.removeEventListener('touchstart', handleOutside)
+  }, [expandedCard])
+
+  const handleMobileCardTap = (idx) => {
+    setExpandedCard(prev => prev === idx ? null : idx)
+  }
+
   const rows = [teamMembers.slice(0, 4), teamMembers.slice(4, 8)]
 
   const IgSvg = () => (
@@ -283,11 +301,15 @@ export default function About() {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes descSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
 
         /* ═══ SKELETON ═══ */
         .skeleton-wrapper {
           position: fixed; inset: 0; z-index: 9999;
-          background: #0808082f; overflow-y: auto;
+          background: #0808084a; overflow-y: auto;
           transition: opacity 0.65s ease-out, visibility 0.65s;
           opacity: 1; visibility: visible;
         }
@@ -556,35 +578,44 @@ export default function About() {
           #team-section { padding: 48px 16px 56px; }
           .team-wrapper { display: none !important; }
 
+          /* ── Mobile: single column ── */
           .team-mobile {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 480px;
             margin: 0 auto;
+            width: 100%;
           }
 
           /* ── Mobile card: full-photo, identity overlaid at bottom ── */
           .mobile-card {
             position: relative;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
             background: #0a0a0a;
-            aspect-ratio: 3 / 4;
+            width: 100%;
+            /* No fixed aspect-ratio — height is dynamic based on expanded state */
             cursor: pointer;
-            transition: transform 0.4s cubic-bezier(0.22,1,0.36,1),
-                        box-shadow 0.4s ease;
+            transition: box-shadow 0.4s ease;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
           }
 
-          /* Slightly scale up active card */
           .mobile-card.in-view {
-            transform: scale(1.025);
             box-shadow: 0 12px 40px rgba(0,0,0,0.65);
-            z-index: 2;
           }
 
-          /* Photo fills entire card */
+          /* Photo wrapper controls height */
+          .mobile-card-photo-wrap {
+            position: relative;
+            width: 100%;
+            /* Default: portrait aspect ratio */
+            aspect-ratio: 3 / 4;
+            overflow: hidden;
+            transition: aspect-ratio 0s;
+          }
+
+          /* Photo fills wrapper */
           .mobile-card .card-photo {
             position: absolute; inset: 0;
             width: 100%; height: 100%;
@@ -592,17 +623,32 @@ export default function About() {
             transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
           }
           .mobile-card.in-view .card-photo {
-            transform: scale(1.05);
+            transform: scale(1.03);
+          }
+          .mobile-card.expanded .card-photo {
+            transform: scale(1.06);
           }
 
-          /* Gradient: strong bottom fade */
+          /* Gradient: default bottom fade */
           .mobile-card-gradient {
             position: absolute; inset: 0; z-index: 1;
             background: linear-gradient(
               to bottom,
-              rgba(0,0,0,0) 30%,
-              rgba(0,0,0,0.55) 58%,
-              rgba(0,0,0,0.93) 100%
+              rgba(0,0,0,0) 35%,
+              rgba(0,0,0,0.6) 62%,
+              rgba(0,0,0,0.96) 100%
+            );
+            transition: background 0.4s ease;
+          }
+
+          /* Expanded: stronger overlay so text is readable */
+          .mobile-card.expanded .mobile-card-gradient {
+            background: linear-gradient(
+              to bottom,
+              rgba(0,0,0,0.1) 0%,
+              rgba(0,0,0,0.55) 45%,
+              rgba(0,0,0,0.97) 75%,
+              rgba(0,0,0,0.99) 100%
             );
           }
 
@@ -611,20 +657,20 @@ export default function About() {
             position: absolute;
             bottom: 0; left: 0; right: 0;
             z-index: 2;
-            padding: 14px 12px 14px;
+            padding: 16px 16px 18px;
           }
 
           /* Name + IG row */
           .mobile-name-row {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 8px;
+            margin-bottom: 5px;
           }
           .mobile-name {
-            font-size: clamp(11px, 2.8vw, 15px);
+            font-size: clamp(13px, 3.5vw, 17px);
             font-weight: 700;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             color: #fff;
             line-height: 1;
@@ -635,21 +681,20 @@ export default function About() {
             min-width: 0;
           }
 
-          /* IG button — always visible on mobile */
+          /* IG button */
           .mobile-ig-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: rgba(255,255,255,0.15);
             border: 1px solid rgba(255,255,255,0.28);
             color: #fff;
             text-decoration: none;
             transition: background 0.2s ease, transform 0.2s ease;
-            /* Large tap target */
             position: relative;
           }
           .mobile-ig-btn::before {
@@ -663,39 +708,109 @@ export default function About() {
             transform: scale(0.9);
           }
           .mobile-ig-icon {
-            width: 11px; height: 11px;
+            width: 12px; height: 12px;
             display: block; pointer-events: none;
           }
 
           /* Role label */
           .mobile-role {
-            font-size: clamp(9px, 2vw, 11px);
-            color: rgba(255,255,255,0.5);
-            letter-spacing: 0.04em;
+            font-size: clamp(10px, 2.5vw, 12px);
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
 
-          /* Active card accent line */
-          .mobile-accent-bar {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 2px;
-            background: #fff;
-            z-index: 3;
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.45s cubic-bezier(0.22,1,0.36,1);
+          /* Tap hint chevron */
+          .mobile-tap-hint {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            opacity: 0.38;
+            transition: opacity 0.3s ease;
           }
-          .mobile-card.in-view .mobile-accent-bar {
-            transform: scaleX(1);
+          .mobile-card.expanded .mobile-tap-hint {
+            opacity: 0;
+            pointer-events: none;
+          }
+          .mobile-tap-hint span {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fff;
+          }
+          .mobile-tap-hint svg {
+            width: 10px; height: 10px; color: #fff;
+            animation: bounceY 1.6s ease-in-out infinite;
+          }
+          @keyframes bounceY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
+          }
+
+          /* ── Expanded desc panel (slides up from bottom of card) ── */
+          .mobile-desc-panel {
+            position: relative;
+            z-index: 3;
+            background: rgba(8, 8, 8, 0.96);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1),
+                        padding 0.4s cubic-bezier(0.22,1,0.36,1),
+                        opacity 0.35s ease;
+            opacity: 0;
+            padding: 0 18px;
+          }
+
+          .mobile-card.expanded .mobile-desc-panel {
+            max-height: 300px;
+            opacity: 1;
+            padding: 18px 18px 22px;
+          }
+
+          .mobile-desc-text {
+            font-size: clamp(13px, 3.4vw, 15px);
+            line-height: 1.72;
+            color: rgba(255,255,255,0.78);
+            animation: none;
+          }
+
+          .mobile-card.expanded .mobile-desc-text {
+            animation: descSlideUp 0.45s cubic-bezier(0.22,1,0.36,1) 0.12s both;
+          }
+
+          /* Close hint inside panel */
+          .mobile-close-hint {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 14px;
+            opacity: 0.35;
+          }
+          .mobile-close-hint span {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fff;
+          }
+          .mobile-close-hint svg {
+            width: 10px; height: 10px; color: #fff;
+          }
+
+          /* Divider line above expanded text */
+          .mobile-desc-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+            margin-bottom: 14px;
           }
 
           /* Skeleton mobile */
-          .sk-team-grid { grid-template-columns: 1fr 1fr; }
-          .sk-card { height: 240px; border-radius: 14px; }
+          .sk-team-grid { grid-template-columns: 1fr; }
+          .sk-card { height: 300px; border-radius: 14px; }
 
           /* ── Scroll text ── */
           .scroll-text-section {
@@ -765,12 +880,12 @@ export default function About() {
         }
 
         @media (max-width: 400px) {
-          .team-mobile { gap: 8px; }
-          .mobile-card-identity { padding: 10px 10px 12px; }
-          .mobile-name { font-size: 10px; }
-          .mobile-role { font-size: 8px; }
-          .mobile-ig-btn { width: 18px; height: 18px; }
-          .mobile-ig-icon { width: 9px; height: 9px; }
+          .team-mobile { gap: 10px; }
+          .mobile-card-identity { padding: 12px 12px 14px; }
+          .mobile-name { font-size: 12px; }
+          .mobile-role { font-size: 9px; }
+          .mobile-ig-btn { width: 20px; height: 20px; }
+          .mobile-ig-icon { width: 10px; height: 10px; }
         }
       `}</style>
 
@@ -869,47 +984,73 @@ export default function About() {
               ))}
             </div>
 
-            {/* ── MOBILE: 2-column grid, photo-only cards with identity overlay ── */}
+            {/* ── MOBILE: single column, tap to expand bio ── */}
             <div className="team-mobile">
-              {teamMembers.map((member, idx) => (
-                <div
-                  key={idx}
-                  ref={(el) => { cardRefs.current[idx] = el }}
-                  data-index={idx}
-                  className={`mobile-card${activeCard === idx ? ' in-view' : ''}`}
-                >
-                  {/* Full-bleed photo */}
-                  <img
-                    className="card-photo"
-                    src={member.img}
-                    alt={member.name}
-                    style={{ objectPosition: member.objPos }}
-                  />
+              {teamMembers.map((member, idx) => {
+                const isExpanded = expandedCard === idx
+                return (
+                  <div
+                    key={idx}
+                    ref={(el) => { cardRefs.current[idx] = el }}
+                    data-index={idx}
+                    className={`mobile-card${activeCard === idx ? ' in-view' : ''}${isExpanded ? ' expanded' : ''}`}
+                    onClick={() => handleMobileCardTap(idx)}
+                  >
+                    {/* Photo wrapper */}
+                    <div className="mobile-card-photo-wrap">
+                      {/* Full-bleed photo */}
+                      <img
+                        className="card-photo"
+                        src={member.img}
+                        alt={member.name}
+                        style={{ objectPosition: member.objPos }}
+                      />
 
-                  {/* Bottom gradient */}
-                  <div className="mobile-card-gradient" />
+                      {/* Gradient overlay */}
+                      <div className="mobile-card-gradient" />
 
-                  {/* Name + role + IG */}
-                  <div className="mobile-card-identity">
-                    <div className="mobile-name-row">
-                      <span className="mobile-name">{member.name}</span>
-                      <a
-                        href={member.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mobile-ig-btn"
-                        aria-label={`${member.name} on Instagram`}
-                      >
-                        <span className="mobile-ig-icon"><IgSvg /></span>
-                      </a>
+                      {/* Name + role + IG */}
+                      <div className="mobile-card-identity">
+                        <div className="mobile-name-row">
+                          <span className="mobile-name">{member.name}</span>
+                          <a
+                            href={member.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mobile-ig-btn"
+                            aria-label={`${member.name} on Instagram`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="mobile-ig-icon"><IgSvg /></span>
+                          </a>
+                        </div>
+                        <span className="mobile-role">{member.role}</span>
+
+                        {/* Tap hint — hidden when expanded */}
+                        <div className="mobile-tap-hint">
+                          <span>Tap to read more</span>
+                          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M2 3.5L5 6.5L8 3.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
-                    <span className="mobile-role">{member.role}</span>
-                  </div>
 
-                  {/* Active-state accent bar */}
-                  <div className="mobile-accent-bar" />
-                </div>
-              ))}
+                    {/* Expandable description panel — below the photo */}
+                    <div className="mobile-desc-panel">
+                      <div className="mobile-desc-divider" />
+                      <p className="mobile-desc-text">{member.desc}</p>
+                      <div className="mobile-close-hint">
+                        <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M2 6.5L5 3.5L8 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>Tap to close</span>
+                      </div>
+                    </div>
+
+                  </div>
+                )
+              })}
             </div>
 
           </section>
