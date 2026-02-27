@@ -79,7 +79,6 @@ export default function About() {
       instagram: 'https://www.instagram.com/_prajwal__2004/?hl=en',
       objPos: 'center 15%',
     },
-
   ]
 
   const logoSrcs = [
@@ -225,15 +224,13 @@ export default function About() {
     }
   }, [isLoaded])
 
-  // Mobile IntersectionObserver — fires when card crosses center threshold
+  // Mobile IntersectionObserver
   useEffect(() => {
     if (!isLoaded) return
     if (window.innerWidth > 768) return
     const cards = cardRefs.current.filter(Boolean)
-
     const observer = new IntersectionObserver(
       (entries) => {
-        // find the entry with highest intersectionRatio
         let best = null
         let bestRatio = 0
         entries.forEach((entry) => {
@@ -282,11 +279,15 @@ export default function About() {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes mobileCardSlideIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
 
         /* ═══ SKELETON ═══ */
         .skeleton-wrapper {
           position: fixed; inset: 0; z-index: 9999;
-          background: #08080837; overflow-y: auto;
+          background: #0808082f; overflow-y: auto;
           transition: opacity 0.65s ease-out, visibility 0.65s;
           opacity: 1; visibility: visible;
         }
@@ -414,8 +415,6 @@ export default function About() {
           position: absolute; bottom: 0; left: 0; right: 0;
           padding: 24px 20px 26px; z-index: 5;
         }
-
-        /* Name + IG on same line — tight gap */
         .card-name-row {
           display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
         }
@@ -425,8 +424,6 @@ export default function About() {
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           flex-shrink: 1; min-width: 0;
         }
-
-        /* Desktop IG: hidden, appears on hover */
         .card-ig-link {
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
@@ -439,7 +436,6 @@ export default function About() {
           transform: scale(0.6);
           transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1),
                       background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-          /* large invisible tap area */
           position: relative;
         }
         .card-ig-link::before {
@@ -548,72 +544,85 @@ export default function About() {
         .team-mobile { display: none; }
 
         @media (max-width: 768px) {
-          #team-section { padding: 60px 16px; }
+
+          /* ── Hero ── */
+          .hero-section { height: 100svh; }
+          .hero-title {
+            font-size: clamp(56px, 16vw, 88px);
+            letter-spacing: -2px;
+          }
+
+          /* ── Team section ── */
+          #team-section { padding: 48px 16px 56px; }
           .team-wrapper { display: none !important; }
 
           .team-mobile {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            max-width: 480px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 500px;
             margin: 0 auto;
           }
 
-          /* Card: auto height so desc never gets cut off */
+          /* ── Mobile card: full-photo, identity overlaid at bottom ── */
           .mobile-card {
             position: relative;
-            border-radius: 16px;
+            border-radius: 14px;
             overflow: hidden;
-            background: #0e0e0e;
-            flex-shrink: 0;
-            transition: transform 0.45s cubic-bezier(0.22,1,0.36,1),
-                        box-shadow 0.45s ease;
-          }
-          .mobile-card.in-view {
-            transform: scale(1.015);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            background: #0a0a0a;
+            aspect-ratio: 3 / 4;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.22,1,0.36,1),
+                        box-shadow 0.4s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
           }
 
-          /* Photo: fixed height, not tied to card height */
-          .mobile-photo-wrap {
-            position: relative;
-            width: 100%;
-            height: 340px;
-            overflow: hidden;
-            flex-shrink: 0;
+          /* Slightly scale up active card */
+          .mobile-card.in-view {
+            transform: scale(1.025);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.65);
+            z-index: 2;
           }
+
+          /* Photo fills entire card */
           .mobile-card .card-photo {
             position: absolute; inset: 0;
             width: 100%; height: 100%;
             object-fit: cover;
-            transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+            transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
           }
-          .mobile-card.in-view .card-photo { transform: scale(1.04); }
-
-          /* Gradient on photo bottom */
-          .mobile-photo-gradient {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            height: 60%;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
-            z-index: 1;
+          .mobile-card.in-view .card-photo {
+            transform: scale(1.05);
           }
 
-          /* Name + IG sits at bottom of photo, overlapping */
-          .mobile-photo-identity {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 16px 18px 14px;
+          /* Gradient: strong bottom fade */
+          .mobile-card-gradient {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(
+              to bottom,
+              rgba(0,0,0,0) 30%,
+              rgba(0,0,0,0.55) 58%,
+              rgba(0,0,0,0.93) 100%
+            );
+          }
+
+          /* Identity block sits on top of gradient */
+          .mobile-card-identity {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
             z-index: 2;
+            padding: 14px 12px 14px;
           }
 
-          /* Name + IG icon RIGHT next to each other — tight */
+          /* Name + IG row */
           .mobile-name-row {
             display: flex;
             align-items: center;
-            gap: 7px;
-            margin-bottom: 3px;
+            gap: 6px;
+            margin-bottom: 4px;
           }
           .mobile-name {
-            font-size: 20px;
+            font-size: clamp(11px, 2.8vw, 15px);
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -626,109 +635,142 @@ export default function About() {
             min-width: 0;
           }
 
-          /* IG icon — always visible, right next to name */
-          .mobile-ig-link {
+          /* IG button — always visible on mobile */
+          .mobile-ig-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            width: 26px;
-            height: 26px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.25);
-            color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #fff;
             text-decoration: none;
-            /* Extra tap area */
-            position: relative;
             transition: background 0.2s ease, transform 0.2s ease;
+            /* Large tap target */
+            position: relative;
           }
-          .mobile-ig-link::before {
+          .mobile-ig-btn::before {
             content: '';
             position: absolute;
-            inset: -10px;
+            inset: -8px;
             border-radius: 50%;
           }
-          .mobile-ig-link:active {
+          .mobile-ig-btn:active {
             background: rgba(255,255,255,0.3);
-            transform: scale(0.93);
+            transform: scale(0.9);
           }
-          .mobile-ig-icon { width: 13px; height: 13px; display: block; pointer-events: none; }
+          .mobile-ig-icon {
+            width: 11px; height: 11px;
+            display: block; pointer-events: none;
+          }
 
+          /* Role label */
           .mobile-role {
-            font-size: 12px;
-            color: rgba(255,255,255,0.55);
-            letter-spacing: 0.03em;
-          }
-
-          /* Description block below the photo — ALWAYS renders, animates in when in-view */
-          .mobile-desc-block {
-            padding: 0 18px;
+            font-size: clamp(9px, 2vw, 11px);
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
             overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.55s cubic-bezier(0.22,1,0.36,1),
-                        opacity 0.4s ease,
-                        padding 0.4s ease;
-          }
-          .mobile-card.in-view .mobile-desc-block {
-            max-height: 200px; /* generous max for any desc length */
-            opacity: 1;
-            padding: 14px 18px 18px;
+            text-overflow: ellipsis;
           }
 
-          .mobile-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.12);
-            margin-bottom: 12px;
+          /* Active card accent line */
+          .mobile-accent-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: #fff;
+            z-index: 3;
             transform: scaleX(0);
             transform-origin: left;
-            transition: transform 0.5s cubic-bezier(0.22,1,0.36,1) 0.05s;
+            transition: transform 0.45s cubic-bezier(0.22,1,0.36,1);
           }
-          .mobile-card.in-view .mobile-divider { transform: scaleX(1); }
-
-          .mobile-desc {
-            font-size: 13.5px;
-            line-height: 1.72;
-            color: rgba(255,255,255,0.72);
+          .mobile-card.in-view .mobile-accent-bar {
+            transform: scaleX(1);
           }
 
-          /* Skeleton */
-          .sk-team-grid { grid-template-columns: 1fr; }
-          .sk-card { height: 380px; }
+          /* Skeleton mobile */
+          .sk-team-grid { grid-template-columns: 1fr 1fr; }
+          .sk-card { height: 240px; border-radius: 14px; }
 
-          /* Other sections */
-          .scroll-text-section { padding: 80px 20px; }
-          .scroll-text { font-size: clamp(20px, 4vw, 34px); }
-          .trusted-section { padding: 50px 14px; }
-          .trusted-header { margin-bottom: 36px; padding: 0 20px; }
+          /* ── Scroll text ── */
+          .scroll-text-section {
+            padding: 72px 20px;
+            min-height: auto;
+          }
+          .scroll-text {
+            font-size: clamp(20px, 5vw, 32px);
+            line-height: 1.7;
+          }
+
+          /* ── Trusted by ── */
+          .trusted-section { padding: 40px 12px; }
+          .trusted-box {
+            padding: 36px 0;
+            border-radius: 16px;
+          }
+          .trusted-header {
+            margin-bottom: 28px;
+            padding: 0 20px;
+            gap: 10px;
+          }
+          .trusted-header h2 {
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+          }
           .marquee-outer {
-            height: 76px;
-            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
+            height: 70px;
+            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
           }
-          .marquee-strip { height: 64px; }
-          .marquee-logo { height: 64px; width: 108px; padding: 6px 12px; filter: none; opacity: 0.88; }
-          .marquee-logo:hover { filter: none; opacity: 1; transform: scale(1.08) translateY(-2px); }
-          .wisdom-section { margin: 40px auto; padding: 48px 24px; }
-          .wisdom-section::before { font-size: 100px; }
-          .wisdom-section p:first-child { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
-          .copyright-container { padding: 36px 20px; }
-          .copyright { font-size: 12px; text-align: center; }
+          .marquee-strip { height: 60px; }
+          .marquee-logo {
+            height: 60px;
+            width: 100px;
+            padding: 6px 10px;
+            filter: none;
+            opacity: 0.85;
+          }
+          .marquee-logo:hover {
+            filter: none;
+            opacity: 1;
+            transform: scale(1.06) translateY(-2px);
+          }
+
+          /* ── Wisdom ── */
+          .scroll-text-section:last-of-type { padding: 40px 16px 20px; }
+          .wisdom-section {
+            margin: 0 auto;
+            padding: 36px 24px;
+            border-radius: 16px;
+          }
+          .wisdom-section::before { display: none; }
+          .wisdom-section p:first-child {
+            font-size: clamp(1rem, 4vw, 1.35rem);
+            line-height: 1.65;
+            margin-bottom: 16px;
+          }
+          .wisdom-section p:last-child {
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+          }
+
+          /* ── Footer ── */
+          .copyright-container { padding: 32px 16px; }
+          .copyright { font-size: 12px; text-align: center; line-height: 1.6; }
         }
 
-        @media (max-width: 480px) {
-          .mobile-photo-wrap { height: 300px; }
-          .mobile-name { font-size: 18px; }
-          .marquee-outer { height: 62px; }
-          .marquee-strip { height: 52px; }
-          .marquee-logo { height: 52px; width: 90px; padding: 5px 10px; }
-          .scroll-text-section { padding: 56px 16px; }
-          .scroll-text { font-size: clamp(18px, 4.5vw, 28px); line-height: 1.55; }
-          .wisdom-section { padding: 40px 20px; border-radius: 14px; }
-          .wisdom-section::before { display: none; }
-          .copyright-container { padding: 28px 14px; }
-          .copyright { font-size: 11px; }
+        @media (max-width: 400px) {
+          .team-mobile { gap: 8px; }
+          .mobile-card-identity { padding: 10px 10px 12px; }
+          .mobile-name { font-size: 10px; }
+          .mobile-role { font-size: 8px; }
+          .mobile-ig-btn { width: 18px; height: 18px; }
+          .mobile-ig-icon { width: 9px; height: 9px; }
         }
       `}</style>
 
@@ -827,7 +869,7 @@ export default function About() {
               ))}
             </div>
 
-            {/* ── MOBILE: separate structure — photo + below-photo desc ── */}
+            {/* ── MOBILE: 2-column grid, photo-only cards with identity overlay ── */}
             <div className="team-mobile">
               {teamMembers.map((member, idx) => (
                 <div
@@ -836,38 +878,36 @@ export default function About() {
                   data-index={idx}
                   className={`mobile-card${activeCard === idx ? ' in-view' : ''}`}
                 >
-                  {/* Photo area with identity overlay */}
-                  <div className="mobile-photo-wrap">
-                    <img
-                      className="card-photo"
-                      src={member.img}
-                      alt={member.name}
-                      style={{ objectPosition: member.objPos }}
-                    />
-                    <div className="mobile-photo-gradient" />
-                    {/* Name + IG right on photo bottom */}
-                    <div className="mobile-photo-identity">
-                      <div className="mobile-name-row">
-                        <span className="mobile-name">{member.name}</span>
-                        <a
-                          href={member.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mobile-ig-link"
-                          aria-label={`${member.name} on Instagram`}
-                        >
-                          <span className="mobile-ig-icon"><IgSvg /></span>
-                        </a>
-                      </div>
-                      <span className="mobile-role">{member.role}</span>
+                  {/* Full-bleed photo */}
+                  <img
+                    className="card-photo"
+                    src={member.img}
+                    alt={member.name}
+                    style={{ objectPosition: member.objPos }}
+                  />
+
+                  {/* Bottom gradient */}
+                  <div className="mobile-card-gradient" />
+
+                  {/* Name + role + IG */}
+                  <div className="mobile-card-identity">
+                    <div className="mobile-name-row">
+                      <span className="mobile-name">{member.name}</span>
+                      <a
+                        href={member.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mobile-ig-btn"
+                        aria-label={`${member.name} on Instagram`}
+                      >
+                        <span className="mobile-ig-icon"><IgSvg /></span>
+                      </a>
                     </div>
+                    <span className="mobile-role">{member.role}</span>
                   </div>
 
-                  {/* Description block — below photo, always in DOM, animates in on center */}
-                  <div className="mobile-desc-block">
-                    <div className="mobile-divider" />
-                    <p className="mobile-desc">{member.desc}</p>
-                  </div>
+                  {/* Active-state accent bar */}
+                  <div className="mobile-accent-bar" />
                 </div>
               ))}
             </div>
