@@ -7,15 +7,17 @@ export default function About() {
   const scrollSectionRef = useRef(null)
   const scrollTextRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [expandedCard, setExpandedCard] = useState(null)
+  const [expandedCard, setExpandedCard] = useState(null)   // desktop: "rowIdx-cardIdx" | mobile: number index
+  const [activeCard, setActiveCard] = useState(null)        // mobile IntersectionObserver
 
   const stripRef = useRef(null)
   const setARef = useRef(null)
   const setBRef = useRef(null)
+  const mobileCardRefs = useRef([])
 
   const teamMembers = [
     {
-      img: '/profile/1.jpeg',
+      img: '/profile/6.jpeg',
       name: 'KARAN CHANDA',
       role: 'Content Strategist',
       desc: 'Driving creative direction for high-performing social media content. Focused on crafting scroll-stopping visuals and messaging that convert attention into real engagement and growth for clients.',
@@ -23,7 +25,7 @@ export default function About() {
       objPos: '48.8% 24.8%',
     },
     {
-      img: '/profile/2.jpeg',
+      img: '/profile/7.jpeg',
       name: 'AIMAN KALIA',
       role: 'Producer',
       desc: 'Overseeing seamless execution from concept to final cut. Coordinating teams, timelines, and resources to deliver polished content and sustainable growth for every client.',
@@ -31,7 +33,7 @@ export default function About() {
       objPos: '50% 16.4%',
     },
     {
-      img: '/profile/3.jpeg',
+      img: '/profile/1.jpeg',
       name: 'KANNAN VERMA',
       role: 'Production Lead',
       desc: 'Leading teams and elevating visual storytelling. Delivering cinematic content that resonates deeply and consistently drives measurable results for every client.',
@@ -39,23 +41,23 @@ export default function About() {
       objPos: '52.3% 12.8%',
     },
     {
-      img: '/profile/4.jpeg',
-      name: 'Alex',
+      img: '/profile/2.jpeg',
+      name: 'Junaid Ansari',
       role: 'Creative Director',
       desc: 'Shaping the visual identity behind every campaign. Blending art direction with strategic insight to ensure every frame tells a story worth remembering and sharing.',
       instagram: 'https://www.instagram.com/jexstro/',
       objPos: '48.8% 24.8%',
     },
     {
-      img: '/profile/5.jpeg',
-      name: 'Marcus',
+      img: '/profile/3.jpeg',
+      name: 'Amol Gakhal',
       role: 'Video Editor',
       desc: 'Crafting high-impact cuts that hold attention and drive retention. Specialised in short-form content that feels native, engaging, and always on-brand.',
       instagram: 'https://instagram.com/thegakhal/',
       objPos: '55% 18%',
     },
     {
-      img: '/profile/6.jpeg',
+      img: '/profile/5.jpeg',
       name: 'MEHUL SINGHVI',
       role: 'Brand Strategist',
       desc: 'Building brand identities that resonate and last. Translating business goals into clear creative frameworks that connect authentically with audiences.',
@@ -63,9 +65,9 @@ export default function About() {
       objPos: '42% 20%',
     },
     {
-      img: '/profile/7.jpeg',
+      img: '/profile/4.jpeg',
       name: 'PRAJWAL',
-      role: 'Motion Designer',
+      role: 'Web Dev',
       desc: 'Bringing ideas to life through kinetic design and animation. Transforming static concepts into dynamic visuals that captivate and communicate with precision.',
       instagram: 'https://www.instagram.com/_prajwal__2004/?hl=en',
       objPos: 'center 15%',
@@ -86,14 +88,14 @@ export default function About() {
     "/8.webp", "/3.png",
   ]
 
-  // 3-3-1 row layout matching screenshot
-  const rows = [
+  // Desktop: 3-3-1 layout (from file 1)
+  const desktopRows = [
     teamMembers.slice(0, 3),
     teamMembers.slice(3, 6),
     teamMembers.slice(6, 7),
   ]
 
-  // Image preloading
+  // ── Image preloading ──
   useEffect(() => {
     const startTime = Date.now()
     const MIN_LOADING_TIME = 2000
@@ -114,7 +116,7 @@ export default function About() {
     })
   }, [])
 
-  // Blur on scroll
+  // ── Blur on scroll ──
   useEffect(() => {
     if (!isLoaded) return
     const heroSection = document.querySelector('.hero-section')
@@ -142,7 +144,7 @@ export default function About() {
     }
   }, [isLoaded])
 
-  // Scroll text word-reveal
+  // ── Scroll text word-reveal ──
   useEffect(() => {
     if (!isLoaded) return
     const scrollText = scrollTextRef.current
@@ -175,7 +177,7 @@ export default function About() {
     }
   }, [isLoaded])
 
-  // RAF marquee
+  // ── RAF marquee ──
   useEffect(() => {
     if (!isLoaded) return
     const strip = stripRef.current
@@ -222,11 +224,39 @@ export default function About() {
     }
   }, [isLoaded])
 
-  // Close expanded card when tapping outside
+  // ── Mobile IntersectionObserver (from file 2) ──
+  useEffect(() => {
+    if (!isLoaded) return
+    if (window.innerWidth > 768) return
+    const cards = mobileCardRefs.current.filter(Boolean)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let best = null
+        let bestRatio = 0
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio
+            best = entry
+          }
+        })
+        if (best && best.isIntersecting) {
+          setActiveCard(parseInt(best.target.dataset.index))
+        }
+      },
+      {
+        threshold: [0.4, 0.5, 0.6, 0.7, 0.8],
+        rootMargin: '-5% 0px -5% 0px',
+      }
+    )
+    cards.forEach((card) => observer.observe(card))
+    return () => observer.disconnect()
+  }, [isLoaded])
+
+  // ── Desktop: close expanded card when tapping outside ──
   useEffect(() => {
     if (expandedCard === null) return
     const handleOutside = (e) => {
-      if (!e.target.closest('.team-card-wrap')) {
+      if (!e.target.closest('.team-card-wrap') && !e.target.closest('.mobile-card')) {
         setExpandedCard(null)
       }
     }
@@ -234,9 +264,15 @@ export default function About() {
     return () => document.removeEventListener('touchstart', handleOutside)
   }, [expandedCard])
 
-  const handleCardTap = (rowIdx, cardIdx) => {
+  // Desktop tap handler (key = "rowIdx-cardIdx")
+  const handleDesktopCardTap = (rowIdx, cardIdx) => {
     const key = `${rowIdx}-${cardIdx}`
     setExpandedCard(prev => prev === key ? null : key)
+  }
+
+  // Mobile tap handler (key = number index)
+  const handleMobileCardTap = (idx) => {
+    setExpandedCard(prev => prev === idx ? null : idx)
   }
 
   const IgSvg = () => (
@@ -264,8 +300,18 @@ export default function About() {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes descSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounceY {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(3px); }
+        }
 
-        /* ═══ SKELETON ═══ */
+        /* ════════════════════════════
+           SKELETON
+        ════════════════════════════ */
         .skeleton-wrapper {
           position: fixed; inset: 0; z-index: 9999;
           background: #0808084a; overflow-y: auto;
@@ -328,7 +374,9 @@ export default function About() {
         .sk-footer { padding: 50px 20px; flex-shrink: 0; display: flex; justify-content: center; border-top: 1px solid rgba(255,255,255,0.04); margin-top: auto; }
         .sk-footer-text { height: 14px; width: 220px; border-radius: 4px; background: #141414; animation: skPulse 1.9s ease-in-out infinite; }
 
-        /* ═══ CONTENT ═══ */
+        /* ════════════════════════════
+           CONTENT WRAPPER
+        ════════════════════════════ */
         .content-wrapper { opacity: 0; transition: opacity 0.9s ease-in; }
         .content-wrapper.loaded { opacity: 1; }
 
@@ -337,7 +385,9 @@ export default function About() {
           transition: filter 0.8s ease;
         }
 
-        /* ═══ HERO ═══ */
+        /* ════════════════════════════
+           HERO
+        ════════════════════════════ */
         .hero-section {
           position: relative; height: 100vh;
           display: flex; align-items: center; justify-content: center; flex-direction: column;
@@ -352,7 +402,9 @@ export default function About() {
           font-weight: 800; line-height: 1.05; letter-spacing: -3px; color: #fff;
         }
 
-        /* ═══ TEAM SECTION ═══ */
+        /* ════════════════════════════
+           TEAM — DESKTOP (3-3-1 from file 1)
+        ════════════════════════════ */
         #team-section { padding: 100px 40px; position: relative; z-index: 1; }
 
         .team-wrapper {
@@ -366,31 +418,23 @@ export default function About() {
           height: 420px;
         }
 
-        /* Solo row: centered, card starts at 1/3 width, expands from center */
-        .team-row.solo-row {
-          justify-content: center;
-        }
+        /* Solo row (7th card) */
+        .team-row.solo-row { justify-content: center; }
         .team-row.solo-row .team-card-wrap {
           flex: 0 0 calc(33.333% - 7px);
-          transition: flex 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-                      max-width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: flex 0.65s cubic-bezier(0.22, 1, 0.36, 1);
           cursor: pointer;
         }
-        /* Expand equally left+right from center on hover */
         .team-row.solo-row .team-card-wrap:hover,
         .team-row.solo-row .team-card-wrap.expanded {
           flex: 0 0 calc(66.666% - 5px);
         }
 
-        /* ── CARD BASE ── */
+        /* Base card */
         .team-card-wrap {
-          position: relative;
-          border-radius: 13px;
-          overflow: hidden;
-          cursor: pointer;
-          background: #0e0e0e;
-          flex: 1 1 0;
-          min-width: 0;
+          position: relative; border-radius: 13px; overflow: hidden;
+          cursor: pointer; background: #0e0e0e;
+          flex: 1 1 0; min-width: 0;
           opacity: 0;
           animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           transition: flex 0.65s cubic-bezier(0.22, 1, 0.36, 1);
@@ -405,23 +449,15 @@ export default function About() {
         .team-row:nth-child(2) .team-card-wrap:nth-child(3) { animation-delay: 0.34s; }
         .team-row:nth-child(3) .team-card-wrap:nth-child(1) { animation-delay: 0.40s; }
 
-        /* ── DESKTOP: hover expand (3 cards per row) ── */
-        .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:hover {
-          flex: 2.2 1 0;
-        }
-        .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:not(:hover) {
-          flex: 0.65 1 0;
-        }
+        /* Desktop hover expand */
+        .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:hover { flex: 2.2 1 0; }
+        .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:not(:hover) { flex: 0.65 1 0; }
 
-        /* ── MOBILE: tap expand via .expanded class ── */
-        .team-row:not(.solo-row):has(.team-card-wrap.expanded) .team-card-wrap.expanded {
-          flex: 2.2 1 0;
-        }
-        .team-row:not(.solo-row):has(.team-card-wrap.expanded) .team-card-wrap:not(.expanded) {
-          flex: 0.65 1 0;
-        }
+        /* Desktop tap expand */
+        .team-row:not(.solo-row):has(.team-card-wrap.expanded) .team-card-wrap.expanded { flex: 2.2 1 0; }
+        .team-row:not(.solo-row):has(.team-card-wrap.expanded) .team-card-wrap:not(.expanded) { flex: 0.65 1 0; }
 
-        /* ── PHOTO ── */
+        /* Photo */
         .card-photo {
           position: absolute; inset: 0; width: 100%; height: 100%;
           object-fit: cover;
@@ -436,7 +472,7 @@ export default function About() {
           z-index: 1;
         }
 
-        /* ── CARD CONTENT ── */
+        /* Card content */
         .card-content {
           position: absolute; bottom: 0; left: 0; right: 0;
           padding: 24px 20px 26px; z-index: 5;
@@ -458,8 +494,7 @@ export default function About() {
           border: 1px solid rgba(255,255,255,0.18);
           color: rgba(255,255,255,0.6);
           text-decoration: none;
-          opacity: 0;
-          transform: scale(0.6);
+          opacity: 0; transform: scale(0.6);
           transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1),
                       background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
           position: relative;
@@ -501,14 +536,21 @@ export default function About() {
         .card-bio-inner { overflow: hidden; }
         .card-bio { font-size: 12.5px; line-height: 1.72; color: rgba(255,255,255,0.68); }
 
-        /* ═══ SCROLL TEXT ═══ */
+        /* Mobile team — hidden on desktop */
+        .team-mobile { display: none; }
+
+        /* ════════════════════════════
+           SCROLL TEXT
+        ════════════════════════════ */
         .scroll-text-section { padding: 120px 40px; min-height: 60vh; display: flex; align-items: center; justify-content: center; }
         .text-container { max-width: 1200px; width: 100%; text-align: center; }
         .scroll-text { font-size: clamp(26px, 3.8vw, 50px); line-height: 1.75; font-weight: 400; color: #fff; }
         :global(.scroll-text .word) { opacity: 0.18; transition: opacity 0.25s ease; display: inline-block; }
         :global(.scroll-text .word.active) { opacity: 1; }
 
-        /* ═══ TRUSTED BY ═══ */
+        /* ════════════════════════════
+           TRUSTED BY
+        ════════════════════════════ */
         .trusted-section { padding: 80px 20px; display: flex; justify-content: center; }
         .trusted-box {
           width: 100%; max-width: 1400px; padding: 50px 0;
@@ -540,7 +582,9 @@ export default function About() {
         }
         .marquee-logo:hover { filter: none; transform: scale(1.1) translateY(-4px); }
 
-        /* ═══ WISDOM ═══ */
+        /* ════════════════════════════
+           WISDOM
+        ════════════════════════════ */
         .wisdom-section {
           margin: 60px auto; padding: 72px 52px;
           background: rgba(255,255,255,0.025); border-radius: 20px;
@@ -556,7 +600,9 @@ export default function About() {
         .wisdom-section p:first-child { font-size: clamp(1.25rem, 2.3vw, 1.9rem); line-height: 1.75; font-style: italic; margin-bottom: 24px; color: #fff; }
         .wisdom-section p:last-child { font-size: 0.9rem; opacity: 0.5; color: #fff; letter-spacing: 1px; }
 
-        /* ═══ FOOTER ═══ */
+        /* ════════════════════════════
+           FOOTER
+        ════════════════════════════ */
         .copyright-container { width: 100%; padding: 56px 20px; display: flex; justify-content: center; align-items: center; position: relative; z-index: 100; border-top: 1px solid rgba(255,255,255,0.06); }
         .copyright { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 400; letter-spacing: 0.5px; margin: 0; }
         .copyright-link, .copyright-link:visited, .copyright-link:active { color: #fff; font-weight: 700; text-decoration: none; position: relative; display: inline-block; margin: 0 4px; }
@@ -564,53 +610,240 @@ export default function About() {
         .copyright-link:hover::after { width: 100%; }
         .copyright-link:hover { opacity: 0.75; }
 
-        /* ═══════════════════════════
-           MOBILE
-        ═══════════════════════════ */
+        /* ════════════════════════════
+           MOBILE (≤ 768px) — full layout from file 2
+        ════════════════════════════ */
         @media (max-width: 768px) {
 
+          /* Hero */
           .hero-section { height: 100svh; }
           .hero-title { font-size: clamp(56px, 16vw, 88px); letter-spacing: -2px; }
 
-          #team-section { padding: 48px 12px 56px; }
+          /* Team section */
+          #team-section { padding: 48px 16px 56px; }
+          .team-wrapper { display: none !important; }
 
-          .team-wrapper { gap: 7px; }
-
-          .team-row {
-            height: 190px;
-            gap: 6px;
+          /* Mobile: single column */
+          .team-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
           }
 
-          /* Solo row: same centered, expands from center */
-          .team-row.solo-row .team-card-wrap {
-            flex: 0 0 calc(33.333% - 4px);
-            transition: flex 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+          /* Mobile card */
+          .mobile-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #0a0a0a;
+            width: 100%;
+            cursor: pointer;
+            transition: box-shadow 0.4s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
           }
-          .team-row.solo-row .team-card-wrap:hover,
-          .team-row.solo-row .team-card-wrap.expanded {
-            flex: 0 0 calc(66.666% - 3px);
+          .mobile-card.in-view {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.65);
           }
 
-          /* Compact text when collapsed */
-          .card-name { font-size: 9px; letter-spacing: 0.03em; }
-          .card-role { font-size: 8px; }
-          .card-content { padding: 8px 8px 10px; }
-          .card-ig-link { width: 16px; height: 16px; }
-          .card-ig-icon { width: 8px; height: 8px; }
-          .card-bio { font-size: 10px; line-height: 1.55; }
-          .card-name-row { gap: 4px; margin-bottom: 2px; }
+          /* Photo wrapper */
+          .mobile-card-photo-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            overflow: hidden;
+          }
 
-          /* Suppress CSS hover expand on touch — use .expanded class only */
-          .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:hover { flex: 1 1 0; }
-          .team-row:not(.solo-row):has(.team-card-wrap:hover) .team-card-wrap:not(:hover) { flex: 1 1 0; }
+          /* Photo fills wrapper */
+          .mobile-card .card-photo {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
+          }
+          .mobile-card.in-view .card-photo { transform: scale(1.03); }
+          .mobile-card.expanded .card-photo { transform: scale(1.06); }
+
+          /* Gradient */
+          .mobile-card-gradient {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(
+              to bottom,
+              rgba(0,0,0,0) 35%,
+              rgba(0,0,0,0.6) 62%,
+              rgba(0,0,0,0.96) 100%
+            );
+            transition: background 0.4s ease;
+          }
+          .mobile-card.expanded .mobile-card-gradient {
+            background: linear-gradient(
+              to bottom,
+              rgba(0,0,0,0.1) 0%,
+              rgba(0,0,0,0.55) 45%,
+              rgba(0,0,0,0.97) 75%,
+              rgba(0,0,0,0.99) 100%
+            );
+          }
+
+          /* Identity block */
+          .mobile-card-identity {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 2;
+            padding: 16px 16px 18px;
+          }
+
+          /* Name + IG row */
+          .mobile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+          }
+          .mobile-name {
+            font-size: clamp(13px, 3.5vw, 17px);
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #fff;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+            min-width: 0;
+          }
+
+          /* IG button */
+          .mobile-ig-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #fff;
+            text-decoration: none;
+            transition: background 0.2s ease, transform 0.2s ease;
+            position: relative;
+          }
+          .mobile-ig-btn::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+          }
+          .mobile-ig-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.9);
+          }
+          .mobile-ig-icon {
+            width: 12px; height: 12px;
+            display: block; pointer-events: none;
+          }
+
+          /* Role */
+          .mobile-role {
+            font-size: clamp(10px, 2.5vw, 12px);
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          /* Tap hint */
+          .mobile-tap-hint {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            opacity: 0.38;
+            transition: opacity 0.3s ease;
+          }
+          .mobile-card.expanded .mobile-tap-hint {
+            opacity: 0;
+            pointer-events: none;
+          }
+          .mobile-tap-hint span {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fff;
+          }
+          .mobile-tap-hint svg {
+            width: 10px; height: 10px; color: #fff;
+            animation: bounceY 1.6s ease-in-out infinite;
+          }
+
+          /* Expanded desc panel */
+          .mobile-desc-panel {
+            position: relative;
+            z-index: 3;
+            background: rgba(8, 8, 8, 0.96);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1),
+                        padding 0.4s cubic-bezier(0.22,1,0.36,1),
+                        opacity 0.35s ease;
+            opacity: 0;
+            padding: 0 18px;
+          }
+          .mobile-card.expanded .mobile-desc-panel {
+            max-height: 300px;
+            opacity: 1;
+            padding: 18px 18px 22px;
+          }
+
+          .mobile-desc-text {
+            font-size: clamp(13px, 3.4vw, 15px);
+            line-height: 1.72;
+            color: rgba(255,255,255,0.78);
+          }
+          .mobile-card.expanded .mobile-desc-text {
+            animation: descSlideUp 0.45s cubic-bezier(0.22,1,0.36,1) 0.12s both;
+          }
+
+          /* Close hint */
+          .mobile-close-hint {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 14px;
+            opacity: 0.35;
+          }
+          .mobile-close-hint span {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fff;
+          }
+          .mobile-close-hint svg { width: 10px; height: 10px; color: #fff; }
+
+          /* Divider */
+          .mobile-desc-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+            margin-bottom: 14px;
+          }
 
           /* Skeleton mobile */
-          .sk-team-row { height: 190px; }
-          .sk-team-row.last { height: 190px; }
+          .sk-team-grid { display: flex; flex-direction: column; }
+          .sk-team-row { height: 260px; }
+          .sk-team-row.last { height: 260px; }
 
+          /* Scroll text */
           .scroll-text-section { padding: 72px 20px; min-height: auto; }
           .scroll-text { font-size: clamp(20px, 5vw, 32px); line-height: 1.7; }
 
+          /* Trusted by */
           .trusted-section { padding: 40px 12px; }
           .trusted-box { padding: 36px 0; border-radius: 16px; }
           .trusted-header { margin-bottom: 28px; padding: 0 20px; gap: 10px; }
@@ -624,22 +857,24 @@ export default function About() {
           .marquee-logo { height: 60px; width: 100px; padding: 6px 10px; filter: none; opacity: 0.85; }
           .marquee-logo:hover { filter: none; opacity: 1; transform: scale(1.06) translateY(-2px); }
 
+          /* Wisdom */
           .wisdom-section { margin: 0 auto; padding: 36px 24px; border-radius: 16px; }
           .wisdom-section::before { display: none; }
           .wisdom-section p:first-child { font-size: clamp(1rem, 4vw, 1.35rem); line-height: 1.65; margin-bottom: 16px; }
           .wisdom-section p:last-child { font-size: 0.78rem; letter-spacing: 0.5px; }
 
+          /* Footer */
           .copyright-container { padding: 32px 16px; }
           .copyright { font-size: 12px; text-align: center; line-height: 1.6; }
         }
 
         @media (max-width: 400px) {
-          .team-row { height: 155px; gap: 5px; }
-          .card-name { font-size: 7px; }
-          .card-role { font-size: 6px; }
-          .card-ig-link { width: 13px; height: 13px; }
-          .card-ig-icon { width: 6px; height: 6px; }
-          .card-content { padding: 6px 7px 8px; }
+          .team-mobile { gap: 10px; }
+          .mobile-card-identity { padding: 12px 12px 14px; }
+          .mobile-name { font-size: 12px; }
+          .mobile-role { font-size: 9px; }
+          .mobile-ig-btn { width: 20px; height: 20px; }
+          .mobile-ig-icon { width: 10px; height: 10px; }
         }
       `}</style>
 
@@ -707,8 +942,10 @@ export default function About() {
           </section>
 
           <section id="team-section">
+
+            {/* ── DESKTOP: 3-3-1 flex-expand rows (from file 1) ── */}
             <div className="team-wrapper">
-              {rows.map((row, rowIdx) => {
+              {desktopRows.map((row, rowIdx) => {
                 const isSolo = row.length === 1
                 return (
                   <div key={rowIdx} className={`team-row${isSolo ? ' solo-row' : ''}`}>
@@ -719,7 +956,7 @@ export default function About() {
                         <div
                           key={cardIdx}
                           className={`team-card-wrap${isExpanded ? ' expanded' : ''}`}
-                          onClick={() => handleCardTap(rowIdx, cardIdx)}
+                          onClick={() => handleDesktopCardTap(rowIdx, cardIdx)}
                         >
                           <img
                             className="card-photo"
@@ -757,6 +994,68 @@ export default function About() {
                 )
               })}
             </div>
+
+            {/* ── MOBILE: single column, tap-to-expand (from file 2) ── */}
+            <div className="team-mobile">
+              {teamMembers.map((member, idx) => {
+                const isExpanded = expandedCard === idx
+                return (
+                  <div
+                    key={idx}
+                    ref={(el) => { mobileCardRefs.current[idx] = el }}
+                    data-index={idx}
+                    className={`mobile-card${activeCard === idx ? ' in-view' : ''}${isExpanded ? ' expanded' : ''}`}
+                    onClick={() => handleMobileCardTap(idx)}
+                  >
+                    {/* Photo wrapper */}
+                    <div className="mobile-card-photo-wrap">
+                      <img
+                        className="card-photo"
+                        src={member.img}
+                        alt={member.name}
+                        style={{ objectPosition: member.objPos }}
+                      />
+                      <div className="mobile-card-gradient" />
+                      <div className="mobile-card-identity">
+                        <div className="mobile-name-row">
+                          <span className="mobile-name">{member.name}</span>
+                          <a
+                            href={member.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mobile-ig-btn"
+                            aria-label={`${member.name} on Instagram`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="mobile-ig-icon"><IgSvg /></span>
+                          </a>
+                        </div>
+                        <span className="mobile-role">{member.role}</span>
+                        <div className="mobile-tap-hint">
+                          <span>Tap to read more</span>
+                          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M2 3.5L5 6.5L8 3.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expandable description panel */}
+                    <div className="mobile-desc-panel">
+                      <div className="mobile-desc-divider" />
+                      <p className="mobile-desc-text">{member.desc}</p>
+                      <div className="mobile-close-hint">
+                        <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M2 6.5L5 3.5L8 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>Tap to close</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
           </section>
 
           <section ref={scrollSectionRef} className="scroll-text-section">
