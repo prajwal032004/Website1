@@ -70,7 +70,7 @@ export default function About() {
       role: 'Web Dev',
       desc: 'Bringing ideas to life through kinetic design and animation. Transforming static concepts into dynamic visuals that captivate and communicate with precision.',
       instagram: 'https://www.instagram.com/_prajwal__2004/?hl=en',
-      objPos: 'center 15%',
+      objPos: '48.8% 24.8%',
     },
   ]
 
