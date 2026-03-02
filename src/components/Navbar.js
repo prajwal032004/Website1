@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 
 export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [isHoveringLogo, setIsHoveringLogo] = useState(false)
     const pathname = usePathname()
 
     const handleEmailClick = (e) => {
@@ -27,6 +28,46 @@ export default function Navbar() {
     return (
         <>
             <style jsx global>{`
+                /* ===== WATER DROP ANIMATION ===== */
+                @keyframes waterRipple {
+                    0% {
+                        width: 0;
+                        height: 0;
+                        opacity: 1;
+                    }
+                    100% {
+                        width: 200px;
+                        height: 200px;
+                        opacity: 0;
+                    }
+                }
+
+                @keyframes waterZoom {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.15);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes waterDrop {
+                    0% {
+                        transform: translateY(-20px);
+                        opacity: 0;
+                    }
+                    50% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(0);
+                        opacity: 0;
+                    }
+                }
+
                 .navbar {
                     position: fixed;
                     top: 0;
@@ -45,17 +86,84 @@ export default function Navbar() {
                     margin: 0 auto;
                 }
 
+                /* ===== LOGO WITH WATER EFFECT ===== */
+                .logo-wrapper {
+                    position: relative;
+                    height: 100px;
+                    width: auto;
+                    cursor: pointer;
+                    display: inline-block;
+                }
+
                 .logo {
                     height: 100px;
                     width: auto;
                     transition: opacity 0.3s ease;
                     cursor: pointer;
+                    display: block;
+                    position: relative;
+                    z-index: 2;
                 }
 
                 .logo:hover {
                     opacity: 0.7;
                 }
 
+                /* Water ripple effect container */
+                .water-effect {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    pointer-events: none;
+                    z-index: 1;
+                }
+
+                /* Individual ripple circles */
+                .ripple {
+                    position: absolute;
+                    border: 2px solid rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
+
+                /* Multiple ripples with staggered delays */
+                .ripple:nth-child(1) {
+                    animation: waterRipple 0.8s ease-out forwards;
+                    animation-delay: 0s;
+                }
+
+                .ripple:nth-child(2) {
+                    animation: waterRipple 0.8s ease-out forwards;
+                    animation-delay: 0.15s;
+                }
+
+                .ripple:nth-child(3) {
+                    animation: waterRipple 0.8s ease-out forwards;
+                    animation-delay: 0.3s;
+                }
+
+                /* Logo zoom effect on hover */
+                .logo-wrapper.water-active .logo {
+                    animation: waterZoom 0.6s ease-in-out;
+                }
+
+                /* Water drop effect */
+                .water-drop {
+                    position: absolute;
+                    width: 12px;
+                    height: 12px;
+                    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
+                    border-radius: 50%;
+                    top: -20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    animation: waterDrop 0.7s ease-out forwards;
+                }
+
+                /* ===== NAV LINKS - ALL STYLES ===== */
                 .nav-menu {
                     display: flex;
                     gap: 40px;
@@ -69,7 +177,6 @@ export default function Navbar() {
                     padding: 0;
                 }
 
-                /* ===== NAV LINKS - ALL STYLES ===== */
                 .nav-link {
                     color: #ffffff;
                     text-decoration: none;
@@ -143,8 +250,17 @@ export default function Navbar() {
                         padding: 15px 20px;
                     }
 
+                    .logo-wrapper {
+                        height: 58px;
+                    }
+
                     .logo {
                         height: 58px;
+                    }
+
+                    /* Disable water effect on mobile */
+                    .water-effect {
+                        display: none;
                     }
 
                     .nav-menu {
@@ -179,11 +295,27 @@ export default function Navbar() {
             <nav className="navbar">
                 <div className="nav-container">
                     <Link href="/">
-                        <img
-                            className="logo"
-                            src="/logov2.png"
-                            alt="5feet4 Studio"
-                        />
+                        <div
+                            className={`logo-wrapper ${isHoveringLogo ? 'water-active' : ''}`}
+                            onMouseEnter={() => setIsHoveringLogo(true)}
+                            onMouseLeave={() => setIsHoveringLogo(false)}
+                        >
+                            <img
+                                className="logo"
+                                src="/logov2.png"
+                                alt="5feet4 Studio"
+                            />
+                            {isHoveringLogo && (
+                                <>
+                                    <div className="water-effect">
+                                        <div className="ripple"></div>
+                                        <div className="ripple"></div>
+                                        <div className="ripple"></div>
+                                    </div>
+                                    <div className="water-drop"></div>
+                                </>
+                            )}
+                        </div>
                     </Link>
                     <ul className="nav-menu">
                         <li>
