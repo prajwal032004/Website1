@@ -4,64 +4,43 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 const videos = [
-  {
-    src: 'https://vimeo.com/1167679730/a43599f39f',
-    title: 'Brand Campaign',
-    desc: 'Creative storytelling meets brand vision',
-    tag: 'Campaign',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167682809/d726843f75',
-    title: 'UNIQLO',
-    desc: 'Everyday essentials. Elevated comfort.',
-    tag: 'Fashion • Apparel • Global',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167685194/a9c74513ab',
-    title: 'MAMAEARTH',
-    desc: "Safe, natural skincare solutions.",
-    tag: 'Skincare • Beauty • D2C',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167691944',
-    title: 'LENSKART',
-    desc: 'Stylish eyewear with smart innovation.',
-    tag: 'Eyewear • Retail • D2C',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167689633',
-    title: 'EUME',
-    desc: 'Modern travel gear, minimal design.',
-    tag: 'Travel • Lifestyle • Design',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167689020/c15b90820f',
-    title: 'TOKYO TOKYO',
-    desc: 'High-impact commercials that convert',
-    tag: 'Culture • Heritage • Modern',
-    type: 'horizontal',
-  },
-  {
-    src: 'https://vimeo.com/1167684995/8a9eb1db9a',
-    title: 'SWAROVSKI',
-    desc: 'Timeless crystal elegance redefined.',
-    tag: 'Luxury • Jewelry • Lifestyle',
-    type: 'vertical',
-  },
+  { src: 'https://vimeo.com/1167679730/a43599f39f', title: 'Brand Campaign', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167682809/d726843f75', title: 'UNIQLO', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167685194/a9c74513ab', title: 'MAMAEARTH', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167691944', title: 'LENSKART', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167689633', title: 'EUME', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167689020/c15b90820f', title: 'TOKYO TOKYO', type: 'horizontal' },
+  { src: 'https://vimeo.com/1167684995/8a9eb1db9a', title: 'SWAROVSKI', type: 'vertical' },
+  { src: 'https://vimeo.com/1182145252/3a68497660', title: 'HERO DIRT', type: 'vertical' },
+  { src: 'https://vimeo.com/1182149661/b217fa5c0d', title: 'French Factor', type: 'vertical' },
+  { src: 'https://vimeo.com/1182149674/1f426ebc4e', title: 'French Factor II', type: 'vertical' },
+  { src: 'https://vimeo.com/1182145888', title: 'SAMURAI', type: 'horizontal' },
+  { src: 'https://vimeo.com/1182149692/c834348c18', title: 'Hyundai Creta', type: 'horizontal' },
+  { src: 'https://vimeo.com/1182149898/245601feb1', title: 'Mahindra BE6', type: 'horizontal' },
 ]
 
+// Robust parser: strips query strings before extracting id + hash
 function getVimeoData(url) {
-  const idMatch = url.match(/vimeo\.com\/(\d+)/)
-  const hashMatch = url.match(/\/(\d+)\/([a-f0-9]+)/)
+  const clean = url.split('?')[0]
+  const idMatch = clean.match(/vimeo\.com\/(\d+)/)
+  const hashMatch = clean.match(/\/(\d+)\/([a-f0-9]+)$/)
   return {
     id: idMatch ? idMatch[1] : null,
     hash: hashMatch ? hashMatch[2] : null,
   }
+}
+
+function buildEmbedSrc(src, { autoplay = 1, muted = 1, loop = 1, background = 1 } = {}) {
+  const { id, hash } = getVimeoData(src)
+  if (!id) return ''
+  const base = `https://player.vimeo.com/video/${id}`
+  const h = hash ? `?h=${hash}` : '?'
+  const sep = hash ? '&' : ''
+  return `${base}${h}${sep}autoplay=${autoplay}&muted=${muted}&loop=${loop}&background=${background}`
+}
+
+function formatCount(n) {
+  return String(n).padStart(2, '0')
 }
 
 export default function Ads() {
@@ -73,43 +52,38 @@ export default function Ads() {
   const iframeRefs = useRef([])
   const heroRef = useRef(null)
   const prevUnmutedRef = useRef(null)
-  // Track whether homepage bg audio was live before fullscreen opened
   const bgWasUnmutedRef = useRef(false)
 
+  // ── Instant reveal ─────────────────────────────────────────────────────────
   useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 2200)
+    const t = setTimeout(() => setLoaded(true), 100)
     return () => clearTimeout(t)
   }, [])
 
-  // Background video blur on scroll
+  // ── Background blur on scroll ───────────────────────────────────────────────
   useEffect(() => {
     if (!loaded) return
     const updateBlur = () => {
-      const heroSection = heroRef.current
-      if (!heroSection) return
-      const rect = heroSection.getBoundingClientRect()
-      if (rect.bottom < window.innerHeight * 0.2) {
-        document.body.classList.add('blur-active')
-      } else {
-        document.body.classList.remove('blur-active')
-      }
+      const rect = heroRef.current?.getBoundingClientRect()
+      if (!rect) return
+      document.body.classList.toggle('blur-active', rect.bottom < window.innerHeight * 0.2)
     }
     let ticking = false
-    const handleScroll = () => {
+    const onScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => { updateBlur(); ticking = false })
         ticking = true
       }
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
     updateBlur()
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', onScroll)
       document.body.classList.remove('blur-active')
     }
   }, [loaded])
 
-  // IntersectionObserver for auto-play/pause Vimeo iframes
+  // ── Auto-play / pause via IntersectionObserver ──────────────────────────────
   useEffect(() => {
     if (!loaded) return
     const obs = new IntersectionObserver(
@@ -129,80 +103,55 @@ export default function Ads() {
     return () => obs.disconnect()
   }, [loaded])
 
-  // ── Mute ALL card iframes ──────────────────────────────────────────────────
+  // ── Helpers ─────────────────────────────────────────────────────────────────
   const muteAllCards = () => {
-    iframeRefs.current.forEach((iframe) => {
+    iframeRefs.current.forEach((iframe) =>
       iframe?.contentWindow?.postMessage({ method: 'setVolume', value: 0 }, '*')
-    })
+    )
   }
 
-  // ── Sound toggle on cards ──────────────────────────────────────────────────
   const toggleSound = (e, idx) => {
     e.stopPropagation()
-    const isUnmuted = unmutedIndex === idx
-
+    const wasUnmuted = unmutedIndex === idx
     muteAllCards()
-
-    if (!isUnmuted) {
+    if (!wasUnmuted) {
       setUnmutedIndex(idx)
-      iframeRefs.current[idx]?.contentWindow?.postMessage(
-        { method: 'setVolume', value: 1 }, '*'
-      )
-      // Mute homepage background Vimeo via SDK
-      if (window.__vimeoPlayer) {
-        window.__vimeoPlayer.setMuted(true).catch(() => { })
-      }
+      iframeRefs.current[idx]?.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
+      window.__vimeoPlayer?.setMuted(true).catch(() => { })
       window.dispatchEvent(new CustomEvent('ads-video-unmuted'))
     } else {
       setUnmutedIndex(null)
     }
   }
 
-  // ── Open fullscreen ────────────────────────────────────────────────────────
   const openFullscreen = async (idx) => {
-    // Save which card was unmuted
     prevUnmutedRef.current = unmutedIndex
-
-    // Mute ALL card iframes immediately (including the double-tapped one)
     muteAllCards()
     setUnmutedIndex(null)
-
-    // Check if homepage bg Vimeo is currently live, then mute it
     if (window.__vimeoPlayer) {
       try {
         const muted = await window.__vimeoPlayer.getMuted()
-        bgWasUnmutedRef.current = !muted   // remember if it was playing with sound
-        if (!muted) {
-          // It was live — mute it so fullscreen is the only audio source
-          await window.__vimeoPlayer.setMuted(true)
-        }
+        bgWasUnmutedRef.current = !muted
+        if (!muted) await window.__vimeoPlayer.setMuted(true)
       } catch (_) {
         bgWasUnmutedRef.current = false
       }
     }
-
     setFullscreenIndex(idx)
     document.body.style.overflow = 'hidden'
   }
 
-  // ── Exit fullscreen ────────────────────────────────────────────────────────
   const exitFullscreen = () => {
     setFullscreenIndex(null)
     document.body.style.overflow = ''
-
-    // Restore card audio that was playing before fullscreen (if any)
     const prev = prevUnmutedRef.current
     if (prev !== null) {
       setUnmutedIndex(prev)
       setTimeout(() => {
-        iframeRefs.current[prev]?.contentWindow?.postMessage(
-          { method: 'setVolume', value: 1 }, '*'
-        )
+        iframeRefs.current[prev]?.contentWindow?.postMessage({ method: 'setVolume', value: 1 }, '*')
       }, 100)
     }
     prevUnmutedRef.current = null
-
-    // Restore homepage bg Vimeo audio if it was live before fullscreen
     if (bgWasUnmutedRef.current && window.__vimeoPlayer) {
       window.__vimeoPlayer.setMuted(false).catch(() => { })
       window.__vimeoPlayer.setVolume(1).catch(() => { })
@@ -210,7 +159,6 @@ export default function Ads() {
     bgWasUnmutedRef.current = false
   }
 
-  // ── Double tap (mobile) ────────────────────────────────────────────────────
   const handleDoubleTap = (idx) => {
     const now = Date.now()
     const lastTap = lastTapTime[idx] || 0
@@ -218,160 +166,119 @@ export default function Ads() {
       openFullscreen(idx)
       setLastTapTime({})
     } else {
-      setLastTapTime({ ...lastTapTime, [idx]: now })
+      setLastTapTime((prev) => ({ ...prev, [idx]: now }))
     }
   }
 
-  // ── Double click (desktop) ─────────────────────────────────────────────────
-  const handleDoubleClick = (idx) => {
-    openFullscreen(idx)
-  }
-
-  // ── Escape key ────────────────────────────────────────────────────────────
+  // ── Escape key ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && fullscreenIndex !== null) exitFullscreen()
-    }
-    if (fullscreenIndex !== null) document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    const onKey = (e) => { if (e.key === 'Escape' && fullscreenIndex !== null) exitFullscreen() }
+    if (fullscreenIndex !== null) document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [fullscreenIndex])
 
   return (
     <>
       <style jsx suppressHydrationWarning>{`
 
-        /* ─────────────────────────────────────
-           FULLSCREEN VIDEO PLAYER
-        ───────────────────────────────────── */
+        /* ─── FULLSCREEN ──────────────────────────────────────────────────────── */
         .fullscreen-overlay {
-          position: fixed;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          background: #000;
-          z-index: 9999;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease-in;
+          position: fixed; inset: 0;
+          background: #000; z-index: 9999;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          animation: fadeIn 0.25s ease-in;
         }
-         
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .fullscreen-container {
-          position: relative;
-          width: 100%; height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
+          position: relative; width: 100%; height: 100%;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
         }
         .fullscreen-video-wrap {
-          position: relative;
-          width: 100%; flex: 1;
-          background: #000;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          position: relative; width: 100%; flex: 1;
+          background: #000; overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
         }
         .fullscreen-video-wrap iframe {
-          width: 100%; height: 100%;
-          border: none;
-          max-width: 100vw;
-          max-height: calc(100vh - 100px);
+          width: 100%; height: 100%; border: none;
+          max-width: 100vw; max-height: calc(100vh - 88px);
         }
         .fullscreen-controls {
-          position: relative;
-          width: 100%;
-          background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8), transparent);
-          padding: 40px 20px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
+          position: relative; width: 100%;
+          background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.7), transparent);
+          padding: 36px 24px 20px;
+          display: flex; justify-content: space-between; align-items: center; gap: 16px;
           z-index: 100;
-          animation: slideUp 0.3s ease-in;
-          flex-wrap: wrap;
+          animation: slideUp 0.3s ease-out;
         }
         @keyframes slideUp {
-          from { transform: translateY(100px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from { transform: translateY(60px); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
         }
-        .fs-info { flex: 1; min-width: 250px; }
-        .fs-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.2; }
-        .fs-desc  { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.4; }
-        .fs-controls-group { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .fs-title {
+          font-size: 18px; font-weight: 700; color: #fff;
+          line-height: 1.2; flex: 1;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
         .fs-close-btn {
-          width: 44px; height: 44px;
-          border-radius: 50%;
+          width: 44px; height: 44px; border-radius: 50%;
           background: rgba(255,255,255,0.08);
           border: 1.5px solid rgba(255,255,255,0.2);
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
+          cursor: pointer; flex-shrink: 0; padding: 0;
           transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
           backdrop-filter: blur(12px);
-          padding: 0;
-          flex-shrink: 0;
           -webkit-tap-highlight-color: transparent;
         }
         .fs-close-btn:hover {
           background: rgba(255,255,255,0.15);
           border-color: rgba(255,255,255,0.35);
           transform: scale(1.08) rotate(90deg);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
-        .fs-close-btn:active { transform: scale(0.95); }
+        .fs-close-btn:active { transform: scale(0.94); }
         .fs-close-btn svg {
-          width: 22px; height: 22px;
+          width: 20px; height: 20px;
           stroke: #fff; stroke-width: 2.5;
           stroke-linecap: round; stroke-linejoin: round;
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         }
 
-        /* ─────────────────────────────────────
-           BACKGROUND VIDEO BLUR
-        ───────────────────────────────────── */
+        /* ─── BG BLUR ─────────────────────────────────────────────────────────── */
         :global(body.blur-active .background-video) {
           filter: blur(12px) brightness(0.6);
           transition: filter 0.8s ease;
         }
 
-        /* ─────────────────────────────────────
-           SKELETON
-        ───────────────────────────────────── */
+        /* ─── SKELETON ────────────────────────────────────────────────────────── */
         .skeleton-wrapper {
-          position: absolute; top: 0; left: 0;
-          width: 100%; z-index: 50;
-          transition: opacity 0.6s ease-out, visibility 0.6s;
+          position: absolute; top: 0; left: 0; width: 100%; z-index: 50;
+          transition: opacity 0.5s ease-out, visibility 0.5s;
           opacity: 1; visibility: visible; pointer-events: auto;
         }
         .skeleton-wrapper.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .sk-block { background-color: #0f0f0f; position: relative; overflow: hidden; }
+
+        .sk-block { background: #0f0f0f; position: relative; overflow: hidden; }
         .sk-block::after {
-          content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+          content: ''; position: absolute; inset: 0;
           transform: translateX(-100%);
-          background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0.09) 60%, rgba(255,255,255,0) 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.1) 60%, transparent 100%);
           animation: shimmer 2s infinite;
         }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        @keyframes shimmer { to { transform: translateX(100%); } }
 
-        .sk-hero-section {
-          position: relative; height: 100vh;
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-        }
-        .sk-hero-line { border-radius: 12px; background: #111; height: clamp(60px, 10vw, 140px); }
-        .sk-hero-line.line1 { width: 40%; }
-        .sk-hero-line.line2 { width: 37%; }
-        .sk-work-section { padding: 100px 32px 80px; max-width: 1500px; margin: 0 auto; width: 100%; }
-        .sk-work-header { display: flex; align-items: center; justify-content: center; margin-bottom: 52px; }
-        .sk-work-title { width: 220px; height: clamp(40px, 5vw, 68px); border-radius: 8px; background: #111; }
-        .sk-work-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 44px; }
-        .sk-bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; grid-auto-flow: dense; align-items: start; }
-        .sk-card {
+        .sk-hero { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .sk-hero-line { border-radius: 12px; background: #111; }
+        .sk-hero-line.l1 { width: 40%; height: clamp(60px, 10vw, 140px); }
+        .sk-hero-line.l2 { width: 37%; height: clamp(44px, 7vw, 100px); }
+
+        .sk-work { padding: 100px 32px 80px; max-width: 1500px; margin: 0 auto; width: 100%; }
+        .sk-work-hd { display: flex; justify-content: center; margin-bottom: 52px; }
+        .sk-work-t  { width: 220px; height: clamp(40px, 5vw, 68px); border-radius: 8px; background: #111; }
+        .sk-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 44px; }
+
+        .sk-bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; grid-auto-flow: dense; }
+        .sk-card  {
           border-radius: 14px; background: #111;
           border: 1px solid rgba(255,255,255,0.05);
           position: relative; overflow: hidden;
@@ -380,26 +287,30 @@ export default function Ads() {
           content: ''; position: absolute; inset: 0;
           transform: translateX(-100%);
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-          animation: skSweep 2.2s ease-in-out infinite;
+          animation: skSweep 2.4s ease-in-out infinite;
         }
-        .sk-card:nth-child(1)::after { animation-delay: 0s; }
-        .sk-card:nth-child(2)::after { animation-delay: 0.1s; }
-        .sk-card:nth-child(3)::after { animation-delay: 0.2s; }
-        .sk-card:nth-child(4)::after { animation-delay: 0.3s; }
-        .sk-card:nth-child(5)::after { animation-delay: 0.4s; }
-        .sk-card:nth-child(6)::after { animation-delay: 0.5s; }
-        .sk-card:nth-child(7)::after { animation-delay: 0.6s; }
+        .sk-card:nth-child(1)::after  { animation-delay: 0s;    }
+        .sk-card:nth-child(2)::after  { animation-delay: 0.12s; }
+        .sk-card:nth-child(3)::after  { animation-delay: 0.24s; }
+        .sk-card:nth-child(4)::after  { animation-delay: 0.36s; }
+        .sk-card:nth-child(5)::after  { animation-delay: 0.48s; }
+        .sk-card:nth-child(6)::after  { animation-delay: 0.60s; }
+        .sk-card:nth-child(7)::after  { animation-delay: 0.72s; }
+        .sk-card:nth-child(8)::after  { animation-delay: 0.84s; }
+        .sk-card:nth-child(9)::after  { animation-delay: 0.96s; }
+        .sk-card:nth-child(10)::after { animation-delay: 1.08s; }
+        .sk-card:nth-child(11)::after { animation-delay: 1.20s; }
+        .sk-card:nth-child(12)::after { animation-delay: 1.32s; }
+        .sk-card:nth-child(13)::after { animation-delay: 1.44s; }
         @keyframes skSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .sk-card.sk-h { grid-column: span 2; height: 420px; }
         .sk-card.sk-v { grid-column: span 1; height: 550px; }
-        .sk-card-badge { position: absolute; top: 16px; left: 16px; width: 72px; height: 24px; border-radius: 100px; background: rgba(255,255,255,0.06); }
-        .sk-card-sound { position: absolute; top: 16px; right: 16px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
-        .sk-card-info { position: absolute; bottom: 28px; left: 28px; right: 28px; display: flex; flex-direction: column; gap: 10px; }
-        .sk-card-tag   { width: 50px; height: 10px; border-radius: 2px; background: rgba(255,255,255,0.06); }
-        .sk-card-title { width: 55%; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.08); }
-        .sk-card-desc  { width: 75%; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.05); }
+        .sk-sound { position: absolute; top: 16px; right: 16px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+        .sk-info  { position: absolute; bottom: 28px; left: 28px; right: 28px; }
+        .sk-ttl   { width: 50%; height: 20px; border-radius: 4px; background: rgba(255,255,255,0.08); }
+
         .sk-footer { padding: 60px 20px; display: flex; justify-content: center; border-top: 1px solid rgba(255,255,255,0.07); }
-        .sk-footer-line { width: 200px; height: 14px; border-radius: 4px; background: #111; }
+        .sk-foot-line { width: 200px; height: 14px; border-radius: 4px; background: #111; }
 
         @media (max-width: 1024px) {
           .sk-bento { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -407,12 +318,12 @@ export default function Ads() {
           .sk-card.sk-v { grid-column: span 1; height: auto; aspect-ratio: 9 / 16; }
         }
         @media (max-width: 768px) {
-          .sk-work-section { padding: 60px 16px 56px; }
+          .sk-work { padding: 60px 16px 56px; }
           .sk-bento { gap: 8px; }
           .sk-card.sk-h { grid-column: 1 / -1; height: 220px; }
           .sk-card.sk-v { grid-column: span 1; height: auto; aspect-ratio: 9 / 16; }
-          .sk-hero-line.line1 { width: 80%; height: 80px; }
-          .sk-hero-line.line2 { width: 55%; height: 60px; }
+          .sk-hero-line.l1 { width: 80%; height: 80px; }
+          .sk-hero-line.l2 { width: 55%; height: 60px; }
           .sk-footer { padding: 40px 20px; }
         }
         @media (max-width: 480px) {
@@ -421,16 +332,15 @@ export default function Ads() {
           .sk-card.sk-v { grid-column: 1; height: auto; aspect-ratio: 9 / 16; }
         }
 
-        /* ─────────────────────────────────────
-           PAGE
-        ───────────────────────────────────── */
+        /* ─── PAGE ────────────────────────────────────────────────────────────── */
         .content-wrapper { opacity: 0; transition: opacity 0.8s ease-in; }
         .content-wrapper.loaded { opacity: 1; }
         .page { min-height: 100vh; background: transparent; display: flex; flex-direction: column; }
 
+        /* ─── HERO ────────────────────────────────────────────────────────────── */
         .hero {
-          height: 100vh; display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
+          height: 100vh;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
           position: relative; padding: 0 24px;
         }
         .hero-eyebrow {
@@ -445,35 +355,40 @@ export default function Ads() {
           color: #fff; text-align: center;
           opacity: 0; animation: fadeInUp 1.2s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
         }
-        .hero-scroll {
-          position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-          display: flex; flex-direction: column; align-items: center; gap: 8px;
-          opacity: 0; animation: heroFade 1s ease 1.3s forwards;
-        }
-        .hero-scroll-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
-        .hero-scroll-line {
-          width: 1px; height: 44px;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.28), transparent);
-          animation: scrollPulse 1.6s ease-in-out infinite;
-        }
-        @keyframes scrollPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes heroFade { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp  { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes heroFade  { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 768px) {
-          .hero-title { font-size: clamp(58px, 18vw, 110px); }
+          .hero-title   { font-size: clamp(58px, 18vw, 110px); }
           .hero-eyebrow { font-size: 10px; }
-          .hero-scroll { bottom: 24px; }
         }
         @media (max-width: 480px) { .hero-title { font-size: clamp(50px, 20vw, 88px); } }
 
+        /* ─── WORK ────────────────────────────────────────────────────────────── */
         .work { padding: 100px 32px 80px; max-width: 1500px; margin: 0 auto; width: 100%; }
-        .work-header { position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 52px; }
-        .work-title { font-size: clamp(40px,6vw,72px); font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; line-height: 1; color: #fff; text-align: center; }
-        .work-count { position: absolute; right: 0; bottom: 6px; font-size: 10px; letter-spacing: 0.2em; color: rgba(255,255,255,0.28); text-transform: uppercase; white-space: nowrap; }
+        .work-header {
+          position: relative;
+          display: flex; align-items: baseline; justify-content: center;
+          margin-bottom: 52px;
+        }
+        .work-title {
+          font-size: clamp(40px, 6vw, 72px); font-weight: 800;
+          letter-spacing: -0.04em; text-transform: uppercase;
+          line-height: 1; color: #fff; text-align: center;
+        }
+        .work-count {
+          position: absolute; right: 0; bottom: 0;
+          font-size: 10px; letter-spacing: 0.2em;
+          color: rgba(255,255,255,0.28); text-transform: uppercase; white-space: nowrap;
+        }
         .work-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 44px; }
 
-        .bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; grid-auto-flow: dense; align-items: start; }
+        /* ─── BENTO GRID ──────────────────────────────────────────────────────── */
+        .bento {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 12px; grid-auto-flow: dense; align-items: start;
+        }
+
         .video-card {
           position: relative; border-radius: 14px; overflow: hidden;
           background: #080808; border: 1px solid rgba(255,255,255,0.07);
@@ -481,43 +396,52 @@ export default function Ads() {
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s ease, border-color 0.3s ease;
           -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
         }
-        .video-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: 0 28px 70px rgba(0,0,0,0.65); border-color: rgba(255,255,255,0.14); }
+        .video-card:hover {
+          transform: translateY(-6px) scale(1.01);
+          box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+          border-color: rgba(255,255,255,0.13);
+        }
         .video-card.horizontal { grid-column: span 2; height: 420px; }
         .video-card.vertical   { grid-column: span 1; height: 550px; }
 
+        /* ─── VIMEO IFRAME ────────────────────────────────────────────────────── */
         .vimeo-wrap { position: absolute; inset: 0; background: #000; overflow: hidden; }
-        .vimeo-wrap iframe { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 170%; height: 170%; border: none; pointer-events: none; }
+        .vimeo-wrap iframe {
+          position: absolute; top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: 170%; height: 170%;
+          border: none; pointer-events: none;
+        }
         .video-card.vertical .vimeo-wrap iframe { width: 130%; height: 130%; }
 
+        /* ─── CARD OVERLAY ────────────────────────────────────────────────────── */
         .card-info {
           position: absolute; inset: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.35) 50%, transparent 100%);
-          display: flex; flex-direction: column; justify-content: flex-end; padding: 28px;
-          opacity: 0; transition: opacity 0.35s ease;
+          background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 45%, transparent 100%);
+          display: flex; flex-direction: column; justify-content: flex-end;
+          padding: 26px; opacity: 0; transition: opacity 0.3s ease;
         }
         .video-card:hover .card-info { opacity: 1; }
-        .card-tag   { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
-        .card-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #fff; line-height: 1.1; margin-bottom: 8px; }
-        .card-desc  { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.5; }
-
-        .card-badge {
-          position: absolute; top: 16px; left: 16px;
-          font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-          color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(10px); padding: 5px 12px; border-radius: 100px;
-          border: 1px solid rgba(255,255,255,0.1); z-index: 5; pointer-events: none;
+        .card-title {
+          font-size: 24px; font-weight: 700;
+          letter-spacing: -0.02em; color: #fff; line-height: 1.1;
         }
+
+        /* ─── SOUND BTN ───────────────────────────────────────────────────────── */
         .sound-btn {
-          position: absolute; top: 16px; right: 16px;
-          width: 42px; height: 42px; border-radius: 50%;
-          background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15);
+          position: absolute; top: 14px; right: 14px;
+          width: 40px; height: 40px; border-radius: 50%;
+          background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px); z-index: 10; padding: 0;
+          cursor: pointer; transition: all 0.2s ease;
+          backdrop-filter: blur(10px); z-index: 10; padding: 0;
+          -webkit-tap-highlight-color: transparent;
         }
-        .sound-btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.1); }
-        .sound-btn:active { transform: scale(0.95); }
-        .sound-btn svg { width: 17px; height: 17px; stroke: #fff; fill: none; }
+        .sound-btn:hover  { background: rgba(255,255,255,0.12); transform: scale(1.08); }
+        .sound-btn:active { transform: scale(0.94); }
+        .sound-btn svg    { width: 16px; height: 16px; stroke: #fff; fill: none; }
 
+        /* ─── RESPONSIVE ──────────────────────────────────────────────────────── */
         @media (max-width: 1024px) {
           .bento { grid-template-columns: repeat(2, 1fr); gap: 10px; }
           .video-card.horizontal { grid-column: 1 / -1; height: 340px; }
@@ -526,20 +450,21 @@ export default function Ads() {
         }
         @media (max-width: 768px) {
           .work { padding: 60px 16px 56px; }
-          .work-header { flex-direction: column; align-items: flex-start; margin-bottom: 24px; gap: 6px; }
+          .work-header { flex-direction: column; align-items: flex-start; margin-bottom: 24px; gap: 4px; }
+          .work-count  { position: static; }
           .work-divider { margin-bottom: 28px; }
           .bento { gap: 8px; }
           .video-card.horizontal { grid-column: 1 / -1; height: 220px; }
           .video-card.vertical   { grid-column: span 1; height: auto; aspect-ratio: 3 / 4; }
           .video-card.vertical .vimeo-wrap { position: absolute !important; inset: 0 !important; }
-          .card-info { opacity: 1; padding: 14px; }
-          .card-desc { display: none; }
-          .card-title { font-size: 14px; margin-bottom: 0; }
-          .card-tag   { font-size: 8px; margin-bottom: 4px; }
-          .card-badge { font-size: 8px; padding: 3px 8px; top: 10px; left: 10px; }
-          .sound-btn  { width: 34px; height: 34px; top: 10px; right: 10px; }
-          .sound-btn svg { width: 13px; height: 13px; }
+          .card-info  { opacity: 1; padding: 12px; }
+          .card-title { font-size: 14px; }
+          .sound-btn  { width: 32px; height: 32px; top: 8px; right: 8px; }
+          .sound-btn svg { width: 12px; height: 12px; }
           .video-card:hover { transform: none; box-shadow: none; }
+          .fullscreen-controls { padding: 20px; }
+          .fs-title { font-size: 16px; }
+          .fs-close-btn { width: 40px; height: 40px; }
         }
         @media (max-width: 480px) {
           .work { padding: 52px 14px 48px; }
@@ -549,67 +474,67 @@ export default function Ads() {
           .video-card.horizontal .vimeo-wrap,
           .video-card.vertical   .vimeo-wrap { position: absolute !important; inset: 0 !important; }
           .video-card.vertical .vimeo-wrap iframe { width: 130%; height: 130%; }
+          .fullscreen-controls { padding: 14px; }
+          .fs-title { font-size: 14px; }
+          .fs-close-btn { width: 38px; height: 38px; }
+          .fs-close-btn svg { width: 18px; height: 18px; }
         }
 
-        @media (max-width: 768px) {
-          .fullscreen-controls { flex-direction: row; align-items: center; gap: 16px; padding: 20px; justify-content: space-between; }
-          .fs-info { flex: 1; }
-          .fs-title { font-size: 16px; }
-          .fs-desc  { font-size: 11px; }
-          .fs-controls-group { width: auto; justify-content: flex-end; }
-        }
-        @media (max-width: 480px) {
-          .fullscreen-controls { padding: 16px; }
-          .fs-title { font-size: 14px; margin-bottom: 2px; }
-          .fs-desc  { font-size: 10px; }
-          .fs-controls-group { gap: 12px; }
-          .fs-close-btn { width: 40px; height: 40px; }
-          .fs-close-btn svg { width: 20px; height: 20px; stroke-width: 2.5; }
-        }
-
+        /* ─── FOOTER ──────────────────────────────────────────────────────────── */
         .copyright-container {
           width: 100%; padding: 60px 20px;
           display: flex; justify-content: center; align-items: center;
           position: relative; z-index: 100;
           border-top: 1px solid rgba(255,255,255,0.07);
         }
-        .copyright { font-size: 14px; color: rgba(255,255,255,0.9); font-weight: 400; letter-spacing: 0.5px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .copyright-link, .copyright-link:visited, .copyright-link:active { color: #fff; font-weight: 700; text-decoration: none; position: relative; display: inline-block; margin: 0 4px; cursor: pointer; }
-        .copyright-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -2px; left: 0; background-color: #fff; transition: width 0.3s ease; }
+        .copyright {
+          font-size: 14px; color: rgba(255,255,255,0.9);
+          font-weight: 400; letter-spacing: 0.5px; margin: 0;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .copyright-link,
+        .copyright-link:visited,
+        .copyright-link:active {
+          color: #fff; font-weight: 700; text-decoration: none;
+          position: relative; display: inline-block; margin: 0 4px; cursor: pointer;
+        }
+        .copyright-link::after {
+          content: ''; position: absolute;
+          width: 0; height: 1px; bottom: -2px; left: 0;
+          background: #fff; transition: width 0.3s ease;
+        }
         .copyright-link:hover::after { width: 100%; }
         .copyright-link:hover { opacity: 0.8; transform: translateY(-1px); }
-        @media (max-width: 768px) { .copyright-container { padding: 40px 20px; } .copyright { font-size: 12px; text-align: center; } }
+        @media (max-width: 768px) {
+          .copyright-container { padding: 40px 20px; }
+          .copyright { font-size: 12px; text-align: center; }
+        }
       `}</style>
 
       <div style={{ position: 'relative' }}>
 
-        {/* ── SKELETON ── */}
+        {/* ── SKELETON ─────────────────────────────────────────────────────────── */}
         <div className={`skeleton-wrapper ${loaded ? 'hidden' : ''}`}>
-          <section className="sk-hero-section">
-            <div className="sk-block sk-hero-line line1" />
-            <div className="sk-block sk-hero-line line2" />
+          <section className="sk-hero">
+            <div className="sk-block sk-hero-line l1" />
+            <div className="sk-block sk-hero-line l2" />
           </section>
-          <div className="sk-work-section">
-            <div className="sk-work-header"><div className="sk-block sk-work-title" /></div>
-            <div className="sk-work-divider" />
+          <div className="sk-work">
+            <div className="sk-work-hd"><div className="sk-block sk-work-t" /></div>
+            <div className="sk-divider" />
             <div className="sk-bento">
-              {[...Array(7)].map((_, i) => (
-                <div key={i} className={`sk-block sk-card ${i < 6 ? 'sk-h' : 'sk-v'}`}>
-                  <div className="sk-card-badge" />
-                  <div className="sk-card-sound" />
-                  <div className="sk-card-info">
-                    <div className="sk-card-tag" />
-                    <div className="sk-card-title" />
-                    <div className="sk-card-desc" />
-                  </div>
+              {videos.map((v, i) => (
+                <div key={i} className={`sk-block sk-card ${v.type === 'vertical' ? 'sk-v' : 'sk-h'}`}>
+                  <div className="sk-sound" />
+                  <div className="sk-info"><div className="sk-ttl" /></div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="sk-footer"><div className="sk-block sk-footer-line" /></div>
+          <div className="sk-footer"><div className="sk-block sk-foot-line" /></div>
         </div>
 
-        {/* ── CONTENT ── */}
+        {/* ── CONTENT ──────────────────────────────────────────────────────────── */}
         <div className={`content-wrapper ${loaded ? 'loaded' : ''}`}>
           <div className="page">
 
@@ -623,16 +548,13 @@ export default function Ads() {
             <section className="work">
               <div className="work-header">
                 <h2 className="work-title">Our Work</h2>
-                <span className="work-count">0{videos.length} Projects</span>
+                <span className="work-count">{formatCount(videos.length)} Projects</span>
               </div>
               <div className="work-divider" />
 
               <div className="bento">
                 {videos.map((video, i) => {
-                  const { id, hash } = getVimeoData(video.src)
-                  const iframeSrc = hash
-                    ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=1&loop=1&background=1`
-                    : `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&loop=1&background=1`
+                  const iframeSrc = buildEmbedSrc(video.src)
                   const isUnmuted = unmutedIndex === i
 
                   return (
@@ -641,7 +563,7 @@ export default function Ads() {
                       className={`video-card ${video.type}`}
                       ref={(el) => (containerRefs.current[i] = el)}
                       data-idx={i}
-                      onDoubleClick={() => handleDoubleClick(i)}
+                      onDoubleClick={() => openFullscreen(i)}
                       onTouchEnd={() => handleDoubleTap(i)}
                     >
                       <div className="vimeo-wrap">
@@ -655,11 +577,9 @@ export default function Ads() {
                         />
                       </div>
 
-                      <div className="card-badge">{video.tag}</div>
-
                       <button
                         className="sound-btn"
-                        aria-label="Toggle sound"
+                        aria-label={isUnmuted ? 'Mute' : 'Unmute'}
                         onClick={(e) => toggleSound(e, i)}
                       >
                         {isUnmuted ? (
@@ -678,9 +598,7 @@ export default function Ads() {
                       </button>
 
                       <div className="card-info">
-                        <p className="card-tag">{video.tag}</p>
                         <h3 className="card-title">{video.title}</h3>
-                        <p className="card-desc">{video.desc}</p>
                       </div>
                     </div>
                   )
@@ -698,33 +616,26 @@ export default function Ads() {
           </div>
         </div>
 
-        {/* ── FULLSCREEN PLAYER ── */}
-        {fullscreenIndex !== null && (
-          <div className="fullscreen-overlay" onClick={exitFullscreen}>
-            <div className="fullscreen-container" onClick={(e) => e.stopPropagation()}>
-              <div className="fullscreen-video-wrap">
-                <iframe
-                  src={(() => {
-                    const { id, hash } = getVimeoData(videos[fullscreenIndex].src)
-                    return hash
-                      ? `https://player.vimeo.com/video/${id}?h=${hash}&autoplay=1&muted=0&loop=0`
-                      : `https://player.vimeo.com/video/${id}?autoplay=1&muted=0&loop=0`
-                  })()}
-                  title={videos[fullscreenIndex].title}
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-
-              <div className="fullscreen-controls">
-                <div className="fs-info">
-                  <div className="fs-title">{videos[fullscreenIndex].title}</div>
-                  <div className="fs-desc">{videos[fullscreenIndex].desc}</div>
+        {/* ── FULLSCREEN PLAYER ────────────────────────────────────────────────── */}
+        {fullscreenIndex !== null && (() => {
+          const video = videos[fullscreenIndex]
+          const src = buildEmbedSrc(video.src, { autoplay: 1, muted: 0, loop: 0, background: 0 })
+          return (
+            <div className="fullscreen-overlay" onClick={exitFullscreen}>
+              <div className="fullscreen-container" onClick={(e) => e.stopPropagation()}>
+                <div className="fullscreen-video-wrap">
+                  <iframe
+                    src={src}
+                    title={video.title}
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  />
                 </div>
-                <div className="fs-controls-group">
-                  <button className="fs-close-btn" onClick={exitFullscreen} aria-label="Exit fullscreen">
-                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5">
+                <div className="fullscreen-controls">
+                  <div className="fs-title">{video.title}</div>
+                  <button className="fs-close-btn" onClick={exitFullscreen} aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -732,8 +643,8 @@ export default function Ads() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
       </div>
     </>
